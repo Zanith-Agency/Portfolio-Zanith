@@ -1,13 +1,5 @@
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-gsap.registerPlugin(ScrollTrigger);
-
 export function initStoryScroll() {
-  if ("scrollRestoration" in window.history) {
-    window.history.scrollRestoration = "manual";
-  }
-
-  const sections = Array.from(document.querySelectorAll(".story-section"));
+  const sections = Array.from(document.querySelectorAll(".story-block"));
   if (sections.length === 0) return;
 
   const menuItems = Array.from(document.querySelectorAll(".services-menu-item"));
@@ -23,13 +15,48 @@ export function initStoryScroll() {
     header?.classList.toggle("is-dark-bg", dark);
   };
 
-  const updateActive = (sectionIndex) => {
-    const menuIndex = Number(sections[sectionIndex]?.dataset.skillMenuIndex ?? -1);
-    menuItems.forEach((el, i) => el.classList.toggle("is-active", i === menuIndex));
-    if (indicatorNumber) indicatorNumber.textContent = String(sectionIndex + 1).padStart(2, "0");
+  const updateActive = (index) => {
+    const menuIndex = Number(sections[index]?.dataset.skillMenuIndex ?? -1);
+    if (menuIndex >= 0) {
+      menuItems.forEach((el, i) => el.classList.toggle("is-active", i === menuIndex));
+    }
+    if (indicatorNumber) indicatorNumber.textContent = String(index + 1).padStart(2, "0");
+    setDark(sections[index]?.dataset.dark === "true");
   };
   updateActive(0);
-  setDark(sections[0]?.dataset.dark === "true");
+
+  // Apparition en fondu, une fois par section, quand elle entre dans l'écran
+  if (reduced) {
+    sections.forEach((s) => s.classList.add("is-visible"));
+  } else {
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12 }
+    );
+    sections.forEach((s) => revealObserver.observe(s));
+  }
+
+  // Suit quelle section occupe la bande centrale de l'écran, pour mettre à
+  // jour le menu, le numéro d'indicateur, et le contraste clair/sombre.
+  const activeObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const index = sections.indexOf(entry.target);
+          if (index !== -1) updateActive(index);
+        }
+      });
+    },
+    { rootMargin: "-45% 0px -45% 0px", threshold: 0 }
+  );
+  sections.forEach((s) => activeObserver.observe(s));
 
   const scrollToMenuIndex = (menuIndex) => {
     const target = sections.find((s) => Number(s.dataset.skillMenuIndex) === menuIndex);
@@ -41,48 +68,4 @@ export function initStoryScroll() {
     }
   };
   menuItems.forEach((item, i) => item.addEventListener("click", () => scrollToMenuIndex(i)));
-
-  if (reduced) return;
-
-  const getMaxRadius = () => {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    return Math.sqrt((w / 2) ** 2 + h ** 2) * 1.05;
-  };
-
-  sections.forEach((section, i) => {
-    const panel = section.querySelector(".story-panel");
-
-    if (i > 0) gsap.set(panel, { clipPath: "circle(0px at 50% 100%)" });
-
-    let crossedDark = false;
-
-    ScrollTrigger.create({
-      trigger: section,
-      start: "top bottom",
-      end: "bottom top",
-      scrub: 0.4,
-      onUpdate: (self) => {
-        if (i === 0) return;
-        const revealProgress = Math.min(1, self.progress / 0.5);
-        const r = getMaxRadius() * revealProgress;
-        panel.style.clipPath = `circle(${r}px at 50% 100%)`;
-
-        const dark = section.dataset.dark === "true";
-        if (revealProgress >= 0.5 && !crossedDark) {
-          crossedDark = true;
-          setDark(dark);
-        } else if (revealProgress < 0.5 && crossedDark) {
-          crossedDark = false;
-          const prevDark = sections[i - 1]?.dataset.dark === "true";
-          setDark(prevDark);
-        }
-      },
-      onEnter: () => updateActive(i),
-      onEnterBack: () => updateActive(i),
-      onLeaveBack: () => updateActive(Math.max(0, i - 1)),
-    });
-  });
-
-  window.addEventListener("resize", () => ScrollTrigger.refresh());
 }

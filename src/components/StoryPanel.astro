@@ -16,59 +16,90 @@ const {
 } = Astro.props;
 ---
 
-<section class="story-section" data-index={index} data-dark={dark ? "true" : "false"} data-skill-menu-index={skillMenuIndex}>
-  <div
-    class="story-panel"
-    style={`--panel-bg: ${backgroundColor}; --panel-color: ${textColor}; z-index: ${index + 1};`}
-  >
-    <div class="story-panel-inner">
-      {type === "intro" && <span class="story-panel-eyebrow">Zanith — Agence digitale</span>}
-      {title && <h2 class="story-panel-title">{title}</h2>}
-      <p class:list={["story-panel-body", { "story-panel-body--lede": type !== "skill" }]}>{body}</p>
-      {tools.length > 0 && (
-        <ul class="story-panel-tools">
-          {tools.map((t) => <li>{t}</li>)}
-        </ul>
-      )}
-      <div class="story-panel-extra">
-        <slot />
-      </div>
-    </div>
+<section
+  class:list={["story-block", { "story-block--first": index === 0 }]}
+  data-index={index}
+  data-dark={dark ? "true" : "false"}
+  data-skill-menu-index={skillMenuIndex}
+  style={`--block-bg: ${backgroundColor}; --block-color: ${textColor};`}
+>
+  {index !== 0 && (
+    <svg class="story-block-dome" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0,160 Q720,0 1440,160 Z" />
+    </svg>
+  )}
 
-    {type === "intro" && (
-      <span class="story-panel-cue" aria-hidden="true">
-        <span class="story-panel-cue-line"></span>
-        <span class="story-panel-cue-arrow">↓</span>
-      </span>
+  <div class="story-block-inner">
+    {type === "intro" && <span class="story-block-eyebrow">Zanith — Agence digitale</span>}
+    {title && <h2 class="story-block-title">{title}</h2>}
+    <p class:list={["story-block-body", { "story-block-body--lede": type !== "skill" }]}>{body}</p>
+    {tools.length > 0 && (
+      <ul class="story-block-tools">
+        {tools.map((t) => <li>{t}</li>)}
+      </ul>
     )}
+    <div class="story-block-extra">
+      <slot />
+    </div>
   </div>
+
+  {type === "intro" && (
+    <span class="story-block-cue" aria-hidden="true">
+      <span class="story-block-cue-line"></span>
+      <span class="story-block-cue-arrow">↓</span>
+    </span>
+  )}
 </section>
 
 <style>
-  .story-section { position: relative; height: 200vh; }
-  .story-section[data-index="0"] { height: 100vh; }
+  .story-block {
+    position: relative;
+    background: var(--block-bg);
+    color: var(--block-color);
+    padding: clamp(90px, 14vw, 180px) var(--container-padding) clamp(80px, 10vw, 140px);
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.9s var(--ease-default), transform 0.9s var(--ease-default);
+  }
+  .story-block.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
 
-  .story-panel {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100vh;
-    height: 100dvh;
+  .story-block--first {
+    min-height: 100vh;
     display: flex;
     align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    background: var(--panel-bg);
-    color: var(--panel-color);
-    will-change: clip-path;
+    padding-top: 80px;
+    opacity: 1;
+    transform: none;
   }
 
-  .story-panel-inner {
-    position: relative; width: 100%; max-width: 760px;
-    padding: 0 var(--container-padding); text-align: center;
+  /* La capsule du dôme : une ellipse plate positionnée juste au-dessus de la
+     section, dans la même couleur. Comme elle chevauche visuellement la fin
+     de la section précédente, la transition de couleur suit sa courbe au
+     lieu d'une ligne droite — et en dessous, la section reste un simple
+     rectangle plein, quelle que soit sa hauteur de contenu. */
+  .story-block-dome {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: clamp(50px, 9vw, 130px);
+    display: block;
+    transform: translateY(-100%);
+  }
+  .story-block-dome path {
+    fill: var(--block-bg);
   }
 
-  .story-panel-eyebrow {
+  .story-block-inner {
+    position: relative;
+    max-width: 760px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .story-block-eyebrow {
     display: block;
     font-family: var(--font-mono);
     font-size: 0.7rem;
@@ -78,30 +109,30 @@ const {
     margin-bottom: 1.5rem;
   }
 
-  .story-panel-title {
+  .story-block-title {
     font-weight: 300; letter-spacing: -0.01em;
     font-size: clamp(2.5rem, 7vw, 6rem); margin: 0 0 1.5rem;
   }
-  .story-panel-body {
+  .story-block-body {
     font-size: 1rem; line-height: 1.7;
     max-width: 560px; margin: 0 auto 2rem; opacity: 0.85;
   }
-  .story-panel-body--lede {
+  .story-block-body--lede {
     font-size: clamp(1.4rem, 3vw, 2.2rem); font-weight: 300;
     line-height: 1.5; max-width: 680px; opacity: 1;
   }
-  .story-panel-tools {
+  .story-block-tools {
     list-style: none; margin: 0 0 2rem; padding: 0;
     display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem;
     font-family: var(--font-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em;
   }
-  .story-panel-tools li {
-    border: 1px solid color-mix(in srgb, var(--panel-color) 30%, transparent);
+  .story-block-tools li {
+    border: 1px solid color-mix(in srgb, var(--block-color) 30%, transparent);
     padding: 0.35rem 0.75rem; border-radius: 999px;
   }
-  .story-panel-extra:empty { display: none; }
+  .story-block-extra:empty { display: none; }
 
-  .story-panel-cue {
+  .story-block-cue {
     position: absolute;
     bottom: 2.5rem;
     left: 50%;
@@ -113,16 +144,15 @@ const {
     opacity: 0.5;
     animation: story-cue-bounce 2s ease-in-out infinite;
   }
-  .story-panel-cue-line { width: 1px; height: 32px; background: currentColor; opacity: 0.5; }
-  .story-panel-cue-arrow { font-size: 0.9rem; }
+  .story-block-cue-line { width: 1px; height: 32px; background: currentColor; opacity: 0.5; }
+  .story-block-cue-arrow { font-size: 0.9rem; }
 
   @keyframes story-cue-bounce {
     0%, 100% { transform: translateX(-50%) translateY(0); }
     50% { transform: translateX(-50%) translateY(8px); }
   }
 
-  @media (max-width: 900px) {
-    .story-section { height: 140vh; }
-    .story-section[data-index="0"] { height: 100vh; }
+  @media (prefers-reduced-motion: reduce) {
+    .story-block { transition: none; }
   }
 </style>
