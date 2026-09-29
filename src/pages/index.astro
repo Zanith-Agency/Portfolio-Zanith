@@ -16,6 +16,9 @@ const projects = await getProjects();
 
       {projects.map((project) => (
         <a href={`/projets/${project.slug}`} class="project-orbit-item">
+          <span class="project-orbit-hint">
+           Clic pour découvrir le projet <span class="project-orbit-hint-arrow">→</span>
+          </span>
           <span class="project-orbit-item-inner">
             <img src={project.image_path} alt={project.title} loading="eager" />
           </span>
@@ -116,4 +119,27 @@ const projects = await getProjects();
     .project-orbit { width: min(80vw, 420px); height: min(80vw, 420px); }
     .project-orbit-item { width: 110px; }
   }
+
+  .project-orbit-hint {
+  position: absolute;
+  bottom: 100%; left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 0.6rem;
+  display: flex; align-items: center; gap: 0.35rem;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-inverse);
+  opacity: 0;
+  transition: opacity 0.3s var(--ease-default);
+  pointer-events: none;
+}
+.project-orbit-item:hover .project-orbit-hint {
+  opacity: 0.85;
+}
+.project-orbit-hint-arrow {
+  display: inline-block;
+}
 </style>

@@ -38,8 +38,17 @@ export function initProjectOrbit() {
 
   if (reduced) return; // pas d'animation si l'utilisateur préfère un mouvement réduit
 
-  track.addEventListener("mouseenter", () => (paused = true));
-  track.addEventListener("mouseleave", () => (paused = false));
+  let hoveredCount = 0;
+items.forEach((item) => {
+  item.addEventListener("mouseenter", () => {
+    hoveredCount++;
+    paused = true;
+  });
+  item.addEventListener("mouseleave", () => {
+    hoveredCount--;
+    paused = hoveredCount > 0;
+  });
+});
 
   const SPEED = 5; // degrés par seconde — vitesse de rotation, ajustable
   let lastTime = performance.now();
