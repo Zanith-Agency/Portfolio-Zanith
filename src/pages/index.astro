@@ -1,17 +1,61 @@
 ---
+import { getCollection } from "astro:content";
+import { Image } from "astro:assets";
+import Layout from "../layouts/Layout.astro";
 
+const projects = (await getCollection("projects")).sort((a, b) => a.data.order - b.data.order);
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="Zanith — Nadir Gherich" isHome headerVariant="dark" pageLabel="Travail">
+  <section class="hero" data-reveal-after-intro>
+    <div class="carousel" id="project-carousel">
+      {projects.map((project, i) => (
+        <a href={`/projets/${project.id}`} class="carousel-slide" data-index={i}>
+          <Image src={project.data.cover} alt={project.data.title} width={900} height={650} loading={i === 0 ? "eager" : "lazy"} />
+        </a>
+      ))}
+      <div class="carousel-caption">
+        {projects.map((project, i) => (
+          <div class="carousel-caption-item" data-index={i}>
+            <span class="carousel-title">{project.data.title}</span>
+            <span class="carousel-category">{project.data.category}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <script>
+    import { initIntro } from "../scripts/intro";
+    import { initCarousel } from "../scripts/carousel";
+    initIntro();
+    initCarousel();
+  </script>
+</Layout>
+
+<style>
+  .hero {
+    position: relative; min-height: 100vh;
+    background: var(--bg-inverse);
+    padding-top: 80px;
+    display: flex; align-items: center; justify-content: center;
+    perspective: 1400px; /* donne de la profondeur à la rotation 3D */
+  }
+  .carousel { position: relative; width: min(60vw, 720px); aspect-ratio: 4 / 3; }
+  .carousel-slide {
+    position: absolute; inset: 0; display: block;
+    backface-visibility: hidden; transform-style: preserve-3d;
+    opacity: 0; pointer-events: none;
+  }
+  .carousel-slide.is-active { pointer-events: auto; }
+  .carousel-slide img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+
+  .carousel-caption {
+    position: absolute; left: 0; right: 0; top: calc(100% + 1.5rem);
+    text-align: center; color: var(--text-inverse);
+  }
+  .carousel-caption-item { display: none; flex-direction: column; gap: 0.25rem; }
+  .carousel-caption-item.is-active { display: flex; }
+  .carousel-title { font-weight: 700; }
+  .carousel-category { font-family: var(--font-mono); font-size: 0.75rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.05em; }
+</style>

@@ -1,0 +1,99 @@
+---
+interface Props {
+  startInIntro?: boolean;
+  variant?: "light" | "dark";
+  pageLabel?: string;
+}
+const { startInIntro = false, variant = "light", pageLabel } = Astro.props;
+const teeth = Array.from({ length: 12 });
+
+const navItems = [
+  { label: "Travail", href: "/" },
+  { label: "Compétences", href: "/competences" },
+  { label: "Contact", href: "/contact" },
+];
+// Le menu n'affiche jamais la page sur laquelle on se trouve déjà.
+const menuItems = navItems.filter((item) => item.label !== pageLabel);
+// Pendant l'intro seulement : l'item courant reste temporairement dans
+// le menu (tout le monde y est au chargement), avant de basculer vers
+// le centre à la fin de l'animation (voir intro.js).
+const introExtraItem = startInIntro ? navItems.find((item) => item.label === pageLabel) : null;
+---
+
+<header id="site-header" class:list={["site-header", { "is-intro": startInIntro, "is-dark-bg": variant === "dark" }]}>
+  <div class="header-inner">
+    <div class="brand-group">
+      <a href="/" class="brand" data-intro-item>Zanith</a>
+      <p class="name" data-intro-item> //Nadir Gherich// </p>
+    </div>
+
+    {pageLabel && <p class="page-label" id="page-label">{pageLabel}</p>}
+
+    <nav class="menu" aria-label="Navigation principale">
+      {introExtraItem && (
+        <a href={introExtraItem.href} id="intro-extra-menu-item" data-intro-item>{introExtraItem.label}</a>
+      )}
+      {menuItems.map((item) => (
+        <a href={item.href} data-intro-item>{item.label}</a>
+      ))}
+    </nav>
+  </div>
+
+  {startInIntro && (
+    <svg id="intro-gear" class="loader-gear" viewBox="0 0 100 100" aria-hidden="true">
+      <circle class="loader-gear-ring" cx="50" cy="50" r="30" />
+      {teeth.map((_, i) => (
+        <rect class="loader-gear-tooth" x="46" y="2" width="8" height="14" rx="1" transform={`rotate(${i * 30} 50 50)`} />
+      ))}
+      <circle class="loader-gear-center" cx="50" cy="50" r="6" />
+    </svg>
+  )}
+</header>
+
+<style>
+  .site-header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--text-primary);
+    height: 80px;
+    padding: 0 var(--container-padding);
+    background: transparent;
+    transition: color 0.4s var(--ease-default);
+  }
+  .site-header.is-dark-bg { color: var(--text-inverse); }
+
+  .header-inner {
+    position: relative;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 100%; max-width: 1600px; margin: 0 auto;
+  }
+  .brand-group { display: flex; align-items: baseline; gap: 0.75rem; }
+  .brand, .name { margin: 0; font-size: 0.85rem; text-decoration: none; }
+  .menu { display: flex; gap: 1.5rem; font-size: 0.85rem; }
+  .menu a { text-decoration: none; opacity: 0.75; }
+  .menu a:hover { opacity: 1; }
+
+  .page-label {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0; font-size: 0.85rem;
+  }
+
+  .site-header.is-intro {
+    height: 100vh;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  .loader-gear {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px; height: 40px;
+    color: var(--text-primary);
+    opacity: 0;
+    animation: spin 1.8s linear infinite;
+  }
+  .loader-gear-ring { fill: none; stroke: currentColor; stroke-width: 4; }
+  .loader-gear-tooth, .loader-gear-center { fill: currentColor; }
+  @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+</style>

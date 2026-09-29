@@ -1,0 +1,245 @@
+---
+import Layout from "../layouts/Layout.astro";
+import StoryPanel from "../components/StoryPanel.astro";
+
+const projectSlides = [
+  { title: "Flexyrent", image: "/projects/flexyrent.png" },
+  { title: "Dayfleur", image: "/projects/dayfleur.png" },
+  { title: "Kararra", image: "/projects/kararra.png" },
+  { title: "Itechnix", image: "/projects/itechnix.png" },
+];
+
+const skillNames = ["Développement web", "Google Ads", "Meta Ads", "SEO & Contenu"];
+
+const panels = [
+  {
+    type: "intro",
+    body: "Je suis Nadir Gherich, fondateur de Zanith — une agence bruxelloise qui construit des sites et pilote des campagnes publicitaires pour des PME qui veulent des résultats, pas juste une vitrine.",
+    backgroundColor: "var(--bg-primary)",
+    textColor: "var(--text-primary)",
+    dark: false,
+  },
+  {
+    type: "skill",
+    title: "Développement web",
+    body: "Sites vitrines et e-commerce sur-mesure, pensés pour convertir et tenir dans le temps — performance, SEO et intégrations spécifiques dès la conception.",
+    tools: ["Astro", "React", "Shopify", "Stripe", "SEO technique"],
+    backgroundColor: "color-mix(in srgb, var(--color-orange-muted) 80%, white)",
+    textColor: "var(--text-inverse)",
+    dark: true,
+    skillMenuIndex: 0,
+  },
+  {
+    type: "story",
+    body: "Mais un site, aussi soigné soit-il, ne sert à rien si personne ne le trouve. C'est là qu'intervient l'acquisition — construire la visibilité qui amène les bonnes personnes au bon endroit.",
+    backgroundColor: "var(--bg-primary)",
+    textColor: "var(--text-primary)",
+    dark: false,
+  },
+  {
+    type: "skill",
+    title: "Google Ads",
+    body: "Structuration de campagnes orientée ROI, suivi précis des conversions et optimisation continue des enchères et des mots-clés.",
+    tools: ["Google Ads", "Google Analytics", "Tag Manager", "Looker Studio"],
+    backgroundColor: "var(--color-orange-muted)",
+    textColor: "var(--text-inverse)",
+    dark: true,
+    skillMenuIndex: 1,
+  },
+  {
+    type: "story",
+    body: "Au-delà de la recherche, il y a les réseaux — là où les audiences se construisent, se testent, et se convertissent au fil des créas.",
+    backgroundColor: "var(--bg-primary)",
+    textColor: "var(--text-primary)",
+    dark: false,
+  },
+  {
+    type: "skill",
+    title: "Meta Ads",
+    body: "Campagnes Facebook & Instagram pensées pour l'objectif business, ciblage affiné et itération constante sur les créas et les audiences.",
+    tools: ["Meta Ads Manager", "Meta Pixel", "Creative testing"],
+    backgroundColor: "color-mix(in srgb, var(--color-orange-muted) 85%, black)",
+    textColor: "var(--text-inverse)",
+    dark: true,
+    skillMenuIndex: 2,
+  },
+  {
+    type: "story",
+    body: "Et pour que tout ça tienne dans la durée, il faut un socle solide : un site qui se positionne naturellement, sans dépendre uniquement de la pub.",
+    backgroundColor: "var(--bg-primary)",
+    textColor: "var(--text-primary)",
+    dark: false,
+  },
+  {
+    type: "skill",
+    title: "SEO & Contenu",
+    body: "Audit technique et sémantique, stratégie de contenu alignée business et suivi de positionnement mensuel.",
+    tools: ["Search Console", "Semrush", "Rédaction éditoriale"],
+    backgroundColor: "var(--bg-inverse)",
+    textColor: "var(--text-inverse)",
+    dark: true,
+    skillMenuIndex: 3,
+  },
+];
+---
+
+<Layout title="Compétences — Zanith" pageLabel="Compétences">
+  <section class="story">
+    <nav class="services-menu" aria-label="Liste des compétences">
+      {skillNames.map((name, i) => (
+        <button class="services-menu-item" data-index={i} type="button">{name}</button>
+      ))}
+    </nav>
+
+    <aside class="scroll-indicator" aria-hidden="true">
+      <span class="scroll-indicator-number">01</span>
+      <span class="scroll-indicator-line"></span>
+      <span class="scroll-indicator-label">Scroll</span>
+      <span class="scroll-indicator-arrow">↓</span>
+    </aside>
+
+    {panels.map((p, i) => (
+      <StoryPanel
+        type={p.type}
+        title={p.title}
+        body={p.body}
+        tools={p.tools}
+        backgroundColor={p.backgroundColor}
+        textColor={p.textColor}
+        dark={p.dark}
+        index={i}
+        skillMenuIndex={p.skillMenuIndex ?? -1}
+      >
+        {p.title === "Développement web" && (
+          <div class="projects-slider projects-slider--compact" id="projects-slider">
+            <div class="projects-slider-frame">
+              {projectSlides.map((proj, j) => (
+                <figure class="projects-slide" data-index={j}>
+                  <img src={proj.image} alt={proj.title} loading={j === 0 ? "eager" : "lazy"} />
+                </figure>
+              ))}
+              <div class="wave-crest" aria-hidden="true"></div>
+            </div>
+            <div class="projects-slider-controls">
+              <button class="slider-arrow slider-prev" type="button" aria-label="Projet précédent">
+                <svg viewBox="0 0 24 24" width="16" height="16"><path d="M15 4 L7 12 L15 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <span class="slider-current">01</span>
+              <span class="slider-track"><span class="slider-track-fill"></span></span>
+              <span class="slider-total">04</span>
+              <button class="slider-arrow slider-next" type="button" aria-label="Projet suivant">
+                <svg viewBox="0 0 24 24" width="16" height="16"><path d="M9 4 L17 12 L9 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+        )}
+      </StoryPanel>
+    ))}
+  </section>
+
+  <script>
+    import { initStoryScroll } from "../scripts/story-scroll";
+    import { initProjectsSlider } from "../scripts/projects-slider";
+    initStoryScroll();
+    initProjectsSlider();
+  </script>
+</Layout>
+
+<style>
+  .story { position: relative; }
+
+  .services-menu {
+    position: fixed; left: var(--container-padding); top: 50%;
+    transform: translateY(-50%);
+    z-index: 300;
+    display: flex; flex-direction: column; gap: 0.9rem;
+    color: var(--text-primary);
+    transition: color 0.4s var(--ease-default);
+  }
+  .services-menu.is-dark-bg { color: var(--text-inverse); }
+  .services-menu-item {
+    all: unset; cursor: pointer;
+    display: block; padding: 0.3rem 0;
+    font-family: var(--font-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em;
+    color: inherit;
+    opacity: 0.4; transition: opacity 0.3s var(--ease-default), color 0.3s var(--ease-default);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .services-menu-item:hover { opacity: 0.75; }
+  .services-menu-item.is-active { opacity: 1; color: var(--accent); }
+  .services-menu-item.is-active::before { content: "— "; }
+
+  .scroll-indicator {
+    position: fixed; right: 2rem; top: 50%; transform: translateY(-50%);
+    z-index: 300;
+    display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+    font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.05em;
+    color: var(--text-primary);
+    transition: color 0.4s var(--ease-default);
+  }
+  .scroll-indicator.is-dark-bg { color: var(--text-inverse); }
+  .scroll-indicator-line { width: 1px; height: 42px; background: currentColor; opacity: 0.3; }
+  .scroll-indicator-label { writing-mode: vertical-rl; transform: rotate(180deg); text-transform: uppercase; opacity: 0.6; }
+  .scroll-indicator-arrow { opacity: 0.6; }
+
+  .projects-slider-frame {
+    position: relative; width: 100%; aspect-ratio: 16 / 9;
+    border-radius: 6px; overflow: hidden;
+    perspective: 1000px;
+  }
+  .projects-slide {
+    position: absolute; inset: 0; margin: 0;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    transform-origin: 0% 50%;
+    will-change: clip-path, transform, filter;
+  }
+  .projects-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .wave-crest {
+    position: absolute; top: 0; bottom: 0; width: 50px;
+    left: -25%;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 75%, white) 50%, transparent);
+    filter: blur(8px);
+    opacity: 0; pointer-events: none; z-index: 3;
+    mix-blend-mode: screen;
+  }
+
+  .projects-slider-controls {
+    display: flex; align-items: center; gap: 1.25rem;
+    margin-top: 1rem;
+  }
+  .slider-arrow {
+    all: unset; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px;
+    color: currentColor; opacity: 0.6;
+    transition: opacity 0.25s var(--ease-default);
+  }
+  .slider-arrow:hover { opacity: 1; }
+
+  .slider-current, .slider-total {
+    font-family: var(--font-mono); font-size: 0.8rem; font-weight: 500;
+  }
+  .slider-total { opacity: 0.5; }
+
+  .slider-track {
+    flex: 1; height: 1px;
+    background: color-mix(in srgb, currentColor 25%, transparent);
+    position: relative;
+  }
+  .slider-track-fill {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.5s var(--ease-default);
+  }
+
+  .projects-slider--compact { width: 100%; max-width: 320px; margin: 0 auto; }
+
+  @media (max-width: 900px) {
+    .services-menu { display: none; }
+    .scroll-indicator { display: none; }
+  }
+</style>
