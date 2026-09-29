@@ -9,28 +9,30 @@ const projects = await getProjects();
 
 <Layout title="Zanith — Nadir Gherich" isHome headerVariant="dark" pageLabel="Travail">
   <section class="hero" data-reveal-after-intro>
-    <div class="carousel" id="project-carousel">
-      {projects.map((project, i) => (
-        <a href={`/projets/${project.slug}`} class="carousel-slide" data-index={i}>
-          <img src={project.image_path} alt={project.title} width={900} height={650} loading={i === 0 ? "eager" : "lazy"} />
+    <div class="project-orbit" id="project-orbit">
+      <div class="project-orbit-center">
+        <span class="project-orbit-mark">Zanith</span>
+      </div>
+
+      {projects.map((project) => (
+        <a href={`/projets/${project.slug}`} class="project-orbit-item">
+          <span class="project-orbit-item-inner">
+            <img src={project.image_path} alt={project.title} loading="eager" />
+          </span>
+          <span class="project-orbit-caption">
+            <span class="project-orbit-title">{project.title}</span>
+            <span class="project-orbit-category">{project.category}</span>
+          </span>
         </a>
       ))}
-      <div class="carousel-caption">
-        {projects.map((project, i) => (
-          <div class="carousel-caption-item" data-index={i}>
-            <span class="carousel-title">{project.title}</span>
-            <span class="carousel-category">{project.category}</span>
-          </div>
-        ))}
-      </div>
     </div>
   </section>
 
   <script>
     import { initIntro } from "../scripts/intro";
-    import { initCarousel } from "../scripts/carousel";
+    import { initProjectOrbit } from "../scripts/project-orbit";
     initIntro();
-    initCarousel();
+    initProjectOrbit();
   </script>
 </Layout>
 
@@ -40,23 +42,78 @@ const projects = await getProjects();
     background: var(--bg-inverse);
     padding-top: 80px;
     display: flex; align-items: center; justify-content: center;
-    perspective: 1400px;
   }
-  .carousel { position: relative; width: min(60vw, 720px); aspect-ratio: 4 / 3; }
-  .carousel-slide {
-    position: absolute; inset: 0; display: block;
-    backface-visibility: hidden; transform-style: preserve-3d;
-    opacity: 0; pointer-events: none;
-  }
-  .carousel-slide.is-active { pointer-events: auto; }
-  .carousel-slide img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
 
-  .carousel-caption {
-    position: absolute; left: 0; right: 0; top: calc(100% + 1.5rem);
-    text-align: center; color: var(--text-inverse);
+  .project-orbit {
+    position: relative;
+    width: min(65vw, 620px);
+    height: min(65vw, 620px);
   }
-  .carousel-caption-item { display: none; flex-direction: column; gap: 0.25rem; }
-  .carousel-caption-item.is-active { display: flex; }
-  .carousel-title { font-weight: 700; }
-  .carousel-category { font-family: var(--font-mono); font-size: 0.75rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  .project-orbit-center {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    pointer-events: none;
+  }
+  .project-orbit-mark {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-inverse);
+    opacity: 0.5;
+  }
+
+  .project-orbit-item {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 170px;
+    display: block;
+    text-decoration: none;
+    /* le transform de positionnement (translate + coordonnées orbite) est posé en JS à chaque frame */
+  }
+
+  .project-orbit-item-inner {
+    display: block;
+    aspect-ratio: 4 / 3;
+    border-radius: 4px;
+    overflow: hidden;
+    transform: scale(1);
+    transition: transform 0.4s var(--ease-default);
+  }
+  .project-orbit-item:hover .project-orbit-item-inner {
+    transform: scale(1.06);
+  }
+  .project-orbit-item-inner img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+
+  .project-orbit-caption {
+    position: absolute;
+    top: 100%; left: 50%;
+    transform: translateX(-50%);
+    margin-top: 0.6rem;
+    display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.3s var(--ease-default);
+    white-space: nowrap;
+  }
+  .project-orbit-item:hover .project-orbit-caption {
+    opacity: 1;
+  }
+  .project-orbit-title {
+    font-weight: 700; font-size: 0.85rem; color: var(--text-inverse);
+  }
+  .project-orbit-category {
+    font-family: var(--font-mono); font-size: 0.65rem;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--text-inverse); opacity: 0.7;
+  }
+
+  @media (max-width: 700px) {
+    .project-orbit { width: min(80vw, 420px); height: min(80vw, 420px); }
+    .project-orbit-item { width: 110px; }
+  }
 </style>
