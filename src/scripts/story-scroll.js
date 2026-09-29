@@ -1,3 +1,7 @@
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+gsap.registerPlugin(ScrollTrigger);
+
 export function initStoryScroll() {
   const sections = Array.from(document.querySelectorAll(".story-block"));
   if (sections.length === 0) return;
@@ -25,26 +29,7 @@ export function initStoryScroll() {
   };
   updateActive(0);
 
-  // Apparition en fondu, une fois par section, quand elle entre dans l'écran
-  if (reduced) {
-    sections.forEach((s) => s.classList.add("is-visible"));
-  } else {
-    const revealObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("is-visible");
-            revealObserver.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.12 }
-    );
-    sections.forEach((s) => revealObserver.observe(s));
-  }
-
-  // Suit quelle section occupe la bande centrale de l'écran, pour mettre à
-  // jour le menu, le numéro d'indicateur, et le contraste clair/sombre.
+  // Quelle section occupe la bande centrale de l'écran → menu / indicateur / contraste
   const activeObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -68,4 +53,55 @@ export function initStoryScroll() {
     }
   };
   menuItems.forEach((item, i) => item.addEventListener("click", () => scrollToMenuIndex(i)));
+
+  // Formation du dôme (cercle qui grandit) + apparition du contenu
+  sections.forEach((section) => {
+    const wrap = section.querySelector(".story-block-dome-wrap");
+    const circle = section.querySelector(".story-block-dome-circle");
+    const inner = section.querySelector(".story-block-inner");
+
+    if (!wrap || !circle) {
+      // Pas de dôme sur cette section (la toute première) — juste l'apparition du contenu au scroll
+      if (inner && !section.classList.contains("story-block--first")) {
+        ScrollTrigger.create({
+          trigger: section,
+          start: "top 85%",
+          onEnter: () => inner.classList.add("is-visible"),
+          once: true,
+        });
+      }
+      return;
+    }
+
+    const getRMax = () => {
+      const domeHeight = wrap.getBoundingClientRect().height;
+      return Math.sqrt((window.innerWidth / 2) ** 2 + domeHeight ** 2) * 1.15;
+    };
+
+    if (reduced) {
+      const r = getRMax();
+      circle.style.width = `${r * 2}px`;
+      circle.style.height = `${r * 2}px`;
+      inner?.classList.add("is-visible");
+      return;
+    }
+
+    let rMax = getRMax();
+    window.addEventListener("resize", () => { rMax = getRMax(); });
+
+    ScrollTrigger.create({
+      trigger: section,
+      start: "top bottom",
+      end: "top 25%", // la formation du dôme s'étale sur ~3/4 de la hauteur d'écran
+      scrub: 0.3,
+      onUpdate: (self) => {
+        const r = rMax * self.progress;
+        circle.style.width = `${r * 2}px`;
+        circle.style.height = `${r * 2}px`;
+        if (self.progress > 0.05) inner?.classList.add("is-visible");
+      },
+    });
+  });
+
+  window.addEventListener("resize", () => ScrollTrigger.refresh());
 }

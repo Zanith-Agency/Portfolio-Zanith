@@ -24,9 +24,9 @@ const {
   style={`--block-bg: ${backgroundColor}; --block-color: ${textColor};`}
 >
   {index !== 0 && (
-    <svg class="story-block-dome" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
-      <path d="M0,160 Q720,0 1440,160 Z" />
-    </svg>
+    <div class="story-block-dome-wrap" aria-hidden="true">
+      <span class="story-block-dome-circle"></span>
+    </div>
   )}
 
   <div class="story-block-inner">
@@ -57,13 +57,6 @@ const {
     background: var(--block-bg);
     color: var(--block-color);
     padding: clamp(90px, 14vw, 180px) var(--container-padding) clamp(80px, 10vw, 140px);
-    opacity: 0;
-    transform: translateY(28px);
-    transition: opacity 0.9s var(--ease-default), transform 0.9s var(--ease-default);
-  }
-  .story-block.is-visible {
-    opacity: 1;
-    transform: translateY(0);
   }
 
   .story-block--first {
@@ -71,25 +64,27 @@ const {
     display: flex;
     align-items: center;
     padding-top: 80px;
-    opacity: 1;
-    transform: none;
   }
 
-  /* La capsule du dôme : une ellipse plate positionnée juste au-dessus de la
-     section, dans la même couleur. Comme elle chevauche visuellement la fin
-     de la section précédente, la transition de couleur suit sa courbe au
-     lieu d'une ligne droite — et en dessous, la section reste un simple
-     rectangle plein, quelle que soit sa hauteur de contenu. */
-  .story-block-dome {
+  /* Fenêtre fixe où seule la calotte du cercle qui grandit est visible */
+  .story-block-dome-wrap {
     position: absolute;
     top: 0; left: 0;
     width: 100%;
     height: clamp(50px, 9vw, 130px);
-    display: block;
+    overflow: hidden;
     transform: translateY(-100%);
+    pointer-events: none;
   }
-  .story-block-dome path {
-    fill: var(--block-bg);
+  .story-block-dome-circle {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 0; height: 0;
+    border-radius: 50%;
+    background: var(--block-bg);
+    transform: translate(-50%, 50%);
+    /* width/height animés en JS en fonction du scroll */
   }
 
   .story-block-inner {
@@ -97,6 +92,17 @@ const {
     max-width: 760px;
     margin: 0 auto;
     text-align: center;
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.8s var(--ease-default), transform 0.8s var(--ease-default);
+  }
+  .story-block-inner.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .story-block--first .story-block-inner {
+    opacity: 1;
+    transform: none;
   }
 
   .story-block-eyebrow {
@@ -153,6 +159,6 @@ const {
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .story-block { transition: none; }
+    .story-block-inner { transition: none; }
   }
 </style>
