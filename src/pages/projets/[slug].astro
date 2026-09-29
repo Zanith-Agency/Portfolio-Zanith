@@ -1,0 +1,99 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getProjectBySlug } from "../../lib/supabase";
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+const project = slug ? await getProjectBySlug(slug) : null;
+
+if (!project) {
+  return Astro.redirect("/");
+}
+---
+
+<Layout title={`${project.title} — Zanith`} pageLabel="Projets">
+  <section class="project-detail">
+    <a href="/" class="project-back">← Retour</a>
+
+    <div class="project-media">
+      <img src={project.image_path} alt={project.title} />
+    </div>
+
+    <div class="project-info">
+      <span class="project-category">{project.category}</span>
+      <h1 class="project-title">{project.title}</h1>
+      {project.description && <p class="project-description">{project.description}</p>}
+
+      {project.tools?.length > 0 && (
+        <ul class="project-tools">
+          {project.tools.map((t) => <li>{t}</li>)}
+        </ul>
+      )}
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .project-detail {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 140px var(--container-padding) 100px;
+  }
+  .project-back {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-primary);
+    opacity: 0.6;
+    text-decoration: none;
+    margin-bottom: 2.5rem;
+    transition: opacity 0.3s var(--ease-default);
+  }
+  .project-back:hover { opacity: 1; }
+
+  .project-media {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 2.5rem;
+  }
+  .project-media img {
+    width: 100%; height: 100%; object-fit: cover;
+  }
+
+  .project-category {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.6;
+    margin-bottom: 0.75rem;
+  }
+  .project-title {
+    font-weight: 300;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    margin: 0 0 1.5rem;
+  }
+  .project-description {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    max-width: 640px;
+    opacity: 0.85;
+    margin: 0 0 2rem;
+  }
+  .project-tools {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-wrap: wrap; gap: 0.6rem;
+    font-family: var(--font-mono); font-size: 0.7rem;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .project-tools li {
+    border: 1px solid color-mix(in srgb, var(--text-primary) 25%, transparent);
+    padding: 0.35rem 0.75rem; border-radius: 999px;
+  }
+</style>

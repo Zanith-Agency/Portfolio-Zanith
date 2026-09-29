@@ -1,24 +1,25 @@
 ---
-import { getCollection } from "astro:content";
-import { Image } from "astro:assets";
 import Layout from "../layouts/Layout.astro";
+import { getProjects } from "../lib/supabase";
 
-const projects = (await getCollection("projects")).sort((a, b) => a.data.order - b.data.order);
+export const prerender = false;
+
+const projects = await getProjects();
 ---
 
 <Layout title="Zanith — Nadir Gherich" isHome headerVariant="dark" pageLabel="Travail">
   <section class="hero" data-reveal-after-intro>
     <div class="carousel" id="project-carousel">
       {projects.map((project, i) => (
-        <a href={`/projets/${project.id}`} class="carousel-slide" data-index={i}>
-          <Image src={project.data.cover} alt={project.data.title} width={900} height={650} loading={i === 0 ? "eager" : "lazy"} />
+        <a href={`/projets/${project.slug}`} class="carousel-slide" data-index={i}>
+          <img src={project.image_path} alt={project.title} width={900} height={650} loading={i === 0 ? "eager" : "lazy"} />
         </a>
       ))}
       <div class="carousel-caption">
         {projects.map((project, i) => (
           <div class="carousel-caption-item" data-index={i}>
-            <span class="carousel-title">{project.data.title}</span>
-            <span class="carousel-category">{project.data.category}</span>
+            <span class="carousel-title">{project.title}</span>
+            <span class="carousel-category">{project.category}</span>
           </div>
         ))}
       </div>
@@ -39,7 +40,7 @@ const projects = (await getCollection("projects")).sort((a, b) => a.data.order -
     background: var(--bg-inverse);
     padding-top: 80px;
     display: flex; align-items: center; justify-content: center;
-    perspective: 1400px; /* donne de la profondeur à la rotation 3D */
+    perspective: 1400px;
   }
   .carousel { position: relative; width: min(60vw, 720px); aspect-ratio: 4 / 3; }
   .carousel-slide {
