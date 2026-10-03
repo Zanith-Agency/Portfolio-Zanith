@@ -12,6 +12,15 @@ export function initContactReveal() {
   const label = toggle?.querySelector(".theme-toggle-label");
   const header = document.getElementById("site-header");
 
+  // Repéré en testant la page : tant qu'aucun mousemove n'a eu lieu,
+  // le CSS retombe sur sa valeur par défaut (--mx/--my: 50%), donc un
+  // cercle de texte coloré apparaît au centre de l'écran dès le
+  // chargement — avant même que quiconque ait touché la souris. On
+  // pousse le masque hors champ au départ pour que rien ne soit
+  // révélé tant qu'il n'y a pas eu d'interaction réelle.
+  section.style.setProperty("--mx", "-9999px");
+  section.style.setProperty("--my", "-9999px");
+
   toggle?.addEventListener("click", () => {
     const isNight = section.getAttribute("data-theme") === "night";
     section.setAttribute("data-theme", isNight ? "day" : "night");

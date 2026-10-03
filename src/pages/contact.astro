@@ -75,72 +75,173 @@ import Layout from "../layouts/Layout.astro";
     </noscript>
   </section>
 
-  <section class="contact-path" data-contact-path aria-labelledby="contact-path-heading">
-    <h2 id="contact-path-heading">Parlons de votre projet</h2>
-    <p class="contact-path-intro">
-      Choisissez ce qui correspond le mieux à votre situation — le formulaire
-      s'adapte en conséquence. Rien d'engageant, juste de quoi démarrer la
-      conversation du bon pied.
-    </p>
+  <!--
+    Section infos : grand titre + trois colonnes (écrire / bureau /
+    appeler). Reprend les mêmes coordonnées que le hero au-dessus, mais
+    ici toujours lisibles directement — pas de révélation au survol.
+  -->
+  <section class="contact-info" aria-labelledby="contact-info-heading">
+    <h2 id="contact-info-heading" class="contact-info-title">Contactez-Nous</h2>
 
-    <div class="contact-path-options" role="group" aria-label="Type de projet">
-      <button type="button" class="contact-path-option" data-path="nouveau-site" aria-pressed="false">
-        <span class="contact-path-option-title">Nouveau site</span>
-        <span class="contact-path-option-desc">Vous n'avez pas encore de site.</span>
-      </button>
-      <button type="button" class="contact-path-option" data-path="refonte" aria-pressed="false">
-        <span class="contact-path-option-title">Refonte</span>
-        <span class="contact-path-option-desc">Votre site existe mais ne vous ressemble plus.</span>
-      </button>
-      <button type="button" class="contact-path-option" data-path="campagne" aria-pressed="false">
-        <span class="contact-path-option-title">Campagne</span>
-        <span class="contact-path-option-desc">Vous voulez plus de visibilité ou de clients.</span>
-      </button>
+    <div class="contact-info-grid">
+      <div class="contact-info-col">
+        <p class="contact-info-label">Écrivez-nous</p>
+        <a class="contact-info-value" href="mailto:contact@zanith.be">contact@zanith.be</a>
+      </div>
+      <div class="contact-info-col">
+        <p class="contact-info-label">Bureau</p>
+        <p class="contact-info-value">Rue de Heembeek 267<br />1120 Bruxelles, Belgique</p>
+      </div>
+      <div class="contact-info-col">
+        <p class="contact-info-label">Appelez-nous</p>
+        <a class="contact-info-value" href="tel:+32488697108">+32 488 69 71 08</a>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    Carte à gauche / "Book un rendez-vous" à droite, séparés par une
+    vague dessinée à partir du symbole ∞ de Zanith : la moitié
+    INFÉRIEURE de sa boucle gauche, suivie de la moitié SUPÉRIEURE de
+    sa boucle droite — exactement comme demandé, pas une vague
+    générique. Le contenu de gauche se cale au-dessus du creux, celui
+    de droite en dessous de la bosse : la ligne serpente entre les deux
+    plutôt que de les séparer par un simple trait.
+  -->
+  <section class="contact-split">
+    <svg class="contact-wave" viewBox="0 0 400 100" aria-hidden="true">
+      <path d="M0,50 A100,50 0 0 0 200,50 A100,50 0 0 1 400,50" />
+    </svg>
+
+    <div class="contact-split-col contact-split-map">
+      <p class="contact-split-label">Où nous trouver</p>
+      <svg
+        class="brussels-map"
+        viewBox="0 0 320 320"
+        role="img"
+        aria-label="Illustration stylisée de Bruxelles : Zanith est situé le long du canal, au nord du pentagone."
+      >
+        <line x1="160" y1="0" x2="160" y2="320" class="map-line map-line--canal" />
+        <line x1="10" y1="180" x2="310" y2="180" class="map-line" />
+        <line x1="50" y1="70" x2="270" y2="290" class="map-line" />
+        <line x1="270" y1="70" x2="50" y2="290" class="map-line" />
+        <path
+          d="M160,90 L245.6,152.2 L212.9,252.8 L107.1,252.8 L74.4,152.2 Z"
+          class="map-ring"
+        />
+        <circle cx="160" cy="40" r="6" class="map-marker" />
+        <line x1="160" y1="46" x2="160" y2="70" class="map-marker-line" />
+        <text x="160" y="26" text-anchor="middle" class="map-marker-label">ZANITH</text>
+      </svg>
     </div>
 
-    <!--
-      Un seul formulaire, dont les champs se révèlent/s'adaptent selon
-      l'option choisie (voir contact-form.js) : type_projet est posé en
-      hidden, le libellé de la question qualitative change de texte, et
-      le champ "lien du site actuel" n'apparaît que pour refonte/campagne.
-      Le détail fin des champs par option reste à affiner (TODO Nadir) —
-      ceci pose la structure, pas le contenu final.
-    -->
-    <form class="contact-path-form" data-contact-form hidden>
-      <input type="hidden" name="type_projet" />
-
-      <div class="contact-path-field">
-        <label for="contact-nom">Nom</label>
-        <input type="text" id="contact-nom" name="nom" required />
-      </div>
-
-      <div class="contact-path-field">
-        <label for="contact-email">Email</label>
-        <input type="email" id="contact-email" name="email" required />
-      </div>
-
-      <div class="contact-path-field" data-field="url" hidden>
-        <label for="contact-url">
-          Lien du site actuel <span class="contact-path-optional">(facultatif)</span>
-        </label>
-        <input type="url" id="contact-url" name="url" placeholder="https://" />
-      </div>
-
-      <div class="contact-path-field">
-        <label id="contact-question-label" for="contact-question"></label>
-        <textarea id="contact-question" name="message" rows="4"></textarea>
-      </div>
-
-      <button type="submit" class="contact-path-submit">Envoyer</button>
-      <p class="contact-path-status" role="status" aria-live="polite"></p>
-    </form>
+    <div class="contact-split-col contact-split-book">
+      <p class="contact-split-label">Un projet en tête ?</p>
+      <h3 class="contact-split-title">Book un rendez-vous</h3>
+      <p class="contact-split-desc">
+        On en discute 15 minutes, sans engagement.
+      </p>
+      <button type="button" class="contact-split-cta" data-open-book-call>
+        Réserver un créneau
+        <span class="contact-split-cta-arrow" aria-hidden="true">→</span>
+      </button>
+    </div>
   </section>
+
+  <!--
+    Modale "Book un rendez-vous" : tombe depuis le haut à l'ouverture,
+    ressort par le bas à la fermeture (voir book-call-modal.js). Le
+    contenu interne (.contact-path) est exactement celui du formulaire
+    à 3 parcours déjà construit — seul son emballage change, pas sa
+    logique (contact-form.js n'a pas été touché).
+  -->
+  <div class="book-modal" data-book-modal aria-hidden="true">
+    <div class="book-modal-backdrop" data-book-modal-backdrop></div>
+    <div
+      class="book-modal-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="contact-path-heading"
+    >
+      <button
+        type="button"
+        class="book-modal-close"
+        data-book-modal-close
+        aria-label="Fermer"
+      >
+        ✕
+      </button>
+
+      <div class="contact-path" data-contact-path>
+        <h2 id="contact-path-heading">Parlons de votre projet</h2>
+        <p class="contact-path-intro">
+          Choisissez ce qui correspond le mieux à votre situation — le
+          formulaire s'adapte en conséquence. Rien d'engageant, juste de
+          quoi démarrer la conversation du bon pied.
+        </p>
+
+        <div class="contact-path-options" role="group" aria-label="Type de projet">
+          <button type="button" class="contact-path-option" data-path="nouveau-site" aria-pressed="false">
+            <span class="contact-path-option-title">Nouveau site</span>
+            <span class="contact-path-option-desc">Vous n'avez pas encore de site.</span>
+          </button>
+          <button type="button" class="contact-path-option" data-path="refonte" aria-pressed="false">
+            <span class="contact-path-option-title">Refonte</span>
+            <span class="contact-path-option-desc">Votre site existe mais ne vous ressemble plus.</span>
+          </button>
+          <button type="button" class="contact-path-option" data-path="campagne" aria-pressed="false">
+            <span class="contact-path-option-title">Campagne</span>
+            <span class="contact-path-option-desc">Vous voulez plus de visibilité ou de clients.</span>
+          </button>
+        </div>
+
+        <!--
+          Un seul formulaire, dont les champs se révèlent/s'adaptent selon
+          l'option choisie (voir contact-form.js) : type_projet est posé en
+          hidden, le libellé de la question qualitative change de texte, et
+          le champ "lien du site actuel" n'apparaît que pour refonte/campagne.
+          Le détail fin des champs par option reste à affiner (TODO Nadir) —
+          ceci pose la structure, pas le contenu final.
+        -->
+        <form class="contact-path-form" data-contact-form hidden>
+          <input type="hidden" name="type_projet" />
+
+          <div class="contact-path-field">
+            <label for="contact-nom">Nom</label>
+            <input type="text" id="contact-nom" name="nom" required />
+          </div>
+
+          <div class="contact-path-field">
+            <label for="contact-email">Email</label>
+            <input type="email" id="contact-email" name="email" required />
+          </div>
+
+          <div class="contact-path-field" data-field="url" hidden>
+            <label for="contact-url">
+              Lien du site actuel <span class="contact-path-optional">(facultatif)</span>
+            </label>
+            <input type="url" id="contact-url" name="url" placeholder="https://" />
+          </div>
+
+          <div class="contact-path-field">
+            <label id="contact-question-label" for="contact-question"></label>
+            <textarea id="contact-question" name="message" rows="4"></textarea>
+          </div>
+
+          <button type="submit" class="contact-path-submit">Envoyer</button>
+          <p class="contact-path-status" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <script>
     import { initContactReveal } from "../scripts/contact-reveal";
     import { initContactForm } from "../scripts/contact-form";
+    import { initBookCallModal } from "../scripts/book-call-modal";
     initContactReveal();
     initContactForm();
+    initBookCallModal();
   </script>
 </Layout>
 
@@ -363,11 +464,285 @@ import Layout from "../layouts/Layout.astro";
     }
   }
 
-  /* --- Section formulaire adaptatif --- */
-  .contact-path {
-    max-width: 760px;
+  /* --- Section infos (Contactez-Nous + 3 colonnes) --- */
+  .contact-info {
+    background: var(--bg-primary);
+    padding: 6rem var(--container-padding);
+  }
+
+  .contact-info-title {
+    text-align: center;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    font-size: clamp(3rem, 11vw, 7rem);
+    margin: 0 0 4.5rem;
+  }
+
+  .contact-info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2.5rem;
+    max-width: 1100px;
     margin: 0 auto;
-    padding: 5rem var(--container-padding) 6rem;
+    text-align: center;
+  }
+
+  .contact-info-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.55;
+    margin: 0 0 0.6rem;
+  }
+
+  .contact-info-value {
+    display: inline-block;
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.5;
+    text-decoration: none;
+  }
+
+  a.contact-info-value:hover {
+    color: var(--accent);
+  }
+
+  @media (max-width: 700px) {
+    .contact-info-grid {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+  }
+
+  /* --- Section carte / book un rendez-vous, séparées par la vague ∞ --- */
+  .contact-split {
+    position: relative;
+    background: var(--bg-primary);
+    min-height: 68vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow: hidden;
+  }
+
+  /* `.contact-split` n'a qu'un min-height (sa hauteur réelle dépend du
+     contenu des deux colonnes) : un height en % ne se résout pas de
+     façon fiable contre un ancêtre en hauteur "auto". On fixe donc la
+     taille de la vague avec aspect-ratio (calé sur le viewBox, 4/1)
+     plutôt qu'un pourcentage — et on la centre, plus large que haute,
+     pour rester un filet discret plutôt qu'un élément qui domine la
+     section. */
+  .contact-wave {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: min(85%, 1100px);
+    aspect-ratio: 400 / 100;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .contact-wave path {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2.5;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .contact-split-col {
+    position: relative;
+    z-index: 1;
+    padding: 3rem var(--container-padding);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Le creux de la vague est à gauche : le contenu s'appuie en haut,
+     au-dessus de lui. */
+  .contact-split-map {
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  /* La bosse de la vague est à droite : le contenu s'appuie en bas,
+     en dessous d'elle. */
+  .contact-split-book {
+    justify-content: flex-end;
+    align-items: center;
+    text-align: center;
+  }
+
+  .contact-split-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.55;
+    margin: 0 0 1.25rem;
+  }
+
+  .brussels-map {
+    width: min(100%, 320px);
+    height: auto;
+  }
+
+  .map-line {
+    stroke: color-mix(in srgb, var(--text-primary) 20%, transparent);
+    stroke-width: 1;
+  }
+
+  .map-line--canal {
+    stroke: color-mix(in srgb, var(--accent) 45%, transparent);
+    stroke-width: 1.5;
+  }
+
+  .map-ring {
+    fill: none;
+    stroke: var(--text-primary);
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+    opacity: 0.8;
+  }
+
+  .map-marker {
+    fill: var(--accent);
+  }
+
+  .map-marker-line {
+    stroke: var(--accent);
+    stroke-width: 1.5;
+  }
+
+  .map-marker-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    fill: var(--text-primary);
+  }
+
+  .contact-split-title {
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    font-weight: 700;
+    margin: 0 0 0.75rem;
+  }
+
+  .contact-split-desc {
+    opacity: 0.75;
+    max-width: 320px;
+    margin: 0 0 1.75rem;
+  }
+
+  .contact-split-cta {
+    all: unset;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.9rem 1.75rem;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--color-cream);
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: transform 0.25s var(--ease-default);
+  }
+
+  .contact-split-cta:hover {
+    transform: translateY(-2px);
+  }
+
+  .contact-split-cta-arrow {
+    transition: transform 0.25s var(--ease-default);
+  }
+
+  .contact-split-cta:hover .contact-split-cta-arrow {
+    transform: translateX(3px);
+  }
+
+  /* Sous 900px, deux colonnes + vague en fond n'ont plus la place de
+     respirer : on repasse en pile simple, sans la vague décorative
+     (elle perd son sens sans les deux blocs côte à côte). */
+  @media (max-width: 900px) {
+    .contact-split {
+      grid-template-columns: 1fr;
+      min-height: 0;
+    }
+
+    .contact-wave {
+      display: none;
+    }
+
+    .contact-split-map,
+    .contact-split-book {
+      align-items: center;
+      text-align: center;
+      padding: 3rem var(--container-padding);
+    }
+  }
+
+  /* --- Modale "Book un rendez-vous" : tombe du haut, ressort par le
+     bas (l'animation elle-même est gérée en JS via GSAP, voir
+     book-call-modal.js — ceci ne pose que l'état de base). --- */
+  .book-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    justify-content: center;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .book-modal.is-open {
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .book-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(8, 8, 14, 0.55);
+    opacity: 0;
+    transition: opacity 0.3s var(--ease-default);
+  }
+
+  .book-modal.is-open .book-modal-backdrop {
+    opacity: 1;
+  }
+
+  .book-modal-panel {
+    position: relative;
+    margin-top: 80px;
+    width: min(640px, calc(100% - 2 * var(--container-padding)));
+    max-height: calc(100vh - 80px - 3rem);
+    overflow-y: auto;
+    background: var(--bg-primary);
+    border-radius: 0 0 16px 16px;
+    padding: 3rem var(--container-padding) 2.5rem;
+    box-shadow: 0 20px 50px rgba(8, 8, 14, 0.35);
+  }
+
+  .book-modal-close {
+    all: unset;
+    cursor: pointer;
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(8, 8, 14, 0.2);
+    border-radius: 50%;
+    font-size: 0.85rem;
+  }
+
+  .book-modal-close:hover {
+    border-color: var(--accent);
+    color: var(--accent);
   }
 
   .contact-path h2 {
@@ -433,6 +808,18 @@ import Layout from "../layouts/Layout.astro";
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
+  }
+
+  /* Bug trouvé en testant la modale : [hidden] et .contact-path-form
+     ont la même spécificité (0,1,0) côté sélecteur, donc en cascade
+     c'est la règle "display: flex" ci-dessus qui l'emportait sur le
+     [hidden] du navigateur — le formulaire (et le champ "lien du site
+     actuel") restaient visibles en permanence au lieu de n'apparaître
+     qu'après le choix d'un parcours. Ces deux règles, plus précises,
+     rétablissent le comportement voulu. */
+  .contact-path-form[hidden],
+  .contact-path-field[hidden] {
+    display: none;
   }
 
   .contact-path-field label {
