@@ -39,16 +39,39 @@ export function initProjectOrbit() {
   if (reduced) return; // pas d'animation si l'utilisateur préfère un mouvement réduit
 
   let hoveredCount = 0;
-items.forEach((item) => {
-  item.addEventListener("mouseenter", () => {
-    hoveredCount++;
-    paused = true;
+  items.forEach((item) => {
+    item.addEventListener("mouseenter", () => {
+      hoveredCount++;
+      paused = true;
+    });
+    item.addEventListener("mouseleave", () => {
+      hoveredCount--;
+      paused = hoveredCount > 0;
+    });
+
+    // Équivalent tactile : il n'y a pas de mouseenter/mouseleave au
+    // doigt, donc sans ça un visiteur mobile ne peut jamais stabiliser
+    // le cercle pour lire la légende d'un projet — elle tourne avec
+    // lui en permanence. On met en pause pendant que le doigt reste
+    // posé sur l'item ; { passive: true } car on ne bloque jamais le
+    // scroll ni le tap (le lien continue de naviguer normalement).
+    item.addEventListener(
+      "touchstart",
+      () => {
+        hoveredCount++;
+        paused = true;
+      },
+      { passive: true }
+    );
+    item.addEventListener(
+      "touchend",
+      () => {
+        hoveredCount = Math.max(0, hoveredCount - 1);
+        paused = hoveredCount > 0;
+      },
+      { passive: true }
+    );
   });
-  item.addEventListener("mouseleave", () => {
-    hoveredCount--;
-    paused = hoveredCount > 0;
-  });
-});
 
   const SPEED = 5; // degrés par seconde — vitesse de rotation, ajustable
   let lastTime = performance.now();

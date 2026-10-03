@@ -1,0 +1,401 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Contact — Zanith">
+  <section class="contact-page" data-theme="day">
+    <button
+      id="theme-toggle"
+      class="theme-toggle"
+      type="button"
+      aria-pressed="false"
+    >
+      <span class="theme-toggle-label">Jour</span>
+      <span class="theme-toggle-track" aria-hidden="true"></span>
+    </button>
+
+    <!--
+      Deux calques superposés, même contenu :
+      1. .contact-text--base : le VRAI texte (lu par les lecteurs
+         d'écran, cliquable, toujours dans le flux). En mode jour il est
+         blanc sur fond blanc — invisible à l'œil, mais bien présent.
+      2. .contact-text--reveal : une copie purement décorative
+         (aria-hidden), colorée, découpée par un masque circulaire qui
+         suit le curseur. C'est elle qui "révèle" le contenu au survol.
+      Sans JS (voir <noscript>), le calque décoratif est masqué et le
+      texte de base repasse en couleur normale.
+    -->
+    <div class="contact-text contact-text--base">
+      <p class="contact-line">
+        <a href="mailto:contact@zanith.be">contact@zanith.be</a>
+      </p>
+      <p class="contact-line">
+        <a href="tel:+32488697108">+32 488 69 71 08</a>
+      </p>
+      <p class="contact-line contact-address">
+        Rue de Heembeek 267, 1120 Bruxelles
+      </p>
+    </div>
+
+    <div class="contact-text contact-text--reveal" aria-hidden="true">
+      <p class="contact-line">contact@zanith.be</p>
+      <p class="contact-line">+32 488 69 71 08</p>
+      <p class="contact-line contact-address">
+        Rue de Heembeek 267, 1120 Bruxelles
+      </p>
+    </div>
+
+    <noscript>
+      <style>
+        .contact-text--base {
+          color: var(--text-primary) !important;
+        }
+        .contact-text--reveal,
+        .theme-toggle {
+          display: none !important;
+        }
+      </style>
+    </noscript>
+  </section>
+
+  <section class="contact-path" data-contact-path aria-labelledby="contact-path-heading">
+    <h2 id="contact-path-heading">Parlons de votre projet</h2>
+    <p class="contact-path-intro">
+      Choisissez ce qui correspond le mieux à votre situation — le formulaire
+      s'adapte en conséquence. Rien d'engageant, juste de quoi démarrer la
+      conversation du bon pied.
+    </p>
+
+    <div class="contact-path-options" role="group" aria-label="Type de projet">
+      <button type="button" class="contact-path-option" data-path="nouveau-site" aria-pressed="false">
+        <span class="contact-path-option-title">Nouveau site</span>
+        <span class="contact-path-option-desc">Vous n'avez pas encore de site.</span>
+      </button>
+      <button type="button" class="contact-path-option" data-path="refonte" aria-pressed="false">
+        <span class="contact-path-option-title">Refonte</span>
+        <span class="contact-path-option-desc">Votre site existe mais ne vous ressemble plus.</span>
+      </button>
+      <button type="button" class="contact-path-option" data-path="campagne" aria-pressed="false">
+        <span class="contact-path-option-title">Campagne</span>
+        <span class="contact-path-option-desc">Vous voulez plus de visibilité ou de clients.</span>
+      </button>
+    </div>
+
+    <!--
+      Un seul formulaire, dont les champs se révèlent/s'adaptent selon
+      l'option choisie (voir contact-form.js) : type_projet est posé en
+      hidden, le libellé de la question qualitative change de texte, et
+      le champ "lien du site actuel" n'apparaît que pour refonte/campagne.
+      Le détail fin des champs par option reste à affiner (TODO Nadir) —
+      ceci pose la structure, pas le contenu final.
+    -->
+    <form class="contact-path-form" data-contact-form hidden>
+      <input type="hidden" name="type_projet" />
+
+      <div class="contact-path-field">
+        <label for="contact-nom">Nom</label>
+        <input type="text" id="contact-nom" name="nom" required />
+      </div>
+
+      <div class="contact-path-field">
+        <label for="contact-email">Email</label>
+        <input type="email" id="contact-email" name="email" required />
+      </div>
+
+      <div class="contact-path-field" data-field="url" hidden>
+        <label for="contact-url">
+          Lien du site actuel <span class="contact-path-optional">(facultatif)</span>
+        </label>
+        <input type="url" id="contact-url" name="url" placeholder="https://" />
+      </div>
+
+      <div class="contact-path-field">
+        <label id="contact-question-label" for="contact-question"></label>
+        <textarea id="contact-question" name="message" rows="4"></textarea>
+      </div>
+
+      <button type="submit" class="contact-path-submit">Envoyer</button>
+      <p class="contact-path-status" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <script>
+    import { initContactReveal } from "../scripts/contact-reveal";
+    import { initContactForm } from "../scripts/contact-form";
+    initContactReveal();
+    initContactForm();
+  </script>
+</Layout>
+
+<style>
+  .contact-page {
+    position: relative;
+    min-height: 100vh;
+    transition: background-color 0.5s var(--ease-default);
+  }
+
+  .contact-page[data-theme="day"] {
+    background: #ffffff;
+  }
+
+  .contact-page[data-theme="night"] {
+    background: var(--color-night);
+  }
+
+  .theme-toggle {
+    all: unset;
+    position: absolute;
+    top: calc(80px + 1.5rem);
+    right: var(--container-padding);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-primary);
+  }
+
+  .contact-page[data-theme="night"] .theme-toggle {
+    color: var(--text-inverse);
+  }
+
+  .theme-toggle-track {
+    width: 34px;
+    height: 18px;
+    border-radius: 999px;
+    border: 1px solid currentColor;
+    position: relative;
+  }
+
+  .theme-toggle-track::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: currentColor;
+    transition: transform 0.3s var(--ease-default);
+  }
+
+  .contact-page[data-theme="night"] .theme-toggle-track::after {
+    transform: translateX(14px);
+  }
+
+  .contact-text {
+    /* Recouvre toute la section : important pour que les coordonnées
+       --mx/--my (calculées en JS par rapport à CE bloc) correspondent
+       exactement à la position du curseur à l'écran. */
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    text-align: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.5rem, 4vw, 3rem);
+  }
+
+  .contact-address {
+    font-weight: 400;
+    font-size: 0.6em;
+    opacity: 0.8;
+  }
+
+  /* --- Calque de base : le vrai texte, cliquable --- */
+  .contact-text--base a {
+    text-decoration: none;
+  }
+
+  .contact-page[data-theme="day"] .contact-text--base {
+    color: #ffffff; /* invisible sur fond blanc, mais bien réel */
+  }
+
+  .contact-page[data-theme="night"] .contact-text--base {
+    color: var(--text-inverse); /* pleinement visible en mode nuit */
+  }
+
+  /* --- Calque décoratif : coloré, découpé par le masque qui suit le
+     curseur. Purement visuel, jamais interactif. --- */
+  .contact-text--reveal {
+    pointer-events: none;
+  }
+
+  .contact-page[data-theme="day"] .contact-text--reveal {
+    color: var(--accent);
+    -webkit-mask-image: radial-gradient(
+      circle 180px at var(--mx, 50%) var(--my, 50%),
+      black 0%,
+      black 55%,
+      transparent 100%
+    );
+    mask-image: radial-gradient(
+      circle 180px at var(--mx, 50%) var(--my, 50%),
+      black 0%,
+      black 55%,
+      transparent 100%
+    );
+  }
+
+  /* En mode nuit, le calque de base suffit : on cache le calque
+     décoratif plutôt que de le laisser dupliquer le texte. */
+  .contact-page[data-theme="night"] .contact-text--reveal {
+    display: none;
+  }
+
+  /* --- Tactile : le halo suit le CURSEUR par design (desktop). Au
+     doigt, il n'y a pas de "survol" ambiant — l'utilisateur ne voit le
+     texte que là où il touche, et rien tant qu'il n'a pas encore posé
+     le doigt. On traite ça comme le <noscript> : calque de base visible
+     directement, calque décoratif masqué, indépendamment du thème. --- */
+  @media (hover: none) {
+    .contact-page[data-theme="day"] .contact-text--base {
+      color: var(--text-primary);
+    }
+
+    .contact-text--reveal {
+      display: none;
+    }
+  }
+
+  /* --- Section formulaire adaptatif --- */
+  .contact-path {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 5rem var(--container-padding) 6rem;
+  }
+
+  .contact-path h2 {
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    margin: 0 0 1rem;
+    text-align: center;
+  }
+
+  .contact-path-intro {
+    text-align: center;
+    opacity: 0.75;
+    line-height: 1.6;
+    max-width: 480px;
+    margin: 0 auto 2.5rem;
+  }
+
+  .contact-path-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .contact-path-option {
+    all: unset;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.25rem 1rem;
+    border: 1px solid rgba(8, 8, 14, 0.15);
+    border-radius: 8px;
+    text-align: left;
+    transition: border-color 0.3s var(--ease-default), background-color 0.3s var(--ease-default);
+  }
+
+  .contact-path-option:hover {
+    border-color: var(--accent);
+  }
+
+  .contact-path-option.is-selected {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+
+  .contact-path-option-title {
+    font-weight: 700;
+  }
+
+  .contact-path-option-desc {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    line-height: 1.4;
+  }
+
+  .contact-path-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .contact-path-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .contact-path-field label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.7;
+  }
+
+  .contact-path-optional {
+    text-transform: none;
+    letter-spacing: 0;
+    opacity: 0.7;
+  }
+
+  .contact-path-field input,
+  .contact-path-field textarea {
+    font: inherit;
+    font-family: var(--font-display);
+    padding: 0.7rem 0.85rem;
+    border: 1px solid rgba(8, 8, 14, 0.2);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--text-primary);
+    resize: vertical;
+  }
+
+  .contact-path-field input:focus,
+  .contact-path-field textarea:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .contact-path-submit {
+    all: unset;
+    cursor: pointer;
+    align-self: flex-start;
+    padding: 0.75rem 1.75rem;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--color-cream);
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: transform 0.2s var(--ease-default);
+  }
+
+  .contact-path-submit:hover {
+    transform: translateY(-2px);
+  }
+
+  .contact-path-status {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    min-height: 1.2em;
+  }
+
+  @media (max-width: 640px) {
+    .contact-path-options {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

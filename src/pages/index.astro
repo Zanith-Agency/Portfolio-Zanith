@@ -142,4 +142,18 @@ const projects = await getProjects();
 .project-orbit-hint-arrow {
   display: inline-block;
 }
+
+  /* --- Tactile : .project-orbit-caption et .project-orbit-hint ne
+     s'affichent qu'au :hover, qui n'existe pas au doigt — sans ça, un
+     visiteur mobile voit juste des photos qui flottent, sans titre, ni
+     indication que ce sont des liens cliquables. On rend la légende
+     (titre + catégorie) permanente sur ces appareils ; on laisse le
+     hint "Clic pour découvrir..." hover-only, son texte est trop long
+     pour rester lisible en permanence sur des vignettes de 110px sans
+     se chevaucher entre projets voisins sur l'orbite. --- */
+  @media (hover: none) {
+    .project-orbit-caption {
+      opacity: 1;
+    }
+  }
 </style>

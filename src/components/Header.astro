@@ -96,4 +96,40 @@ const introExtraItem = startInIntro ? navItems.find((item) => item.label === pag
   .loader-gear-ring { fill: none; stroke: currentColor; stroke-width: 4; }
   .loader-gear-tooth, .loader-gear-center { fill: currentColor; }
   @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+  /* --- Mobile ---
+     Sous ~640px, "Zanith" + "//Nadir Gherich//" + le page-label centré
+     en position absolute + 2 liens de nav ne tiennent plus dans une
+     bande de 80px sans se chevaucher. On retire le nom secondaire
+     (déjà peu utile hors intro) et on resserre la nav. Le page-label
+     est centré en absolute indépendamment du flex du reste : une fois
+     la nav condensée, rien ne garantit qu'il reste dans l'espace libre
+     entre brand et menu selon la longueur du libellé ("Compétences"
+     est plus long que "Contact") — on le masque plutôt que de risquer
+     un chevauchement visuel ; l'info de page courante reste disponible
+     via le contenu de la page elle-même. */
+  @media (max-width: 640px) {
+    .header-inner {
+      gap: 0.75rem;
+    }
+
+    .name {
+      display: none;
+    }
+
+    .page-label {
+      display: none;
+    }
+
+    .menu {
+      gap: 1rem;
+      font-size: 0.7rem;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .menu {
+      gap: 0.65rem;
+    }
+  }
 </style>
