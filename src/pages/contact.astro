@@ -159,8 +159,7 @@ import Layout from "../layouts/Layout.astro";
     background: var(--color-night);
   }
 
-  /* Centré en haut et nettement plus visible qu'un simple petit lien :
-     pilule avec bordure franche, texte en gras, piste agrandie —
+  /* Centré en haut, nettement plus visible qu'un simple petit lien —
      pensé pour être le premier élément qu'on remarque sur la page. */
   .theme-toggle {
     all: unset;
@@ -171,36 +170,37 @@ import Layout from "../layouts/Layout.astro";
     z-index: 10;
     display: flex;
     align-items: center;
-    gap: 0.85rem;
+    gap: 0.75rem;
     cursor: pointer;
-    padding: 0.65rem 1.25rem;
-    border: 1.5px solid currentColor;
-    border-radius: 999px;
     font-family: var(--font-mono);
     font-weight: 700;
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--text-primary);
-    background: color-mix(in srgb, currentColor 6%, transparent);
-    transition: background-color 0.3s var(--ease-default);
-  }
-
-  .theme-toggle:hover {
-    background: color-mix(in srgb, currentColor 12%, transparent);
   }
 
   .contact-page[data-theme="night"] .theme-toggle {
     color: var(--text-inverse);
   }
 
+  /* Piste + bouton façon iOS : fond plein (gris au repos, accent une
+     fois activé) plutôt qu'un simple contour, bouton blanc toujours
+     opaque avec une légère ombre pour le détacher de la piste — c'est
+     ce contraste plein-fond/bouton-blanc qui donne le look "toggle
+     Apple", pas juste la forme en pilule. */
   .theme-toggle-track {
-    width: 46px;
-    height: 24px;
+    width: 50px;
+    height: 30px;
     border-radius: 999px;
-    border: 1.5px solid currentColor;
     position: relative;
     flex-shrink: 0;
+    background: color-mix(in srgb, currentColor 22%, transparent);
+    transition: background-color 0.3s var(--ease-default);
+  }
+
+  .contact-page[data-theme="night"] .theme-toggle-track {
+    background: var(--accent);
   }
 
   .theme-toggle-track::after {
@@ -208,10 +208,11 @@ import Layout from "../layouts/Layout.astro";
     position: absolute;
     top: 2px;
     left: 2px;
-    width: 17px;
-    height: 17px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
-    background: currentColor;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     transition: transform 0.3s var(--ease-default);
   }
 
