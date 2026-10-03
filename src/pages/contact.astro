@@ -45,13 +45,30 @@ import Layout from "../layouts/Layout.astro";
       </p>
     </div>
 
+    <!--
+      Indices purement décoratifs (aria-hidden) qui invitent à bouger la
+      souris pour révéler le texte caché. Masqués au tactile et en mode
+      nuit (le texte y est déjà visible sans interaction), et sur petit
+      écran où il n'y a pas la place de les poser sans chevaucher le
+      texte central.
+    -->
+    <span class="contact-hint contact-hint--left" aria-hidden="true">
+      <span class="contact-hint-text">Explore avec<br />ta souris</span>
+      <span class="contact-hint-arrow">↓</span>
+    </span>
+    <span class="contact-hint contact-hint--right" aria-hidden="true">
+      <span class="contact-hint-text">Explore avec<br />ta souris</span>
+      <span class="contact-hint-arrow">↓</span>
+    </span>
+
     <noscript>
       <style>
         .contact-text--base {
           color: var(--text-primary) !important;
         }
         .contact-text--reveal,
-        .theme-toggle {
+        .theme-toggle,
+        .contact-hint {
           display: none !important;
         }
       </style>
@@ -142,21 +159,35 @@ import Layout from "../layouts/Layout.astro";
     background: var(--color-night);
   }
 
+  /* Centré en haut et nettement plus visible qu'un simple petit lien :
+     pilule avec bordure franche, texte en gras, piste agrandie —
+     pensé pour être le premier élément qu'on remarque sur la page. */
   .theme-toggle {
     all: unset;
     position: absolute;
-    top: calc(80px + 1.5rem);
-    right: var(--container-padding);
+    top: calc(80px + 1.75rem);
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 10;
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.85rem;
     cursor: pointer;
+    padding: 0.65rem 1.25rem;
+    border: 1.5px solid currentColor;
+    border-radius: 999px;
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-weight: 700;
+    font-size: 0.85rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     color: var(--text-primary);
+    background: color-mix(in srgb, currentColor 6%, transparent);
+    transition: background-color 0.3s var(--ease-default);
+  }
+
+  .theme-toggle:hover {
+    background: color-mix(in srgb, currentColor 12%, transparent);
   }
 
   .contact-page[data-theme="night"] .theme-toggle {
@@ -164,11 +195,12 @@ import Layout from "../layouts/Layout.astro";
   }
 
   .theme-toggle-track {
-    width: 34px;
-    height: 18px;
+    width: 46px;
+    height: 24px;
     border-radius: 999px;
-    border: 1px solid currentColor;
+    border: 1.5px solid currentColor;
     position: relative;
+    flex-shrink: 0;
   }
 
   .theme-toggle-track::after {
@@ -176,15 +208,79 @@ import Layout from "../layouts/Layout.astro";
     position: absolute;
     top: 2px;
     left: 2px;
-    width: 12px;
-    height: 12px;
+    width: 17px;
+    height: 17px;
     border-radius: 50%;
     background: currentColor;
     transition: transform 0.3s var(--ease-default);
   }
 
   .contact-page[data-theme="night"] .theme-toggle-track::after {
-    transform: translateX(14px);
+    transform: translateX(20px);
+  }
+
+  /* --- Indices "explore avec ta souris" --- */
+  .contact-hint {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.5;
+    color: var(--text-primary);
+    opacity: 0.4;
+    pointer-events: none;
+    animation: contact-hint-bounce 2.4s ease-in-out infinite;
+  }
+
+  .contact-hint--left {
+    left: clamp(1rem, 5vw, 3.5rem);
+  }
+
+  .contact-hint--right {
+    right: clamp(1rem, 5vw, 3.5rem);
+  }
+
+  .contact-hint-arrow {
+    font-size: 1.1rem;
+  }
+
+  @keyframes contact-hint-bounce {
+    0%,
+    100% {
+      transform: translateY(-50%);
+    }
+    50% {
+      transform: translateY(calc(-50% + 8px));
+    }
+  }
+
+  /* L'indice n'a de sens qu'en mode jour, avec une souris : en mode
+     nuit le texte est déjà pleinement visible, et au tactile il l'est
+     aussi (voir plus bas). Sur petit écran, pas la place de le poser
+     sans chevaucher le texte central. */
+  .contact-page[data-theme="night"] .contact-hint {
+    display: none;
+  }
+
+  @media (hover: none), (max-width: 900px) {
+    .contact-hint {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .contact-hint {
+      animation: none;
+    }
   }
 
   .contact-text {
