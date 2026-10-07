@@ -3,6 +3,14 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="Contact — Zanith" pageLabel="Contact">
+  <!--
+    Le toggle jour/nuit reste, mais n'a plus de texte caché à révéler :
+    il bascule maintenant le thème de TOUTE cette section (infos, carte,
+    book un rendez-vous) entre clair et sombre, via les custom
+    properties --bg-primary/--text-primary redéfinies plus bas. Le
+    contenu démarre directement sur "Contactez-Nous", pas de hero
+    séparé au-dessus.
+  -->
   <section class="contact-page" data-theme="day">
     <button
       id="theme-toggle"
@@ -14,138 +22,117 @@ import Layout from "../layouts/Layout.astro";
       <span class="theme-toggle-track" aria-hidden="true"></span>
     </button>
 
-    <!--
-      Deux calques superposés, même contenu :
-      1. .contact-text--base : le VRAI texte (lu par les lecteurs
-         d'écran, cliquable, toujours dans le flux). En mode jour il est
-         blanc sur fond blanc — invisible à l'œil, mais bien présent.
-      2. .contact-text--reveal : une copie purement décorative
-         (aria-hidden), colorée, découpée par un masque circulaire qui
-         suit le curseur. C'est elle qui "révèle" le contenu au survol.
-      Sans JS (voir <noscript>), le calque décoratif est masqué et le
-      texte de base repasse en couleur normale.
-    -->
-    <div class="contact-text contact-text--base">
-      <p class="contact-line">
-        <a href="mailto:contact@zanith.be">contact@zanith.be</a>
-      </p>
-      <p class="contact-line">
-        <a href="tel:+32488697108">+32 488 69 71 08</a>
-      </p>
-      <p class="contact-line contact-address">
-        Rue de Heembeek 267, 1120 Bruxelles
-      </p>
-    </div>
+    <section class="contact-info" aria-labelledby="contact-info-heading">
+      <h2 id="contact-info-heading" class="contact-info-title">Contactez-Nous</h2>
 
-    <div class="contact-text contact-text--reveal" aria-hidden="true">
-      <p class="contact-line">contact@zanith.be</p>
-      <p class="contact-line">+32 488 69 71 08</p>
-      <p class="contact-line contact-address">
-        Rue de Heembeek 267, 1120 Bruxelles
-      </p>
-    </div>
+      <div class="contact-info-grid">
+        <div class="contact-info-col">
+          <p class="contact-info-label">Écrivez-nous</p>
+          <a class="contact-info-value" href="mailto:contact@zanith.be">contact@zanith.be</a>
+        </div>
+        <div class="contact-info-col">
+          <p class="contact-info-label">Bureau</p>
+          <p class="contact-info-value">Rue de Heembeek 267<br />1120 Bruxelles, Belgique</p>
+        </div>
+        <div class="contact-info-col">
+          <p class="contact-info-label">Appelez-nous</p>
+          <a class="contact-info-value" href="tel:+32488697108">+32 488 69 71 08</a>
+        </div>
+      </div>
+    </section>
 
     <!--
-      Indices purement décoratifs (aria-hidden) qui invitent à bouger la
-      souris pour révéler le texte caché. Masqués au tactile et en mode
-      nuit (le texte y est déjà visible sans interaction), et sur petit
-      écran où il n'y a pas la place de les poser sans chevaucher le
-      texte central.
+      Carte à gauche / "Book un rendez-vous" à droite, séparés par une
+      vague dessinée à partir du symbole ∞ de Zanith : la moitié
+      INFÉRIEURE de sa boucle gauche, suivie de la moitié SUPÉRIEURE de
+      sa boucle droite. Le contenu de gauche se cale au-dessus du
+      creux, celui de droite est centré sur la bosse.
     -->
-    <span class="contact-hint contact-hint--left" aria-hidden="true">
-      <span class="contact-hint-text">Explore avec<br />ta souris</span>
-      <span class="contact-hint-arrow">↓</span>
-    </span>
-    <span class="contact-hint contact-hint--right" aria-hidden="true">
-      <span class="contact-hint-text">Explore avec<br />ta souris</span>
-      <span class="contact-hint-arrow">↓</span>
-    </span>
-
-    <noscript>
-      <style>
-        .contact-text--base {
-          color: var(--text-primary) !important;
-        }
-        .contact-text--reveal,
-        .theme-toggle,
-        .contact-hint {
-          display: none !important;
-        }
-      </style>
-    </noscript>
-  </section>
-
-  <!--
-    Section infos : grand titre + trois colonnes (écrire / bureau /
-    appeler). Reprend les mêmes coordonnées que le hero au-dessus, mais
-    ici toujours lisibles directement — pas de révélation au survol.
-  -->
-  <section class="contact-info" aria-labelledby="contact-info-heading">
-    <h2 id="contact-info-heading" class="contact-info-title">Contactez-Nous</h2>
-
-    <div class="contact-info-grid">
-      <div class="contact-info-col">
-        <p class="contact-info-label">Écrivez-nous</p>
-        <a class="contact-info-value" href="mailto:contact@zanith.be">contact@zanith.be</a>
-      </div>
-      <div class="contact-info-col">
-        <p class="contact-info-label">Bureau</p>
-        <p class="contact-info-value">Rue de Heembeek 267<br />1120 Bruxelles, Belgique</p>
-      </div>
-      <div class="contact-info-col">
-        <p class="contact-info-label">Appelez-nous</p>
-        <a class="contact-info-value" href="tel:+32488697108">+32 488 69 71 08</a>
-      </div>
-    </div>
-  </section>
-
-  <!--
-    Carte à gauche / "Book un rendez-vous" à droite, séparés par une
-    vague dessinée à partir du symbole ∞ de Zanith : la moitié
-    INFÉRIEURE de sa boucle gauche, suivie de la moitié SUPÉRIEURE de
-    sa boucle droite — exactement comme demandé, pas une vague
-    générique. Le contenu de gauche se cale au-dessus du creux, celui
-    de droite en dessous de la bosse : la ligne serpente entre les deux
-    plutôt que de les séparer par un simple trait.
-  -->
-  <section class="contact-split">
-    <svg class="contact-wave" viewBox="0 0 400 100" aria-hidden="true">
-      <path d="M0,50 A100,50 0 0 0 200,50 A100,50 0 0 1 400,50" />
-    </svg>
-
-    <div class="contact-split-col contact-split-map">
-      <p class="contact-split-label">Où nous trouver</p>
-      <svg
-        class="brussels-map"
-        viewBox="0 0 320 320"
-        role="img"
-        aria-label="Illustration stylisée de Bruxelles : Zanith est situé le long du canal, au nord du pentagone."
-      >
-        <line x1="160" y1="0" x2="160" y2="320" class="map-line map-line--canal" />
-        <line x1="10" y1="180" x2="310" y2="180" class="map-line" />
-        <line x1="50" y1="70" x2="270" y2="290" class="map-line" />
-        <line x1="270" y1="70" x2="50" y2="290" class="map-line" />
-        <path
-          d="M160,90 L245.6,152.2 L212.9,252.8 L107.1,252.8 L74.4,152.2 Z"
-          class="map-ring"
-        />
-        <circle cx="160" cy="40" r="6" class="map-marker" />
-        <line x1="160" y1="46" x2="160" y2="70" class="map-marker-line" />
-        <text x="160" y="26" text-anchor="middle" class="map-marker-label">ZANITH</text>
+    <section class="contact-split">
+      <svg class="contact-wave" viewBox="0 0 400 100" aria-hidden="true">
+        <path d="M0,50 A100,50 0 0 0 200,50 A100,50 0 0 1 400,50" />
       </svg>
-    </div>
 
-    <div class="contact-split-col contact-split-book">
-      <p class="contact-split-label">Un projet en tête ?</p>
-      <h3 class="contact-split-title">Book un rendez-vous</h3>
-      <p class="contact-split-desc">
-        On en discute 15 minutes, sans engagement.
-      </p>
-      <button type="button" class="contact-split-cta" data-open-book-call>
-        Réserver un créneau
-        <span class="contact-split-cta-arrow" aria-hidden="true">→</span>
-      </button>
-    </div>
+      <div class="contact-split-col contact-split-map">
+        <p class="contact-split-label">Où nous trouver</p>
+
+        <!--
+          Illustration façon "carte stylisée" (traits fins, canal en
+          double trait, rond-point, bâtiments schématiques, points
+          d'intérêt réels du quartier) plutôt que la simple forme
+          géométrique précédente — même esprit que la référence, en
+          couleurs Zanith. Le cartouche reste toujours sombre (comme
+          sur la référence), quel que soit le thème jour/nuit de la
+          page, pour rester lisible dans les deux cas.
+        -->
+        <svg
+          class="brussels-map"
+          viewBox="0 0 400 400"
+          role="img"
+          aria-label="Illustration stylisée du quartier de Zanith, le long du canal à Neder-Over-Heembeek, Bruxelles."
+        >
+          <path d="M20,360 Q70,320 50,280 T100,200" class="map-terrain" />
+          <path d="M360,40 Q320,90 340,140 T300,230" class="map-terrain" />
+          <path d="M40,80 Q90,60 130,90 T210,70" class="map-terrain" />
+
+          <line x1="50" y1="230" x2="210" y2="370" class="map-line" />
+          <line x1="330" y1="60" x2="200" y2="340" class="map-line" />
+
+          <rect x="60" y="250" width="16" height="12" class="map-building" />
+          <rect x="90" y="280" width="12" height="16" class="map-building" />
+          <rect x="170" y="320" width="20" height="12" class="map-building" />
+          <rect x="300" y="310" width="14" height="18" class="map-building" />
+          <rect x="330" y="130" width="12" height="12" class="map-building" />
+          <rect x="210" y="60" width="18" height="12" class="map-building" />
+
+          <path
+            d="M30,30 Q160,95 235,165 T380,270"
+            class="map-line map-line--canal-outline"
+          />
+          <path
+            d="M38,22 Q166,85 241,153 T386,258"
+            class="map-line map-line--canal-outline"
+          />
+
+          <circle cx="318" cy="238" r="10" class="map-roundabout" />
+          <line x1="318" y1="220" x2="318" y2="256" class="map-line" />
+          <line x1="300" y1="238" x2="336" y2="238" class="map-line" />
+
+          <circle cx="140" cy="128" r="3.5" class="map-poi" />
+          <text x="150" y="124" class="map-poi-label">TOUR &amp; TAXIS</text>
+
+          <circle cx="80" cy="300" r="3.5" class="map-poi" />
+          <text x="90" y="296" class="map-poi-label">DOCKS BRUXSEL</text>
+
+          <circle cx="355" cy="285" r="3.5" class="map-poi" />
+          <text x="340" y="304" class="map-poi-label" text-anchor="end">PONT VAN PRAET</text>
+
+          <line x1="222" y1="178" x2="222" y2="200" class="map-pin-line" />
+          <circle cx="222" cy="204" r="6" class="map-pin-dot" />
+
+          <g class="map-pin-box">
+            <path d="M190,138 L254,138 L254,172 L230,172 L222,184 L214,172 L190,172 Z" />
+          </g>
+          <text x="222" y="152" text-anchor="middle" class="map-pin-title">ZANITH</text>
+          <text x="222" y="164" text-anchor="middle" class="map-pin-subtitle">Rue de Heembeek</text>
+        </svg>
+      </div>
+
+      <div class="contact-split-col contact-split-book">
+        <!--
+          Cercle "Book un rendez-vous" : anneau tracé au survol (pur
+          CSS, stroke-dashoffset) + léger effet d'inclinaison "assiette"
+          qui suit la souris, géré par book-cta-tilt.js.
+        -->
+        <button type="button" class="book-cta" data-open-book-call>
+          <svg class="book-cta-ring" viewBox="0 0 220 220" aria-hidden="true">
+            <circle class="book-cta-ring-track" cx="110" cy="110" r="104" />
+            <circle class="book-cta-ring-fill" cx="110" cy="110" r="104" />
+          </svg>
+          <span class="book-cta-label">Book un<br />rendez-vous</span>
+        </button>
+      </div>
+    </section>
   </section>
 
   <!--
@@ -239,25 +226,29 @@ import Layout from "../layouts/Layout.astro";
     import { initContactReveal } from "../scripts/contact-reveal";
     import { initContactForm } from "../scripts/contact-form";
     import { initBookCallModal } from "../scripts/book-call-modal";
+    import { initBookCtaTilt } from "../scripts/book-cta-tilt";
     initContactReveal();
     initContactForm();
     initBookCallModal();
+    initBookCtaTilt();
   </script>
 </Layout>
 
 <style>
   .contact-page {
     position: relative;
-    min-height: 100vh;
-    transition: background-color 0.5s var(--ease-default);
   }
 
-  .contact-page[data-theme="day"] {
-    background: #ffffff;
-  }
-
+  /* Le toggle ne masque/révèle plus rien : il bascule maintenant les
+     custom properties de thème sur toute la section. --text-primary
+     doit être redéfini ICI (pas seulement --bg-primary) pour que
+     `color` se recalcule à cet élément et que tous les descendants
+     sans couleur propre héritent la nouvelle valeur calculée. */
   .contact-page[data-theme="night"] {
-    background: var(--color-night);
+    --bg-primary: var(--bg-inverse);
+    --text-primary: var(--text-inverse);
+    color: var(--text-primary);
+    transition: color 0.5s var(--ease-default);
   }
 
   /* Centré en haut, nettement plus visible qu'un simple petit lien —
@@ -321,153 +312,14 @@ import Layout from "../layouts/Layout.astro";
     transform: translateX(20px);
   }
 
-  /* --- Indices "explore avec ta souris" --- */
-  .contact-hint {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.6rem;
-    text-align: center;
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    line-height: 1.5;
-    color: var(--text-primary);
-    opacity: 0.4;
-    pointer-events: none;
-    animation: contact-hint-bounce 2.4s ease-in-out infinite;
-  }
-
-  .contact-hint--left {
-    left: clamp(1rem, 5vw, 3.5rem);
-  }
-
-  .contact-hint--right {
-    right: clamp(1rem, 5vw, 3.5rem);
-  }
-
-  .contact-hint-arrow {
-    font-size: 1.1rem;
-  }
-
-  @keyframes contact-hint-bounce {
-    0%,
-    100% {
-      transform: translateY(-50%);
-    }
-    50% {
-      transform: translateY(calc(-50% + 8px));
-    }
-  }
-
-  /* L'indice n'a de sens qu'en mode jour, avec une souris : en mode
-     nuit le texte est déjà pleinement visible, et au tactile il l'est
-     aussi (voir plus bas). Sur petit écran, pas la place de le poser
-     sans chevaucher le texte central. */
-  .contact-page[data-theme="night"] .contact-hint {
-    display: none;
-  }
-
-  @media (hover: none), (max-width: 900px) {
-    .contact-hint {
-      display: none;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .contact-hint {
-      animation: none;
-    }
-  }
-
-  .contact-text {
-    /* Recouvre toute la section : important pour que les coordonnées
-       --mx/--my (calculées en JS par rapport à CE bloc) correspondent
-       exactement à la position du curseur à l'écran. */
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1.25rem;
-    text-align: center;
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: clamp(1.5rem, 4vw, 3rem);
-  }
-
-  .contact-address {
-    font-weight: 400;
-    font-size: 0.6em;
-    opacity: 0.8;
-  }
-
-  /* --- Calque de base : le vrai texte, cliquable --- */
-  .contact-text--base a {
-    text-decoration: none;
-  }
-
-  .contact-page[data-theme="day"] .contact-text--base {
-    color: #ffffff; /* invisible sur fond blanc, mais bien réel */
-  }
-
-  .contact-page[data-theme="night"] .contact-text--base {
-    color: var(--text-inverse); /* pleinement visible en mode nuit */
-  }
-
-  /* --- Calque décoratif : coloré, découpé par le masque qui suit le
-     curseur. Purement visuel, jamais interactif. --- */
-  .contact-text--reveal {
-    pointer-events: none;
-  }
-
-  .contact-page[data-theme="day"] .contact-text--reveal {
-    color: var(--accent);
-    -webkit-mask-image: radial-gradient(
-      circle 180px at var(--mx, 50%) var(--my, 50%),
-      black 0%,
-      black 55%,
-      transparent 100%
-    );
-    mask-image: radial-gradient(
-      circle 180px at var(--mx, 50%) var(--my, 50%),
-      black 0%,
-      black 55%,
-      transparent 100%
-    );
-  }
-
-  /* En mode nuit, le calque de base suffit : on cache le calque
-     décoratif plutôt que de le laisser dupliquer le texte. */
-  .contact-page[data-theme="night"] .contact-text--reveal {
-    display: none;
-  }
-
-  /* --- Tactile : le halo suit le CURSEUR par design (desktop). Au
-     doigt, il n'y a pas de "survol" ambiant — l'utilisateur ne voit le
-     texte que là où il touche, et rien tant qu'il n'a pas encore posé
-     le doigt. On traite ça comme le <noscript> : calque de base visible
-     directement, calque décoratif masqué, indépendamment du thème. --- */
-  @media (hover: none) {
-    .contact-page[data-theme="day"] .contact-text--base {
-      color: var(--text-primary);
-    }
-
-    .contact-text--reveal {
-      display: none;
-    }
-  }
-
   /* --- Section infos (Contactez-Nous + 3 colonnes) --- */
   .contact-info {
     background: var(--bg-primary);
-    padding: 6rem var(--container-padding);
+    /* Le padding-top doit dégager le toggle, maintenant positionné en
+       absolu juste au-dessus (voir .theme-toggle) : la page démarre
+       directement sur ce bloc, il n'y a plus de hero séparé pour lui
+       laisser de la place. */
+    padding: 10rem var(--container-padding) 4rem;
   }
 
   .contact-info-title {
@@ -520,7 +372,7 @@ import Layout from "../layouts/Layout.astro";
   .contact-split {
     position: relative;
     background: var(--bg-primary);
-    min-height: 68vh;
+    min-height: 52vh;
     display: grid;
     grid-template-columns: 1fr 1fr;
     overflow: hidden;
@@ -565,10 +417,11 @@ import Layout from "../layouts/Layout.astro";
     align-items: center;
   }
 
-  /* La bosse de la vague est à droite : le contenu s'appuie en bas,
-     en dessous d'elle. */
+  /* La bosse de la vague est à droite : le cercle se centre sur elle,
+     dans les deux axes (il n'y a plus qu'un seul élément à poser,
+     contrairement à l'ancien bloc titre + texte + bouton). */
   .contact-split-book {
-    justify-content: flex-end;
+    justify-content: center;
     align-items: center;
     text-align: center;
   }
@@ -583,82 +436,153 @@ import Layout from "../layouts/Layout.astro";
   }
 
   .brussels-map {
-    width: min(100%, 320px);
+    width: min(100%, 360px);
     height: auto;
+    overflow: visible;
   }
 
-  .map-line {
-    stroke: color-mix(in srgb, var(--text-primary) 20%, transparent);
+  /* --- Carte détaillée façon "plan topographique" --- */
+  .map-terrain {
+    fill: none;
+    stroke: color-mix(in srgb, var(--text-primary) 14%, transparent);
     stroke-width: 1;
   }
 
-  .map-line--canal {
-    stroke: color-mix(in srgb, var(--accent) 45%, transparent);
-    stroke-width: 1.5;
-  }
-
-  .map-ring {
+  .map-line {
     fill: none;
-    stroke: var(--text-primary);
-    stroke-width: 1.5;
-    stroke-linejoin: round;
-    opacity: 0.8;
+    stroke: color-mix(in srgb, var(--text-primary) 22%, transparent);
+    stroke-width: 1;
   }
 
-  .map-marker {
+  /* Le canal est la voie principale du quartier : tracé en double
+     ligne (deux chemins presque parallèles) et plus contrasté que les
+     simples rues, pour se lire comme l'élément dominant de la carte. */
+  .map-line--canal-outline {
+    stroke: color-mix(in srgb, var(--text-primary) 55%, transparent);
+    stroke-width: 1.25;
+  }
+
+  .map-building {
+    fill: color-mix(in srgb, var(--text-primary) 10%, transparent);
+    stroke: none;
+  }
+
+  .map-roundabout {
+    fill: none;
+    stroke: color-mix(in srgb, var(--text-primary) 35%, transparent);
+    stroke-width: 1.25;
+  }
+
+  .map-poi {
     fill: var(--accent);
   }
 
-  .map-marker-line {
-    stroke: var(--accent);
-    stroke-width: 1.5;
+  .map-poi-label {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    fill: color-mix(in srgb, var(--text-primary) 70%, transparent);
   }
 
-  .map-marker-label {
+  .map-pin-line {
+    stroke: var(--accent);
+    stroke-width: 2;
+  }
+
+  .map-pin-dot {
+    fill: var(--accent);
+  }
+
+  /* Le cartouche reste TOUJOURS sombre, même en mode jour, pour rester
+     lisible exactement comme sur la référence — il ne suit pas le
+     thème jour/nuit du reste de la page. En mode nuit le fond de page
+     devient lui-même sombre : sans liseré, le cartouche s'y fondrait
+     complètement. Le contour couleur accent le détache dans les deux
+     thèmes. */
+  .map-pin-box path {
+    fill: var(--color-night);
+    stroke: var(--accent);
+    stroke-width: 1.25;
+  }
+
+  .map-pin-title {
     font-family: var(--font-mono);
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.04em;
-    fill: var(--text-primary);
+    letter-spacing: 0.05em;
+    fill: var(--color-cream);
   }
 
-  .contact-split-title {
-    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
-    font-weight: 700;
-    margin: 0 0 0.75rem;
+  .map-pin-subtitle {
+    font-family: var(--font-mono);
+    font-size: 7.5px;
+    letter-spacing: 0.02em;
+    fill: color-mix(in srgb, var(--color-cream) 70%, transparent);
   }
 
-  .contact-split-desc {
-    opacity: 0.75;
-    max-width: 320px;
-    margin: 0 0 1.75rem;
-  }
-
-  .contact-split-cta {
+  /* --- Cercle "Book un rendez-vous" --- */
+  .book-cta {
     all: unset;
     cursor: pointer;
-    display: inline-flex;
+    position: relative;
+    width: clamp(180px, 18vw, 220px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    display: flex;
     align-items: center;
-    gap: 0.6rem;
-    padding: 0.9rem 1.75rem;
-    border-radius: 999px;
-    background: var(--accent);
-    color: var(--color-cream);
+    justify-content: center;
+    will-change: transform;
+  }
+
+  .book-cta-ring {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .book-cta-ring-track {
+    fill: none;
+    stroke: color-mix(in srgb, var(--text-primary) 20%, transparent);
+    stroke-width: 1.5;
+  }
+
+  /* Anneau tracé au survol : stroke-dasharray = circonférence du
+     cercle (2 × π × 104, rayon du SVG ci-dessus), donc dashoffset à 0
+     le fait paraître entièrement rempli. Rotation à -90deg pour que le
+     tracé démarre en haut plutôt qu'à droite. */
+  .book-cta-ring-fill {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-dasharray: 654;
+    stroke-dashoffset: 654;
+    transform-origin: 50% 50%;
+    transform: rotate(-90deg);
+    transition: stroke-dashoffset 0.6s var(--ease-default);
+  }
+
+  .book-cta:hover .book-cta-ring-fill,
+  .book-cta:focus-visible .book-cta-ring-fill {
+    stroke-dashoffset: 0;
+  }
+
+  .book-cta-label {
+    position: relative;
+    z-index: 1;
     font-weight: 700;
-    font-size: 0.95rem;
-    transition: transform 0.25s var(--ease-default);
+    font-size: 1rem;
+    line-height: 1.4;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
   }
 
-  .contact-split-cta:hover {
-    transform: translateY(-2px);
-  }
-
-  .contact-split-cta-arrow {
-    transition: transform 0.25s var(--ease-default);
-  }
-
-  .contact-split-cta:hover .contact-split-cta-arrow {
-    transform: translateX(3px);
+  @media (prefers-reduced-motion: reduce), (hover: none) {
+    .book-cta-ring-fill {
+      transition: none;
+    }
   }
 
   /* Sous 900px, deux colonnes + vague en fond n'ont plus la place de
