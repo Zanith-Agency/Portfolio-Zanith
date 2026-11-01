@@ -18,16 +18,20 @@ interface Props {
   hint?: string;
   showcaseLabel?: string;
   behindLabel?: string;
+  // Fond du haut de la vitrine, pour la couleur du header
+  // (voir src/scripts/header-theme.js)
+  headerTheme?: "dark" | "light";
 }
 
 const {
   hint = "Drag to explore",
   showcaseLabel = "Project showcase",
   behindLabel = "Behind the scenes",
+  headerTheme = "dark",
 } = Astro.props;
 ---
 
-<section class="project-reveal" data-project-reveal>
+<section class="project-reveal" data-project-reveal data-header-theme={headerTheme}>
   <div class="project-reveal-scene project-reveal-scene--showcase" aria-label={showcaseLabel}>
     <slot name="showcase" />
   </div>
