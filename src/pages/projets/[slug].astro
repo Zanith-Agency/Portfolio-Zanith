@@ -19,7 +19,7 @@ const nextProject = await getNextProject(project);
 // Clé = le slug du projet dans Supabase. Un projet absent de cette
 // liste utilise les scènes par défaut (DefaultReveal).
 const customReveals = {
-  "el-magico": ElMagicoReveal,
+  "elmagicobarber": ElMagicoReveal,
 };
 const Reveal = customReveals[project.slug as keyof typeof customReveals] ?? DefaultReveal;
 
