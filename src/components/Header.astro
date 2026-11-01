@@ -37,6 +37,42 @@ const introExtraItem = startInIntro ? navItems.find((item) => item.label === pag
         <a href={item.href} data-intro-item>{item.label}</a>
       ))}
     </nav>
+
+    <!-- Mobile : un seul bouton à la place des liens (voir menu plein écran) -->
+    <button
+      class="menu-toggle"
+      id="menu-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+      data-intro-item
+    >Menu</button>
+  </div>
+
+  <!--
+    Menu plein écran (mobile uniquement). Contrairement au menu du haut,
+    il liste TOUTES les pages, y compris celle où l'on se trouve
+    (marquée), pour que le visiteur sache toujours où il est.
+  -->
+  <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+    <nav class="mobile-menu-nav" aria-label="Navigation principale (mobile)">
+      {navItems.map((item, index) => (
+        <a
+          href={item.href}
+          class="mobile-menu-link"
+          style={`--i: ${index}`}
+          aria-current={item.label === pageLabel ? "page" : undefined}
+          tabindex="-1"
+        >
+          <span class="mobile-menu-index">{String(index + 1).padStart(2, "0")}</span>
+          {item.label}
+        </a>
+      ))}
+    </nav>
+    <div class="mobile-menu-footer" style={`--i: ${navItems.length}`}>
+      <a href="mailto:contact@zanith.be" tabindex="-1">contact@zanith.be</a>
+      <span>Bruxelles</span>
+    </div>
   </div>
 
   {startInIntro && (
@@ -49,6 +85,62 @@ const introExtraItem = startInIntro ? navItems.find((item) => item.label === pag
     </svg>
   )}
 </header>
+
+<script>
+  // Menu plein écran mobile : ouverture/fermeture, scroll bloqué
+  // pendant qu'il est ouvert, fermeture à Échap, focus géré.
+  const header = document.getElementById("site-header");
+  const toggle = document.getElementById("menu-toggle");
+  const panel = document.getElementById("mobile-menu");
+
+  if (header && toggle && panel) {
+    const links = panel.querySelectorAll("a");
+    let open = false;
+
+    const setOpen = (value) => {
+      open = value;
+      header.classList.toggle("is-menu-open", open);
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.textContent = open ? "Fermer" : "Menu";
+      panel.setAttribute("aria-hidden", String(!open));
+      links.forEach((link) => (link.tabIndex = open ? 0 : -1));
+
+      // Défilement bloqué pendant que le menu est ouvert (Lenis + natif)
+      const lenis = (window as any).__lenis;
+      if (open) {
+        lenis?.stop();
+        document.documentElement.style.overflow = "hidden";
+        links[0]?.focus({ preventScroll: true });
+      } else {
+        lenis?.start();
+        document.documentElement.style.overflow = "";
+      }
+    };
+
+    toggle.addEventListener("click", () => {
+      // Pas d'ouverture pendant l'intro de l'accueil
+      if (header.classList.contains("is-intro")) return;
+      setOpen(!open);
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && open) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+
+    // Retour au format ordinateur (rotation, fenêtre élargie) : on ferme.
+    window.matchMedia("(min-width: 641px)").addEventListener("change", (event) => {
+      if (event.matches && open) setOpen(false);
+    });
+
+    // Retour arrière vers une page restée en mémoire avec le menu ouvert
+    window.addEventListener("pageshow", (event) => {
+      if (event.persisted && open) setOpen(false);
+    });
+  }
+</script>
 
 <style>
   .site-header {
@@ -81,6 +173,7 @@ const introExtraItem = startInIntro ? navItems.find((item) => item.label === pag
 
   .site-header.is-intro {
     height: 100vh;
+    height: 100svh;
     background: var(--bg-primary);
     color: var(--text-primary);
   }
@@ -108,28 +201,150 @@ const introExtraItem = startInIntro ? navItems.find((item) => item.label === pag
      est plus long que "Contact") — on le masque plutôt que de risquer
      un chevauchement visuel ; l'info de page courante reste disponible
      via le contenu de la page elle-même. */
+  /* ============ Menu mobile ============ */
+
+  .menu-toggle {
+    display: none;
+    margin: 0;
+    padding: 0.6rem 0 0.6rem 1rem; /* zone de toucher confortable */
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 0.8rem;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+  }
+
+  .mobile-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: calc(80px + 2.5rem) var(--container-padding) calc(2rem + env(safe-area-inset-bottom));
+    background: var(--color-night);
+    color: var(--color-cream);
+    /* Rideau qui descend depuis le haut */
+    clip-path: inset(0 0 100% 0);
+    visibility: hidden;
+    transition:
+      clip-path 0.6s var(--ease-default),
+      visibility 0s linear 0.6s;
+  }
+
+  .header-inner {
+    z-index: 2; /* logo et bouton restent au-dessus du menu ouvert */
+  }
+
+  .site-header.is-menu-open {
+    color: var(--color-cream);
+  }
+
+  .site-header.is-menu-open .mobile-menu {
+    clip-path: inset(0 0 0 0);
+    visibility: visible;
+    transition: clip-path 0.6s var(--ease-default);
+  }
+
+  .mobile-menu-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .mobile-menu-link,
+  .mobile-menu-footer {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 0.3s var(--ease-default),
+      transform 0.3s var(--ease-default);
+  }
+
+  .site-header.is-menu-open .mobile-menu-link,
+  .site-header.is-menu-open .mobile-menu-footer {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.5s var(--ease-default) calc(0.25s + var(--i) * 0.07s),
+      transform 0.5s var(--ease-default) calc(0.25s + var(--i) * 0.07s);
+  }
+
+  .mobile-menu-link {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.35rem 0;
+    font-family: var(--font-display);
+    font-size: clamp(2.4rem, 12vw, 3.4rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    text-transform: none;
+    text-decoration: none;
+  }
+
+  .mobile-menu-index {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+
+  /* Page actuelle : atténuée, marquée d'un point */
+  .mobile-menu-link[aria-current="page"] {
+    opacity: 0.4;
+  }
+  .site-header.is-menu-open .mobile-menu-link[aria-current="page"] {
+    opacity: 0.4;
+  }
+  .mobile-menu-link[aria-current="page"]::after {
+    content: "";
+    align-self: center;
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .mobile-menu-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid color-mix(in srgb, var(--color-cream) 18%, transparent);
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+  .site-header.is-menu-open .mobile-menu-footer {
+    opacity: 0.7;
+  }
+  .mobile-menu-footer a {
+    text-decoration: none;
+  }
+
   @media (max-width: 640px) {
-    .header-inner {
-      gap: 0.75rem;
-    }
-
-    .name {
-      display: none;
-    }
-
-    .page-label {
-      display: none;
-    }
-
+    .name,
+    .page-label,
     .menu {
-      gap: 1rem;
-      font-size: 0.7rem;
+      display: none;
+    }
+
+    .menu-toggle,
+    .mobile-menu {
+      display: flex;
     }
   }
 
-  @media (max-width: 380px) {
-    .menu {
-      gap: 0.65rem;
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-menu,
+    .mobile-menu-link,
+    .mobile-menu-footer {
+      transition: none !important;
     }
   }
 </style>

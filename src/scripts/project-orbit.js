@@ -70,24 +70,34 @@ export function initProjectOrbit() {
     opacity: 0,
   }));
 
-  let radius = 0;
+  // Rayons horizontal et vertical de l'orbite. Sur ordinateur, le
+  // cercle est carré : les deux sont égaux. Sur téléphone, la zone est
+  // plus haute que large (voir index.astro) : l'orbite devient un ovale
+  // vertical qui profite de la hauteur de l'écran, au lieu d'un petit
+  // cercle limité par la largeur où les projets se chevauchent.
+  let radiusX = 0;
+  let radiusY = 0;
   let angle = START_ANGLE;
   let phase = "fill"; // fill → decel → cruise → closing
   let decelElapsed = 0;
   let paused = false;
 
   const computeRadius = () => {
-    const rect = track.getBoundingClientRect();
-    const itemSize = anchors[0].getBoundingClientRect().width;
-    radius = Math.min(rect.width, rect.height) / 2 - itemSize / 2;
+    // offsetWidth/offsetHeight : taille réelle, sans l'effet des
+    // transform (déplacement de l'intro, zoom des projets).
+    const width = track.offsetWidth;
+    const height = track.offsetHeight;
+    const itemSize = anchors[0].offsetWidth;
+    radiusX = Math.max(0, width / 2 - itemSize / 2);
+    radiusY = Math.max(0, height / 2 - itemSize / 2);
   };
 
   const render = () => {
     items.forEach((item) => {
       if (!item.revealed || item.closed) return;
       const a = ((angle - item.i * step + item.extra) * Math.PI) / 180;
-      const x = Math.cos(a) * radius;
-      const y = Math.sin(a) * radius;
+      const x = Math.cos(a) * radiusX;
+      const y = Math.sin(a) * radiusY;
       item.el.style.transform =
         `translate(-50%, -50%) translate(${x}px, ${y}px) scale(${item.scale})`;
       item.el.style.opacity = String(item.opacity);

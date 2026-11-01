@@ -42,6 +42,9 @@ const projects = await getProjects();
 <style>
   .hero {
     position: relative; min-height: 100vh;
+    /* Rien ne doit dépasser sur les côtés (projets près du bord) : sur
+       téléphone, un débordement même invisible élargit la page. */
+    overflow-x: clip;
     background: var(--bg-inverse);
     padding-top: 80px;
     display: flex; align-items: center; justify-content: center;
@@ -135,9 +138,60 @@ const projects = await getProjects();
     color: var(--text-inverse); opacity: 0.7;
   }
 
+  /* --- Téléphone (portrait) ---
+     L'écran est bien plus haut que large : un cercle limité par la
+     largeur (~310 px) serre les projets au point qu'ils se chevauchent.
+     On donne à l'orbite toute la largeur utile ET la hauteur de l'écran
+     sous le header : project-orbit.js en fait un ovale vertical. */
   @media (max-width: 700px) {
-    .project-orbit { width: min(80vw, 420px); height: min(80vw, 420px); }
-    .project-orbit-item { width: 110px; }
+    .hero {
+      min-height: 100vh;
+      min-height: 100svh;
+    }
+    .project-orbit {
+      width: calc(100vw - 2 * var(--container-padding));
+      height: min(calc(100svh - 80px - 7rem), 640px);
+    }
+    .project-orbit-item {
+      width: clamp(84px, 26vw, 112px);
+    }
+    /* Légende réduite au titre : la catégorie chargerait l'écran */
+    .project-orbit-caption {
+      margin-top: 0.45rem;
+    }
+    .project-orbit-title {
+      font-size: 0.78rem;
+    }
+    .project-orbit-category {
+      display: none;
+    }
+  }
+
+  /* --- Téléphone en paysage / écrans très bas ---
+     Même principe dans l'autre sens : ovale horizontal. */
+  @media (max-height: 560px) and (orientation: landscape) {
+    .hero {
+      min-height: 100svh;
+    }
+    .hero {
+      padding-top: 64px;
+    }
+    .project-orbit {
+      width: min(84vw, 760px);
+      height: calc(100svh - 64px - 1.5rem);
+    }
+    .project-orbit-item {
+      width: 76px;
+    }
+    .project-orbit-title {
+      font-size: 0.72rem;
+    }
+    .project-orbit-caption {
+      margin-top: 0.3rem;
+    }
+    .project-orbit-category {
+      display: none;
+    }
   }
 
   .project-orbit-hint {
@@ -174,6 +228,12 @@ const projects = await getProjects();
   @media (hover: none) {
     .project-orbit-caption {
       opacity: 1;
+    }
+    /* L'indication "Clic pour découvrir…" n'apparaît qu'au survol de la
+       souris : inutile au doigt, et elle dépassait de l'écran près des
+       bords (la page se retrouvait plus large que le téléphone). */
+    .project-orbit-hint {
+      display: none;
     }
   }
 </style>

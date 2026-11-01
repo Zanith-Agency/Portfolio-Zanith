@@ -239,6 +239,28 @@ const { project } = Astro.props;
   }
 
   @media (max-width: 700px) {
+    /* La capture du site est au format ordinateur : en plein écran sur
+       un téléphone, elle est recadrée au centre et son propre texte se
+       mélange au titre. On l'affiche plutôt comme un écran encadré, sur
+       fond sombre, au-dessus du titre. */
+    .scene-showcase-media {
+      inset: auto;
+      top: calc(80px + 1.75rem);
+      left: var(--container-padding);
+      width: calc(100% - 2 * var(--container-padding));
+      height: auto;
+      aspect-ratio: 16 / 10;
+      border-radius: 6px;
+      border: 1px solid color-mix(in srgb, var(--color-cream) 18%, transparent);
+      box-shadow: 0 24px 50px rgba(0, 0, 0, 0.55);
+    }
+    .scene-showcase-shade {
+      background: radial-gradient(ellipse 80% 45% at 50% 30%, rgba(201, 124, 86, 0.14), transparent 70%);
+    }
+    .scene-showcase-title {
+      font-size: clamp(2.4rem, 13vw, 3.5rem);
+    }
+
     .scene-behind-frame {
       width: 84vw;
       transform: translate(-50%, -58%);
