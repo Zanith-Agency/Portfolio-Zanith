@@ -44,28 +44,26 @@ const WIPE_DURATION = 0.75; // s pour la fermeture diagonale finale
 // de rotation de la roue.
 const forwardGap = (deg) => ((deg % 360) + 360) % 360;
 
-// Fermeture diagonale, du coin supérieur droit vers le coin inférieur
-// gauche. Une droite parallèle à la diagonale haut-gauche → bas-droite
-// (x - y = seuil, en % de la vignette) balaie l'image :
-//   seuil = 100  → rien n'est effacé (la droite touche le coin haut-droit)
-//   seuil = 0    → la moitié haut-droite est effacée
-//   seuil = -100 → tout est effacé (dernier point : coin bas-gauche)
-// La partie visible, { x - y ≤ seuil }, est découpée avec clip-path.
+// Fermeture diagonale : le coin supérieur droit et le coin inférieur
+// gauche se referment l'un vers l'autre et se rejoignent au centre de
+// l'image. Deux bords parallèles à la diagonale haut-gauche →
+// bas-droite (x - y = ±t, en % de la vignette) avancent à la même
+// vitesse vers le milieu :
+//   t = 100 → rien n'est effacé (les bords touchent les deux coins)
+//   t = 50  → il reste une bande diagonale centrale
+//   t = 0   → les deux bords se rejoignent sur la diagonale centrale
+// La partie visible, { -t ≤ x - y ≤ t }, est découpée avec clip-path.
+// Toujours 6 points, donc l'interpolation reste parfaitement continue.
 function diagonalClipPath(progress) {
-  const t = 100 - 200 * progress;
-  let points;
-
-  if (t >= 100) {
-    points = [[0, 0], [100, 0], [100, 100], [0, 100]];
-  } else if (t >= 0) {
-    // Pentagone : le coin haut-droit est rogné
-    points = [[0, 0], [t, 0], [100, 100 - t], [100, 100], [0, 100]];
-  } else if (t > -100) {
-    // Triangle restant, côté bas-gauche
-    points = [[0, -t], [0, 100], [t + 100, 100]];
-  } else {
-    points = [[0, 100], [0, 100], [0, 100]];
-  }
+  const t = 100 * (1 - progress);
+  const points = [
+    [0, 0],
+    [t, 0], // bord haut-droit, côté haut
+    [100, 100 - t], // bord haut-droit, côté droit
+    [100, 100],
+    [100 - t, 100], // bord bas-gauche, côté bas
+    [0, t], // bord bas-gauche, côté gauche
+  ];
 
   return `polygon(${points.map(([x, y]) => `${x}% ${y}%`).join(", ")})`;
 }
