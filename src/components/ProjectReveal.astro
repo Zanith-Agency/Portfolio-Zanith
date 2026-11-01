@@ -1,0 +1,230 @@
+---
+// Introduction immersive des pages projets : deux univers superposés
+// (PROJECT SHOWCASE / BEHIND THE SCENES) et une poignée qui déplace la
+// frontière horizontale entre les deux.
+//
+// Utilisation :
+//   <ProjectReveal>
+//     <Fragment slot="showcase">…scène du résultat final…</Fragment>
+//     <Fragment slot="behind">…scène des coulisses…</Fragment>
+//   </ProjectReveal>
+//
+// Les deux scènes occupent TOUTE la surface, chacune avec sa propre
+// composition : on ne les redimensionne jamais, on choisit seulement
+// quelle partie de chacune est visible (clip-path, voir plus bas). La
+// logique de glissement est dans src/scripts/project-reveal.js.
+
+interface Props {
+  hint?: string;
+  showcaseLabel?: string;
+  behindLabel?: string;
+}
+
+const {
+  hint = "Drag to explore",
+  showcaseLabel = "Project showcase",
+  behindLabel = "Behind the scenes",
+} = Astro.props;
+---
+
+<section class="project-reveal" data-project-reveal>
+  <div class="project-reveal-scene project-reveal-scene--showcase" aria-label={showcaseLabel}>
+    <slot name="showcase" />
+  </div>
+
+  <div class="project-reveal-scene project-reveal-scene--behind" aria-label={behindLabel}>
+    <slot name="behind" />
+  </div>
+
+  <!-- Frontière + étiquettes de part et d'autre : purement visuelles -->
+  <div class="project-reveal-line" aria-hidden="true"></div>
+  <span class="project-reveal-tag project-reveal-tag--above" aria-hidden="true">{showcaseLabel}</span>
+  <span class="project-reveal-tag project-reveal-tag--below" aria-hidden="true">{behindLabel}</span>
+
+  <!--
+    La poignée. role="slider" + tabindex : utilisable aussi au clavier
+    (flèches haut/bas). data-lenis-prevent : le défilement fluide du
+    site ne doit pas intercepter le glissement.
+  -->
+  <div
+    class="project-reveal-handle"
+    role="slider"
+    tabindex="0"
+    aria-orientation="vertical"
+    aria-label={`Révéler ${behindLabel}`}
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-valuenow="0"
+    data-reveal-handle
+    data-lenis-prevent
+  >
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7 10 L12 5 L17 10" />
+      <path d="M7 14 L12 19 L17 14" />
+    </svg>
+    <span class="project-reveal-hint">{hint}</span>
+  </div>
+</section>
+
+<script>
+  import { initProjectReveal } from "../scripts/project-reveal";
+  initProjectReveal();
+</script>
+
+<style>
+  .project-reveal {
+    /* --split : hauteur (px) de la frontière depuis le haut.
+       100% = coulisses totalement cachées. Posé en JS. */
+    --split: 100%;
+    --handle-y: calc(100% - 52px);
+    --reveal-ui: var(--color-cream);
+
+    position: relative;
+    height: 100vh;
+    height: 100svh;
+    min-height: 520px;
+    overflow: hidden;
+    background: var(--color-night);
+    isolation: isolate;
+  }
+
+  .project-reveal-scene {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  /* Les coulisses sont posées PAR-DESSUS la vitrine, et découpées par
+     le haut : tout ce qui est au-dessus de la frontière est coupé,
+     donc on y voit la vitrine ; en dessous, on voit les coulisses.
+     Aucune transparence, aucun redimensionnement. */
+  .project-reveal-scene--behind {
+    z-index: 1;
+    clip-path: inset(var(--split) 0 0 0);
+  }
+
+  .project-reveal-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: var(--split);
+    z-index: 2;
+    height: 1px;
+    transform: translateY(-0.5px);
+    background: color-mix(in srgb, var(--reveal-ui) 55%, transparent);
+    box-shadow: 0 0 12px rgba(8, 8, 14, 0.35);
+    pointer-events: none;
+  }
+
+  .project-reveal-tag {
+    position: absolute;
+    left: var(--container-padding);
+    top: var(--split);
+    z-index: 2;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--reveal-ui);
+    opacity: 0.7;
+    pointer-events: none;
+    transition: opacity 0.3s var(--ease-default);
+  }
+  .project-reveal-tag--above {
+    transform: translateY(calc(-100% - 0.7rem));
+  }
+  .project-reveal-tag--below {
+    transform: translateY(0.7rem);
+  }
+  /* Une étiquette n'a de sens que si sa zone est visible */
+  .project-reveal.is-at-bottom .project-reveal-tag--below,
+  .project-reveal.is-near-top .project-reveal-tag {
+    opacity: 0;
+  }
+
+  .project-reveal-handle {
+    position: absolute;
+    left: 50%;
+    top: var(--handle-y);
+    z-index: 3;
+    width: 52px;
+    height: 52px;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--reveal-ui) 60%, transparent);
+    background: color-mix(in srgb, var(--color-night) 45%, transparent);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    color: var(--reveal-ui);
+    cursor: grab;
+    /* Glisser la poignée au doigt ne doit PAS faire défiler la page —
+       uniquement sur la poignée : partout ailleurs, le défilement
+       reste normal. */
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    transition:
+      background-color 0.3s var(--ease-default),
+      border-color 0.3s var(--ease-default),
+      scale 0.3s var(--ease-default);
+  }
+
+  .project-reveal-handle:hover,
+  .project-reveal.is-dragging .project-reveal-handle {
+    background: color-mix(in srgb, var(--color-night) 70%, transparent);
+    border-color: var(--reveal-ui);
+    scale: 1.08;
+  }
+
+  .project-reveal-handle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+  }
+
+  .project-reveal.is-dragging,
+  .project-reveal.is-dragging * {
+    cursor: grabbing;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .project-reveal-handle svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+  }
+
+  .project-reveal-hint {
+    position: absolute;
+    left: calc(100% + 1rem);
+    top: 50%;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--reveal-ui);
+    opacity: 0.85;
+    pointer-events: none;
+    transition: opacity 0.5s var(--ease-default);
+  }
+  /* L'indication a fait son travail dès le premier glissement */
+  .project-reveal.has-interacted .project-reveal-hint {
+    opacity: 0;
+  }
+
+  @media (max-width: 700px) {
+    .project-reveal-tag {
+      font-size: 0.6rem;
+    }
+  }
+</style>
