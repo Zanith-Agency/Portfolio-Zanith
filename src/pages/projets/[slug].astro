@@ -121,6 +121,29 @@ const sections = [
 ---
 
 <Layout title={`${project.title} — Zanith`} pageLabel="Projets" headerVariant="dark">
+  <!--
+    Arrivée depuis l'accueil (ou le projet précédent) : si la page
+    d'avant a laissé le marqueur de transition, on ferme l'introduction
+    AVANT qu'elle s'affiche, pour qu'elle puisse ensuite s'ouvrir en
+    diagonale (voir page-transition.js). Script volontairement inline
+    et synchrone : un module arriverait trop tard et l'introduction
+    clignoterait.
+  -->
+  <script is:inline>
+    try {
+      if (sessionStorage.getItem("zanith:transition") === "diagonal") {
+        sessionStorage.removeItem("zanith:transition");
+        if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          document.documentElement.classList.add("is-arriving");
+          // Filet de sécurité : la page ne reste jamais fermée.
+          setTimeout(function () {
+            document.documentElement.classList.remove("is-arriving");
+          }, 4000);
+        }
+      }
+    } catch (e) {}
+  </script>
+
   <div class="project-page" style={themeStyle}>
     <!--
       PARTIE 1 — Introduction immersive : scènes sur mesure si le projet
@@ -135,14 +158,14 @@ const sections = [
 
         {sections.map((section) => (
           <section class={`case-section case-section--${section.id}`} aria-labelledby={`case-${section.id}`}>
-            <header class="case-section-head">
+            <header class="case-section-head" data-case-reveal>
               <span class="case-section-label">
                 {section.number} — {section.label}
               </span>
               <h2 class="case-section-title" id={`case-${section.id}`}>{section.title}</h2>
             </header>
 
-            <div class="case-section-body">
+            <div class="case-section-body" data-case-reveal>
               {section.body.map((paragraph) => <p>{paragraph}</p>)}
 
               {section.id === "overview" && facts.length > 0 && (
@@ -170,7 +193,7 @@ const sections = [
             {section.id === "development" && gallery.length > 0 && (
               <div class="case-gallery">
                 {gallery.map((url) => (
-                  <figure class="case-gallery-item">
+                  <figure class="case-gallery-item" data-case-reveal>
                     <img src={url} alt="" loading="lazy" decoding="async" />
                   </figure>
                 ))}
@@ -183,7 +206,7 @@ const sections = [
 
     <!-- Transition vers le projet suivant -->
     {nextProject && (
-      <a href={`/projets/${nextProject.slug}`} class="next-project" data-header-theme="dark">
+      <a href={`/projets/${nextProject.slug}`} class="next-project" data-header-theme="dark" data-diagonal-link>
         <img class="next-project-media" src={nextProject.image_path} alt="" loading="lazy" decoding="async" />
         <div class="next-project-shade" aria-hidden="true"></div>
         <div class="next-project-content">
@@ -201,10 +224,45 @@ const sections = [
 
 <script>
   import { initHeaderTheme } from "../../scripts/header-theme";
+  import { initCaseReveal } from "../../scripts/case-reveal";
+  import { playDiagonalArrival, initDiagonalLinks } from "../../scripts/page-transition";
+
+  playDiagonalArrival(document.querySelector("[data-project-reveal]"));
   initHeaderTheme();
+  initCaseReveal();
+  initDiagonalLinks();
 </script>
 
 <style>
+  /* --- Arrivée diagonale (voir le script inline en haut de page) ---
+     L'introduction reste réduite à sa diagonale centrale jusqu'à ce
+     que page-transition.js l'ouvre. Fond sombre pendant ce temps, dans
+     la continuité de l'accueil. */
+  :global(html.is-arriving body) {
+    background: var(--color-night);
+  }
+  :global(html.is-arriving [data-project-reveal]) {
+    clip-path: polygon(0% 0%, 0% 0%, 100% 100%, 100% 100%, 100% 100%, 0% 0%);
+  }
+
+  /* --- Apparition des sections au défilement (case-reveal.js) ---
+     Masquage seulement si le script tourne. */
+  :global(html.has-case-reveal) [data-case-reveal] {
+    opacity: 0;
+    transform: translateY(28px);
+    transition:
+      opacity 0.9s var(--ease-default),
+      transform 0.9s var(--ease-default);
+  }
+  :global(html.has-case-reveal) [data-case-reveal].is-revealed {
+    opacity: 1;
+    transform: none;
+  }
+  /* Le texte suit le titre d'un court instant */
+  :global(html.has-case-reveal) .case-section-body[data-case-reveal] {
+    transition-delay: 0.12s;
+  }
+
   /* La couleur d'accent du projet (si renseignée) remplace celle du
      site sur toute la page : repères, numéros, liens… */
   .project-page {

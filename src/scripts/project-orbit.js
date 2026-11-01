@@ -24,6 +24,7 @@
 //    un ; il se referme ensuite en diagonale, puis on navigue.
 
 import { gsap } from "gsap";
+import { diagonalClipPath, markDiagonalTransition } from "./page-transition";
 
 const START_ANGLE = -90; // 12 heures : point d'entrée de tous les projets
 const CRUISE_SPEED = 5; // degrés/s — rotation continue (inchangée)
@@ -43,30 +44,6 @@ const WIPE_DURATION = 0.75; // s pour la fermeture diagonale finale
 // Ramène un angle dans [0, 360) : écart « vers l'avant », dans le sens
 // de rotation de la roue.
 const forwardGap = (deg) => ((deg % 360) + 360) % 360;
-
-// Fermeture diagonale : le coin supérieur droit et le coin inférieur
-// gauche se referment l'un vers l'autre et se rejoignent au centre de
-// l'image. Deux bords parallèles à la diagonale haut-gauche →
-// bas-droite (x - y = ±t, en % de la vignette) avancent à la même
-// vitesse vers le milieu :
-//   t = 100 → rien n'est effacé (les bords touchent les deux coins)
-//   t = 50  → il reste une bande diagonale centrale
-//   t = 0   → les deux bords se rejoignent sur la diagonale centrale
-// La partie visible, { -t ≤ x - y ≤ t }, est découpée avec clip-path.
-// Toujours 6 points, donc l'interpolation reste parfaitement continue.
-function diagonalClipPath(progress) {
-  const t = 100 * (1 - progress);
-  const points = [
-    [0, 0],
-    [t, 0], // bord haut-droit, côté haut
-    [100, 100 - t], // bord haut-droit, côté droit
-    [100, 100],
-    [100 - t, 100], // bord bas-gauche, côté bas
-    [0, t], // bord bas-gauche, côté gauche
-  ];
-
-  return `polygon(${points.map(([x, y]) => `${x}% ${y}%`).join(", ")})`;
-}
 
 export function initProjectOrbit() {
   const track = document.querySelector(".project-orbit");
@@ -192,6 +169,8 @@ export function initProjectOrbit() {
 
     const finish = () => {
       diagonalClose(selected).then(() => {
+        // La page projet s'ouvrira avec le mouvement inverse
+        markDiagonalTransition();
         window.location.href = href;
       });
     };
@@ -235,6 +214,13 @@ export function initProjectOrbit() {
       });
     });
   };
+
+  // Retour arrière depuis la page projet : le navigateur peut restaurer
+  // l'accueil tel qu'on l'a quitté (cercle vide, image refermée). On le
+  // recharge pour retrouver la roulette complète.
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted && phase === "closing") window.location.reload();
+  });
 
   // --- Interactions ---
   let hoveredCount = 0;
