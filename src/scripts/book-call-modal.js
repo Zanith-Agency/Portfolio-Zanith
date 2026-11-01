@@ -1,42 +1,71 @@
-// Cercle "Book un rendez-vous" : bascule légèrement comme une assiette
-// vers le curseur, quel que soit le côté d'où il approche (haut, bas,
-// gauche, droite). L'anneau qui se remplit au survol est géré en pur
-// CSS (:hover) ; ce script ne s'occupe que de l'inclinaison 3D.
-//
-// Rappel des maths CSS (vérifié) : avec X à droite, Y vers le bas et Z
-// vers le spectateur, rotateX(a) positif éloigne le HAUT de l'élément
-// (vers l'écran) — donc pour qu'il se rapproche du spectateur quand la
-// souris est AU-DESSUS (dy négatif), il faut rotateX = dy * maxTilt
-// (sans signe inversé). Symétriquement, rotateY = -dx * maxTilt pour
-// que le bord droit se rapproche quand la souris est à droite.
+// Modale "Book un rendez-vous" : tombe depuis le haut à l'ouverture
+// ("comme une lettre qui tombe", avec un léger rebond à l'arrivée),
+// ressort par le bas à la fermeture plutôt que de remonter par où elle
+// est venue. Le contenu interne (choix du parcours + formulaire) est
+// géré séparément par contact-form.js — ce script ne s'occupe que de
+// l'apparition/disparition du panneau.
 
-export function initBookCtaTilt() {
-  const button = document.querySelector(".book-cta");
-  if (!button) return; // pas la page contact
+import { gsap } from "gsap";
+
+export function initBookCallModal() {
+  const modal = document.querySelector("[data-book-modal]");
+  const panel = modal?.querySelector(".book-modal-panel");
+  const backdrop = modal?.querySelector("[data-book-modal-backdrop]");
+  const closeBtn = modal?.querySelector("[data-book-modal-close]");
+  const openTriggers = document.querySelectorAll("[data-open-book-call]");
+
+  if (!modal || !panel || openTriggers.length === 0) return; // pas la page contact
 
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const noHover = window.matchMedia("(hover: none)").matches;
-  if (reduced || noHover) return; // l'anneau au survol (CSS) suffit déjà
+  let isOpen = false;
+  let lastFocused = null;
 
-  const maxTilt = 14; // degrés, amplitude max de l'inclinaison
+  const open = () => {
+    if (isOpen) return;
+    isOpen = true;
+    lastFocused = document.activeElement;
 
-  const handleMove = (event) => {
-    const rect = button.getBoundingClientRect();
-    const dx = (event.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
-    const dy = (event.clientY - (rect.top + rect.height / 2)) / (rect.height / 2);
-    const clampedX = Math.max(-1, Math.min(1, dx));
-    const clampedY = Math.max(-1, Math.min(1, dy));
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
 
-    button.style.transition = "transform 0.1s linear";
-    button.style.transform =
-      `perspective(600px) rotateX(${clampedY * maxTilt}deg) rotateY(${-clampedX * maxTilt}deg)`;
+    if (reduced) {
+      gsap.set(panel, { yPercent: 0 });
+    } else {
+      // Repart toujours du haut, même si une fermeture précédente a
+      // laissé le panneau en bas de l'écran (voir close()) — sinon un
+      // deuxième "Book un rendez-vous" remonterait depuis le bas au
+      // lieu de retomber d'en haut.
+      gsap.set(panel, { yPercent: -130 });
+      gsap.to(panel, { yPercent: 0, duration: 0.8, ease: "back.out(1.4)" });
+    }
+
+    // Premier champ interactif du panneau (l'option "Nouveau site" au
+    // tout premier affichage).
+    panel.querySelector("button, input")?.focus();
   };
 
-  const reset = () => {
-    button.style.transition = "transform 0.5s var(--ease-default, ease)";
-    button.style.transform = "perspective(600px) rotateX(0deg) rotateY(0deg)";
+  const close = () => {
+    if (!isOpen) return;
+    isOpen = false;
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+
+    const finish = () => modal.classList.remove("is-open");
+
+    if (reduced) {
+      finish();
+    } else {
+      gsap.to(panel, { yPercent: 130, duration: 0.5, ease: "power2.in", onComplete: finish });
+    }
+
+    lastFocused?.focus();
   };
 
-  button.addEventListener("mousemove", handleMove);
-  button.addEventListener("mouseleave", reset);
+  openTriggers.forEach((trigger) => trigger.addEventListener("click", open));
+  closeBtn?.addEventListener("click", close);
+  backdrop?.addEventListener("click", close);
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && isOpen) close();
+  });
 }
