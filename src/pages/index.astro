@@ -74,7 +74,27 @@ const projects = await getProjects();
     width: 170px;
     display: block;
     text-decoration: none;
-    /* le transform de positionnement (translate + coordonnées orbite) est posé en JS à chaque frame */
+    z-index: 2;
+    /* Le cercle démarre vide : chaque projet est invisible et non
+       cliquable tant qu'il n'est pas entré dans la roulette (classe
+       .is-revealed posée par project-orbit.js). Le transform de
+       positionnement et l'opacité sont ensuite gérés en JS à chaque
+       frame. */
+    opacity: 0;
+    pointer-events: none;
+  }
+  .project-orbit-item.is-revealed {
+    pointer-events: auto;
+  }
+
+  /* Pendant la fermeture : plus aucun clic possible, et on masque les
+     légendes/indices qui resteraient affichés sous la souris. */
+  .project-orbit.is-closing .project-orbit-item {
+    pointer-events: none;
+  }
+  .project-orbit.is-closing .project-orbit-caption,
+  .project-orbit.is-closing .project-orbit-hint {
+    opacity: 0 !important;
   }
 
   .project-orbit-item-inner {
