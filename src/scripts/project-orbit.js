@@ -282,22 +282,29 @@ export function initProjectOrbit() {
     requestAnimationFrame(tick);
   };
 
-  // La section est cachée pendant l'intro (data-reveal-after-intro) :
-  // on attend qu'elle devienne visible pour lancer le remplissage,
-  // sinon la roulette serait déjà pleine au moment où on la découvre.
-  // Filet de sécurité : on démarre quoi qu'il arrive après 6 s.
+  // Pendant l'intro, la section n'est pas transparente : intro.js la
+  // pousse SOUS l'écran (yPercent: 100) pendant que le header plein
+  // écran joue son animation, puis la fait remonter. On attend donc que
+  // le cercle soit réellement remonté dans l'écran — son centre dans
+  // les trois quarts supérieurs — pour lancer le remplissage. Sinon la
+  // roulette se remplit derrière l'intro et apparaît déjà pleine.
+  // Sans intro (déjà jouée dans la session), le cercle est visible dès
+  // le chargement et le remplissage démarre aussitôt.
+  // Filet de sécurité : on démarre quoi qu'il arrive après 10 s.
   const waitForStage = () =>
     new Promise((resolve) => {
-      const stage = track.closest("[data-reveal-after-intro]");
-      if (!stage) return resolve();
       const startedAt = performance.now();
       const check = () => {
+        const stage = track.closest("[data-reveal-after-intro]") ?? track;
         const style = getComputedStyle(stage);
+        const rect = track.getBoundingClientRect();
+        const center = rect.top + rect.height / 2;
         const visible =
           style.display !== "none" &&
           style.visibility !== "hidden" &&
-          parseFloat(style.opacity) > 0.2;
-        if (visible || performance.now() - startedAt > 6000) resolve();
+          parseFloat(style.opacity) > 0.2 &&
+          center < window.innerHeight * 0.75;
+        if (visible || performance.now() - startedAt > 10000) resolve();
         else requestAnimationFrame(check);
       };
       check();
