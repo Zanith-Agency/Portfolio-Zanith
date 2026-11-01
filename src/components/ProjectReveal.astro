@@ -130,15 +130,22 @@ const {
     text-transform: uppercase;
     letter-spacing: 0.12em;
     color: var(--reveal-ui);
-    opacity: 0.7;
+    /* Petite pastille : l'étiquette reste lisible même quand la
+       frontière passe sur un titre ou une image de la scène. */
+    padding: 0.3rem 0.6rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-night) 55%, transparent);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    opacity: 0.85;
     pointer-events: none;
     transition: opacity 0.3s var(--ease-default);
   }
   .project-reveal-tag--above {
-    transform: translateY(calc(-100% - 0.7rem));
+    transform: translateY(calc(-100% - 0.5rem));
   }
   .project-reveal-tag--below {
-    transform: translateY(0.7rem);
+    transform: translateY(0.5rem);
   }
   /* Une étiquette n'a de sens que si sa zone est visible */
   .project-reveal.is-at-bottom .project-reveal-tag--below,
