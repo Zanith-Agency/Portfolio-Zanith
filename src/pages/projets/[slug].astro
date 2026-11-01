@@ -2,7 +2,9 @@
 import Layout from "../../layouts/Layout.astro";
 import DefaultReveal from "../../components/projects/DefaultReveal.astro";
 import ElMagicoReveal from "../../components/projects/ElMagicoReveal.astro";
-import { getProjectBySlug, getNextProject } from "../../lib/supabase";
+import ElMagicoExtras from "../../components/projects/ElMagicoExtras.astro";
+import ProjectAscent from "../../components/ProjectAscent.astro";
+import { getProjectBySlug, getProjects } from "../../lib/supabase";
 
 export const prerender = false;
 
@@ -13,7 +15,8 @@ if (!project) {
   return Astro.redirect("/");
 }
 
-const nextProject = await getNextProject(project);
+// Tous les projets, pour la navigation Nadir → Zénith en bas de page
+const projects = await getProjects();
 
 // --- Introductions sur mesure ---
 // Clé = le slug du projet dans Supabase. Un projet absent de cette
@@ -22,6 +25,15 @@ const customReveals = {
   "elmagicobarber": ElMagicoReveal,
 };
 const Reveal = customReveals[project.slug as keyof typeof customReveals] ?? DefaultReveal;
+
+// --- Contenus interactifs sur mesure ---
+// Même principe : clé = slug. Le composant reçoit l'identifiant de la
+// section (overview, challenge, process, development, outcome) et
+// affiche son contenu sous le texte de la section concernée.
+const customExtras = {
+  elmagicobarber: ElMagicoExtras,
+};
+const Extras = customExtras[project.slug as keyof typeof customExtras];
 
 // --- Textes saisis dans Supabase ---
 // Une ligne vide entre deux blocs = un nouveau paragraphe.
@@ -158,6 +170,10 @@ const sections = [
 
         {sections.map((section) => (
           <section class={`case-section case-section--${section.id}`} aria-labelledby={`case-${section.id}`}>
+            <!-- Titre + texte : le titre reste collé pendant la lecture du
+                 texte, mais s'arrête avant les blocs pleine largeur
+                 (contenus interactifs, galerie) qui suivent. -->
+            <div class="case-section-main">
             <header class="case-section-head" data-case-reveal>
               <span class="case-section-label">
                 {section.number} — {section.label}
@@ -189,6 +205,9 @@ const sections = [
                 </a>
               )}
             </div>
+            </div>
+
+            {Extras && <Extras section={section.id} />}
 
             {section.id === "development" && gallery.length > 0 && (
               <div class="case-gallery">
@@ -204,21 +223,8 @@ const sections = [
       </div>
     </div>
 
-    <!-- Transition vers le projet suivant -->
-    {nextProject && (
-      <a href={`/projets/${nextProject.slug}`} class="next-project" data-header-theme="dark" data-diagonal-link>
-        <img class="next-project-media" src={nextProject.image_path} alt="" loading="lazy" decoding="async" />
-        <div class="next-project-shade" aria-hidden="true"></div>
-        <div class="next-project-content">
-          <span class="next-project-kicker">Projet suivant</span>
-          <span class="next-project-title">{nextProject.title}</span>
-          <span class="next-project-category">{nextProject.category}</span>
-          <span class="next-project-cta">
-            Découvrir le projet <span aria-hidden="true">→</span>
-          </span>
-        </div>
-      </a>
-    )}
+    <!-- Navigation entre projets : Nadir → Zénith -->
+    <ProjectAscent projects={projects} current={project} />
   </div>
 </Layout>
 
@@ -247,14 +253,14 @@ const sections = [
 
   /* --- Apparition des sections au défilement (case-reveal.js) ---
      Masquage seulement si le script tourne. */
-  :global(html.has-case-reveal) [data-case-reveal] {
+  :global(html.has-case-reveal [data-case-reveal]) {
     opacity: 0;
     transform: translateY(28px);
     transition:
       opacity 0.9s var(--ease-default),
       transform 0.9s var(--ease-default);
   }
-  :global(html.has-case-reveal) [data-case-reveal].is-revealed {
+  :global(html.has-case-reveal [data-case-reveal].is-revealed) {
     opacity: 1;
     transform: none;
   }
@@ -298,13 +304,16 @@ const sections = [
     opacity: 1;
   }
 
-  /* Une section = libellé + titre à gauche, contenu à droite */
+  /* Une section = libellé + titre à gauche, contenu à droite, puis
+     éventuellement des blocs pleine largeur en dessous */
   .case-section {
+    padding: clamp(3.5rem, 8vw, 6.5rem) 0;
+    border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+  }
+  .case-section-main {
     display: grid;
     grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
     gap: 2rem clamp(2rem, 5vw, 5rem);
-    padding: clamp(3.5rem, 8vw, 6.5rem) 0;
-    border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent);
   }
 
   /* Le titre accompagne la lecture des longues sections */
@@ -370,11 +379,10 @@ const sections = [
 
   /* --- 04 : galerie en grand format, sur toute la largeur --- */
   .case-gallery {
-    grid-column: 1 / -1;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: clamp(0.75rem, 1.5vw, 1.25rem);
-    margin-top: clamp(1rem, 3vw, 2rem);
+    margin-top: clamp(2rem, 4vw, 3rem);
   }
   .case-gallery-item {
     margin: 0;
@@ -414,7 +422,7 @@ const sections = [
   }
 
   @media (max-width: 800px) {
-    .case-section {
+    .case-section-main {
       grid-template-columns: minmax(0, 1fr);
     }
     .case-section-head {
@@ -426,82 +434,5 @@ const sections = [
     .case-gallery {
       grid-template-columns: minmax(0, 1fr);
     }
-  }
-
-  /* ============ Projet suivant ============ */
-
-  .next-project {
-    position: relative;
-    display: flex;
-    align-items: flex-end;
-    min-height: 100vh;
-    min-height: 100svh;
-    overflow: hidden;
-    background: var(--color-night);
-    color: var(--color-cream);
-    text-decoration: none;
-  }
-
-  .next-project-media {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 1.2s var(--ease-default);
-  }
-  .next-project:hover .next-project-media {
-    transform: scale(1.04);
-  }
-
-  .next-project-shade {
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(to bottom, rgba(8, 8, 14, 0.55), transparent 25%),
-      linear-gradient(to top, rgba(8, 8, 14, 0.85), rgba(8, 8, 14, 0.2) 70%);
-  }
-
-  .next-project-content {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding: clamp(3rem, 8vw, 6rem) var(--container-padding);
-  }
-
-  .next-project-kicker,
-  .next-project-category,
-  .next-project-cta {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-  }
-  .next-project-kicker {
-    color: var(--accent);
-  }
-  .next-project-category {
-    opacity: 0.7;
-  }
-
-  .next-project-title {
-    font-weight: 800;
-    font-size: clamp(2.5rem, 8vw, 6.5rem);
-    line-height: 0.95;
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
-  }
-
-  .next-project-cta {
-    margin-top: 1rem;
-    opacity: 0.85;
-  }
-  .next-project-cta span {
-    display: inline-block;
-    transition: transform 0.4s var(--ease-default);
-  }
-  .next-project:hover .next-project-cta span {
-    transform: translateX(6px);
   }
 </style>

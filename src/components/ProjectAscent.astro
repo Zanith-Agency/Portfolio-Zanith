@@ -1,0 +1,466 @@
+---
+// Navigation entre projets « Nadir → Zénith ».
+//
+// Les projets sont empilés comme des étages, dans l'ordre de
+// sort_order : le premier tout en bas (Nadir, 0 m), le dernier tout en
+// haut (Zénith, 8 848 m — l'Everest, clin d'œil à « Reach the Peak »).
+// Le visiteur monte et descend d'étage en étage, l'altitude défile, et
+// il ouvre le projet choisi avec la transition diagonale.
+//
+// Sans JavaScript, c'est simplement une liste de liens.
+// Logique : src/scripts/project-ascent.js
+import type { Project } from "../lib/supabase";
+
+interface Props {
+  projects: Project[];
+  current: Project;
+}
+
+const { projects, current } = Astro.props;
+const count = projects.length;
+const PEAK = 8848;
+
+const currentIndex = Math.max(0, projects.findIndex((project) => project.id === current.id));
+const altitude = (index: number) => (count > 1 ? Math.round((index / (count - 1)) * PEAK) : 0);
+const formatAltitude = (meters: number) => `${meters.toLocaleString("fr-FR")} m`;
+const position = (index: number) => (count > 1 ? index / (count - 1) : 0);
+
+// Au départ, on regarde l'étage du dessus (le projet suivant). Depuis
+// le sommet, on regarde celui du dessous.
+const initial = currentIndex < count - 1 ? currentIndex + 1 : Math.max(0, currentIndex - 1);
+const initialProject = projects[initial];
+---
+
+{count > 1 && (
+  <section
+    class="ascent"
+    data-ascent
+    data-current={currentIndex}
+    data-initial={initial}
+    data-header-theme="dark"
+    aria-labelledby="ascent-title"
+  >
+    <div class="ascent-head">
+      <span class="ascent-kicker">Nadir → Zénith</span>
+      <h2 class="ascent-title" id="ascent-title">Continuer l'ascension</h2>
+    </div>
+
+    <div class="ascent-body">
+      <!-- Jauge d'altitude -->
+      <div class="ascent-gauge" aria-hidden="true">
+        <span class="ascent-gauge-end">
+          Zénith
+          <small>{formatAltitude(PEAK)}</small>
+        </span>
+        <div class="ascent-gauge-track">
+          {projects.map((_, index) => (
+            <span
+              class:list={["ascent-tick", { "is-current": index === currentIndex }]}
+              style={`--pos: ${position(index)}`}
+            ></span>
+          ))}
+          <span class="ascent-gauge-cursor" data-ascent-cursor style={`--pos: ${position(initial)}`}></span>
+        </div>
+        <span class="ascent-gauge-end">
+          Nadir
+          <small>0 m</small>
+        </span>
+      </div>
+
+      <!-- Les étages -->
+      <div class="ascent-shaft" data-ascent-shaft>
+        <ol class="ascent-floors" data-ascent-floors>
+          {projects.map((project, index) => (
+            <li
+              class:list={["ascent-floor", { "is-focus": index === initial }]}
+              data-ascent-floor={index}
+              data-altitude={altitude(index)}
+              data-title={project.title}
+            >
+              <a
+                href={`/projets/${project.slug}`}
+                class="ascent-card"
+                aria-current={index === currentIndex ? "page" : undefined}
+              >
+                <span class="ascent-card-media">
+                  <img src={project.image_path} alt="" loading="lazy" decoding="async" />
+                </span>
+                <span class="ascent-card-info">
+                  <span class="ascent-card-alt">Alt. {formatAltitude(altitude(index))}</span>
+                  <span class="ascent-card-title">{project.title}</span>
+                  <span class="ascent-card-category">{project.category}</span>
+                </span>
+                {index === currentIndex && <span class="ascent-card-here">Vous êtes ici</span>}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <!-- Altitude et commandes -->
+      <div class="ascent-panel">
+        <span class="ascent-altitude-label">Altitude</span>
+        <span class="ascent-altitude" data-ascent-altitude>{formatAltitude(altitude(initial))}</span>
+
+        <div class="ascent-controls">
+          <button type="button" data-ascent-step="1" disabled={initial >= count - 1}>
+            <span aria-hidden="true">↑</span> Monter
+          </button>
+          <button type="button" data-ascent-step="-1" disabled={initial <= 0}>
+            <span aria-hidden="true">↓</span> Descendre
+          </button>
+        </div>
+
+        <a class="ascent-open" href={`/projets/${initialProject.slug}`} data-ascent-open>
+          <span data-ascent-open-label>Découvrir {initialProject.title}</span>
+          <span class="ascent-open-arrow" aria-hidden="true">→</span>
+        </a>
+        <p class="visually-hidden" aria-live="polite" data-ascent-status></p>
+      </div>
+    </div>
+  </section>
+)}
+
+<script>
+  import { initProjectAscent } from "../scripts/project-ascent";
+  initProjectAscent();
+</script>
+
+<style>
+  .ascent {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(4.5rem, 9vw, 7rem) var(--container-padding) clamp(3.5rem, 7vw, 5.5rem);
+    background: var(--color-night);
+    color: var(--color-cream);
+  }
+
+  .ascent-head {
+    max-width: 1240px;
+    margin: 0 auto clamp(2rem, 4vw, 3rem);
+  }
+
+  .ascent-kicker {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+  }
+
+  .ascent-title {
+    margin: 0;
+    font-weight: 800;
+    font-size: clamp(2.2rem, 6vw, 4.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+
+  .ascent-body {
+    display: grid;
+    grid-template-columns: 5.5rem minmax(0, 1fr) minmax(0, 18rem);
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    align-items: stretch;
+    max-width: 1240px;
+    margin: 0 auto;
+  }
+
+  /* ---------- Jauge ---------- */
+  .ascent-gauge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    text-align: center;
+  }
+  .ascent-gauge-end small {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.6rem;
+    opacity: 0.5;
+  }
+
+  .ascent-gauge-track {
+    position: relative;
+    flex: 1;
+    width: 1px;
+    background: color-mix(in srgb, var(--color-cream) 22%, transparent);
+  }
+
+  .ascent-tick {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--pos) * 100%);
+    width: 9px;
+    height: 1px;
+    transform: translate(-50%, 50%);
+    background: color-mix(in srgb, var(--color-cream) 60%, transparent);
+  }
+  .ascent-tick.is-current {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-cream);
+  }
+
+  .ascent-gauge-cursor {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--pos) * 100%);
+    width: 17px;
+    height: 17px;
+    transform: translate(-50%, 50%);
+    border: 1.5px solid var(--accent);
+    border-radius: 50%;
+    transition: bottom 0.9s var(--ease-default);
+  }
+
+  /* ---------- Étages ---------- */
+  .ascent-shaft {
+    position: relative;
+  }
+
+  .ascent-floors {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column-reverse; /* le premier projet en bas */
+    gap: 1.5rem;
+  }
+
+  .ascent-card {
+    position: relative;
+    display: block;
+    width: min(100%, 34rem);
+    margin: 0 auto;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .ascent-card-media {
+    display: block;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-radius: 6px;
+    border: 1px solid color-mix(in srgb, var(--color-cream) 16%, transparent);
+  }
+  .ascent-card-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 1s var(--ease-default);
+  }
+
+  .ascent-card-info {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.9rem;
+    padding-top: 0.9rem;
+  }
+  .ascent-card-alt {
+    width: 100%;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+  }
+  .ascent-card-title {
+    font-weight: 700;
+    font-size: clamp(1.3rem, 2.4vw, 1.8rem);
+  }
+  .ascent-card-category {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.6;
+  }
+
+  .ascent-card-here {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    background: var(--color-cream);
+    color: var(--color-night);
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* ---------- Panneau ---------- */
+  .ascent-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .ascent-altitude-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    opacity: 0.55;
+  }
+
+  .ascent-altitude {
+    font-weight: 800;
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .ascent-controls {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+  }
+  .ascent-controls button {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid color-mix(in srgb, var(--color-cream) 30%, transparent);
+    border-radius: 999px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition:
+      border-color 0.3s var(--ease-default),
+      opacity 0.3s var(--ease-default);
+  }
+  .ascent-controls button:hover:not(:disabled) {
+    border-color: var(--accent);
+  }
+  .ascent-controls button:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+
+  .ascent-open {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.95rem 1.3rem;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--color-night);
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity 0.3s var(--ease-default);
+  }
+  .ascent-open-arrow {
+    transition: transform 0.4s var(--ease-default);
+  }
+  .ascent-open:hover .ascent-open-arrow {
+    transform: translateX(4px);
+  }
+  .ascent-open.is-disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .ascent-controls button:focus-visible,
+  .ascent-open:focus-visible,
+  .ascent-card:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  /* ---------- Version animée (JavaScript actif) ----------
+     Les étages deviennent une cage d'ascenseur : une fenêtre fixe,
+     l'étage regardé au centre, ses voisins qui dépassent au-dessus et
+     en dessous. */
+  .ascent.is-ready .ascent-shaft {
+    height: clamp(26rem, 72svh, 46rem);
+    overflow: hidden;
+    /* clip : contrairement à hidden, le navigateur ne peut pas faire
+       défiler la fenêtre tout seul (focus clavier sur un étage caché),
+       ce qui décalerait le centrage. */
+    overflow: clip;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
+  }
+  .ascent.is-ready .ascent-floors {
+    transition: transform 0.9s var(--ease-default);
+    will-change: transform;
+  }
+  .ascent.is-ready .ascent-floor {
+    transition:
+      opacity 0.9s var(--ease-default),
+      transform 0.9s var(--ease-default);
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+  .ascent.is-ready .ascent-floor.is-near {
+    opacity: 0.45;
+  }
+  .ascent.is-ready .ascent-floor.is-focus {
+    opacity: 1;
+    transform: none;
+  }
+  .ascent.is-ready .ascent-floor.is-focus .ascent-card:hover img {
+    transform: scale(1.04);
+  }
+
+  /* ---------- Mobile ---------- */
+  @media (max-width: 800px) {
+    .ascent-body {
+      grid-template-columns: 2.75rem minmax(0, 1fr);
+      gap: 1rem 1.25rem;
+    }
+    .ascent-gauge {
+      font-size: 0.55rem;
+      letter-spacing: 0.06em;
+    }
+    .ascent-gauge-end small {
+      display: none;
+    }
+    .ascent-panel {
+      grid-column: 1 / -1;
+    }
+    .ascent.is-ready .ascent-shaft {
+      height: clamp(22rem, 62svh, 34rem);
+    }
+    .ascent-floors {
+      gap: 1rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ascent.is-ready .ascent-floors,
+    .ascent.is-ready .ascent-floor,
+    .ascent-gauge-cursor {
+      transition: none;
+    }
+  }
+</style>

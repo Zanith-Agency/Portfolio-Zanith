@@ -1,0 +1,662 @@
+---
+// Contenus interactifs propres au projet El Mágico Barber, insérés dans
+// l'étude de cas (voir customExtras dans src/pages/projets/[slug].astro) :
+//   - section "process"     → l'atelier typo & couleurs
+//   - section "development" → les captures annotées
+// Pour toute autre section, le composant n'affiche rien.
+import "@fontsource/cormorant-garamond/400.css";
+import "@fontsource/cormorant-garamond/400-italic.css";
+import "@fontsource/cormorant-garamond/600.css";
+import "@fontsource/work-sans/400.css";
+import "@fontsource/work-sans/600.css";
+
+interface Props {
+  section: string;
+}
+
+const { section } = Astro.props;
+
+const palette = [
+  { name: "Anthracite", hex: "#232323", use: "Fond" },
+  { name: "Doré", hex: "#C19A6B", use: "Accents" },
+  { name: "Crème", hex: "#F3ECE0", use: "Texte secondaire" },
+  { name: "Blanc", hex: "#FFFFFF", use: "Titres et texte" },
+];
+
+const styles = [
+  { id: "regular", label: "Regular" },
+  { id: "italic", label: "Italique" },
+  { id: "semibold", label: "SemiBold" },
+];
+
+// Captures annotées : positions des points en % de l'image.
+const captures = [
+  {
+    id: "accueil",
+    label: "Accueil",
+    image: "/projects/elmagico/galerie-01-accueil.webp",
+    width: 2000,
+    height: 1029,
+    alt: "Page d'accueil du site El Mágico Barber",
+    notes: [
+      {
+        x: 77.5,
+        y: 18.5,
+        title: "L'heure de Bruxelles, en direct",
+        text: "À côté du menu, une petite horloge affiche l'heure de Bruxelles en temps réel. Un détail vivant, qui ancre la marque dans sa ville.",
+      },
+      {
+        x: 90.5,
+        y: 18.5,
+        title: "Un bouton toujours à portée",
+        text: "Le bouton Services, cerclé de doré avec sa flèche dans une pastille pleine, reste visible en haut de chaque page : le visiteur accède aux prestations en un geste.",
+      },
+      {
+        x: 4.5,
+        y: 48,
+        title: "Deux voix pour un titre",
+        text: "Une ligne droite en blanc, une ligne en italique dorée. Le contraste du Cormorant Garamond donne au titre l'élégance d'une enseigne.",
+      },
+      {
+        x: 81,
+        y: 40,
+        title: "Une carte en verre",
+        text: "Le diaporama de photos est posé sur une surface translucide et floutée : on garde le salon visible derrière, sans gêner la lecture. Le compteur 03 / 04 indique où l'on en est.",
+      },
+      {
+        x: 45,
+        y: 78,
+        title: "Le salon en toile de fond",
+        text: "Une vraie photo du salon, assombrie par un voile, sert de décor : le visiteur entre dans le lieu avant même de réserver.",
+      },
+    ],
+  },
+  {
+    id: "tarifs",
+    label: "Tarifs",
+    image: "/projects/elmagico/galerie-05-tarifs.webp",
+    width: 1400,
+    height: 721,
+    alt: "Grille tarifaire du site El Mágico Barber",
+    notes: [
+      {
+        x: 34.5,
+        y: 21.8,
+        title: "D'abord, le salon",
+        text: "Deux onglets séparent les salons d'Uccle et du centre-ville. L'onglet actif passe en doré pour que l'on sache toujours où l'on se trouve.",
+      },
+      {
+        x: 30,
+        y: 35,
+        title: "Puis, le barbier",
+        text: "Les tarifs varient d'un professionnel à l'autre. Le visiteur choisit son barbier et la grille se met à jour, sans changer de page.",
+      },
+      {
+        x: 23,
+        y: 46.7,
+        title: "Trois familles de prestations",
+        text: "Coupes et barbes, soins et détente, techniques : les prestations sont rangées en colonnes, comme sur la carte d'un restaurant.",
+      },
+      {
+        x: 77,
+        y: 70,
+        title: "Une carte claire sur fond sombre",
+        text: "La grille est posée sur un fond crème au milieu de la page anthracite : elle se détache et se lit comme un vrai menu.",
+      },
+    ],
+  },
+];
+---
+
+{section === "process" && (
+  <div class="case-extra elm-lab" data-elm-lab data-case-reveal>
+    <div class="extra-head">
+      <span class="extra-kicker">Atelier</span>
+      <h3 class="extra-title">Essayez la typographie et la palette</h3>
+    </div>
+
+    <div class="lab-grid">
+      <div class="lab-controls">
+        <label class="lab-field">
+          <span>Votre texte</span>
+          <input
+            type="text"
+            value="Une coupe nette. Un vrai barbier."
+            maxlength="60"
+            autocomplete="off"
+            spellcheck="false"
+            data-lab-input
+          />
+        </label>
+
+        <div class="lab-styles" role="group" aria-label="Style du titre">
+          {styles.map((style, index) => (
+            <button type="button" data-lab-style={style.id} aria-pressed={index === 1 ? "true" : "false"}>
+              {style.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div class="lab-previews">
+        <figure class="lab-specimen">
+          <figcaption>Cormorant Garamond — titres</figcaption>
+          <p class="lab-serif is-italic" data-lab-serif>Une coupe nette. Un vrai barbier.</p>
+        </figure>
+        <figure class="lab-specimen">
+          <figcaption>Work Sans — texte courant</figcaption>
+          <p class="lab-sans" data-lab-sans>Une coupe nette. Un vrai barbier.</p>
+        </figure>
+      </div>
+    </div>
+
+    <ul class="lab-palette" aria-label="Palette — cliquez pour copier un code couleur">
+      {palette.map((color) => (
+        <li>
+          <button type="button" class="lab-swatch" data-lab-copy={color.hex}>
+            <span class="lab-swatch-color" style={`background: ${color.hex}`}></span>
+            <span class="lab-swatch-text">
+              <strong>{color.name}</strong>
+              <span class="lab-swatch-hex">{color.hex}</span>
+              <span class="lab-swatch-use">{color.use}</span>
+            </span>
+            <span class="lab-swatch-action" data-lab-action>Copier</span>
+          </button>
+        </li>
+      ))}
+    </ul>
+    <p class="visually-hidden" aria-live="polite" data-lab-status></p>
+  </div>
+)}
+
+{section === "development" && (
+  <div class="case-extra elm-notes" data-elm-notes data-case-reveal>
+    <div class="extra-head extra-head--row">
+      <div>
+        <span class="extra-kicker">Captures annotées</span>
+        <h3 class="extra-title">Les choix de design, point par point</h3>
+      </div>
+      <div class="notes-tabs" role="tablist" aria-label="Capture affichée">
+        {captures.map((capture, index) => (
+          <button
+            type="button"
+            role="tab"
+            id={`notes-tab-${capture.id}`}
+            aria-controls={`notes-capture-${capture.id}`}
+            aria-selected={index === 0 ? "true" : "false"}
+            tabindex={index === 0 ? "0" : "-1"}
+            data-notes-tab={capture.id}
+          >
+            {capture.label}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    {captures.map((capture, captureIndex) => (
+      <div
+        class="notes-capture"
+        id={`notes-capture-${capture.id}`}
+        role="tabpanel"
+        aria-labelledby={`notes-tab-${capture.id}`}
+        data-notes-capture={capture.id}
+        hidden={captureIndex !== 0}
+      >
+        <figure class="notes-figure">
+          <img
+            src={capture.image}
+            alt={capture.alt}
+            width={capture.width}
+            height={capture.height}
+            loading="lazy"
+            decoding="async"
+          />
+          {capture.notes.map((note, index) => (
+            <button
+              type="button"
+              class="notes-dot"
+              style={`left: ${note.x}%; top: ${note.y}%`}
+              aria-label={`Note ${index + 1} : ${note.title}`}
+              aria-pressed={index === 0 ? "true" : "false"}
+              data-notes-dot={index}
+            >
+              <span>{index + 1}</span>
+            </button>
+          ))}
+        </figure>
+
+        <div class="notes-panel">
+          {capture.notes.map((note, index) => (
+            <div class="notes-note" data-notes-note={index} hidden={index !== 0}>
+              <span class="notes-note-index">
+                {String(index + 1).padStart(2, "0")} / {String(capture.notes.length).padStart(2, "0")}
+              </span>
+              <h4>{note.title}</h4>
+              <p>{note.text}</p>
+            </div>
+          ))}
+          <div class="notes-nav">
+            <button type="button" data-notes-step="-1" aria-label="Note précédente">←</button>
+            <button type="button" data-notes-step="1" aria-label="Note suivante">→</button>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+
+<script>
+  import { initElMagicoExtras } from "../../scripts/elmagico-extras";
+  initElMagicoExtras();
+</script>
+
+<style>
+  /* Les blocs occupent toute la largeur de la section, sous le texte */
+  .case-extra {
+    grid-column: 1 / -1;
+    margin-top: clamp(1.5rem, 4vw, 3rem);
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+    border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+    border-radius: 14px;
+    background: color-mix(in srgb, currentColor 3%, transparent);
+  }
+
+  .extra-head {
+    margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
+  }
+  .extra-head--row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.25rem;
+  }
+
+  .extra-kicker {
+    display: block;
+    margin-bottom: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+  }
+
+  .extra-title {
+    margin: 0;
+    font-weight: 300;
+    font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+    line-height: 1.15;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  /* ============ Atelier typo & couleurs ============ */
+
+  .lab-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: clamp(1.5rem, 4vw, 3rem);
+  }
+
+  .lab-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .lab-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .lab-field span {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.6;
+  }
+  .lab-field input {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+    border-radius: 8px;
+    background: color-mix(in srgb, currentColor 5%, transparent);
+    color: inherit;
+    font: inherit;
+    font-size: 1rem; /* 16px : évite le zoom automatique sur iPhone */
+  }
+  .lab-field input:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .lab-styles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .lab-styles button {
+    padding: 0.55rem 0.95rem;
+    border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+    border-radius: 999px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition:
+      background-color 0.3s var(--ease-default),
+      border-color 0.3s var(--ease-default),
+      color 0.3s var(--ease-default);
+  }
+  .lab-styles button[aria-pressed="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #141414;
+  }
+
+  .lab-previews {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .lab-specimen {
+    margin: 0;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  }
+  .lab-specimen:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+  .lab-specimen figcaption {
+    margin-bottom: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.55;
+  }
+
+  .lab-serif,
+  .lab-sans {
+    margin: 0;
+    min-height: 1.2em;
+    overflow-wrap: anywhere;
+  }
+
+  .lab-serif {
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(2rem, 5vw, 3.6rem);
+    line-height: 1.05;
+    transition: color 0.3s var(--ease-default);
+  }
+  .lab-serif.is-italic {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .lab-serif.is-semibold {
+    font-weight: 600;
+  }
+
+  .lab-sans {
+    font-family: "Work Sans", system-ui, sans-serif;
+    font-size: clamp(1rem, 1.4vw, 1.15rem);
+    line-height: 1.6;
+    opacity: 0.85;
+  }
+
+  .lab-palette {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: clamp(1.75rem, 3vw, 2.5rem) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .lab-swatch {
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-items: center;
+    gap: 0.25rem 0.85rem;
+    padding: 0.75rem;
+    border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+    border-radius: 10px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.3s var(--ease-default);
+  }
+  .lab-swatch:hover,
+  .lab-swatch:focus-visible {
+    border-color: var(--accent);
+  }
+  .lab-swatch:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .lab-swatch-color {
+    grid-row: 1 / 3;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  }
+  .lab-swatch-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+  }
+  .lab-swatch-text strong {
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+  .lab-swatch-hex {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    opacity: 0.75;
+  }
+  .lab-swatch-use {
+    font-size: 0.7rem;
+    opacity: 0.5;
+  }
+  .lab-swatch-action {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+  }
+  .lab-swatch.is-copied .lab-swatch-action {
+    color: inherit;
+  }
+
+  /* ============ Captures annotées ============ */
+
+  .notes-tabs {
+    display: flex;
+    gap: 0.4rem;
+    padding: 0.3rem;
+    border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+    border-radius: 999px;
+  }
+  .notes-tabs button {
+    padding: 0.5rem 1.1rem;
+    border: 0;
+    border-radius: 999px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition:
+      background-color 0.3s var(--ease-default),
+      color 0.3s var(--ease-default);
+  }
+  .notes-tabs button[aria-selected="true"] {
+    background: var(--accent);
+    color: #141414;
+  }
+
+  .notes-capture {
+    display: grid;
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+    align-items: center;
+  }
+  .notes-capture[hidden] {
+    display: none;
+  }
+
+  .notes-figure {
+    position: relative;
+    margin: 0;
+  }
+  .notes-figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+  }
+
+  /* Points numérotés, avec une pulsation discrète pour inviter au clic */
+  .notes-dot {
+    position: absolute;
+    width: 2rem;
+    height: 2rem;
+    margin: -1rem 0 0 -1rem;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1.5px solid #ffffff;
+    border-radius: 50%;
+    background: color-mix(in srgb, #141414 55%, transparent);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    color: #ffffff;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition:
+      background-color 0.3s var(--ease-default),
+      border-color 0.3s var(--ease-default),
+      transform 0.3s var(--ease-default);
+  }
+  .notes-dot::before {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 1px solid #ffffff;
+    opacity: 0;
+    animation: notes-pulse 2.4s var(--ease-default) infinite;
+  }
+  .notes-dot:hover {
+    transform: scale(1.1);
+  }
+  .notes-dot[aria-pressed="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #141414;
+  }
+  .notes-dot[aria-pressed="true"]::before {
+    border-color: var(--accent);
+  }
+  .notes-dot:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+  }
+
+  @keyframes notes-pulse {
+    0% { opacity: 0.6; transform: scale(0.8); }
+    70%, 100% { opacity: 0; transform: scale(1.5); }
+  }
+
+  .notes-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  .notes-note[hidden] {
+    display: none;
+  }
+  .notes-note-index {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+  }
+  .notes-note h4 {
+    margin: 0 0 0.75rem;
+    font-weight: 600;
+    font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+  }
+  .notes-note p {
+    margin: 0;
+    line-height: 1.7;
+    opacity: 0.85;
+  }
+
+  .notes-nav {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .notes-nav button {
+    width: 2.6rem;
+    height: 2.6rem;
+    border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+    border-radius: 50%;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    transition: border-color 0.3s var(--ease-default);
+  }
+  .notes-nav button:hover {
+    border-color: var(--accent);
+  }
+
+  /* ============ Mobile ============ */
+  @media (max-width: 800px) {
+    .lab-grid,
+    .notes-capture {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .lab-palette {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .notes-dot {
+      width: 1.6rem;
+      height: 1.6rem;
+      margin: -0.8rem 0 0 -0.8rem;
+      font-size: 0.65rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .notes-dot::before {
+      animation: none;
+    }
+  }
+</style>
