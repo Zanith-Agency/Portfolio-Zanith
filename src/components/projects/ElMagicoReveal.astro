@@ -11,7 +11,7 @@
 //   - la photo d'un artiste devient la palette,
 //   - l'autre photo devient l'image brute, avec ses repères de cadrage.
 //
-// Images : public/projets/el-magico/ (captures du site final et export
+// Images : public/projects/elmagico/ (captures du site final et export
 // de la maquette Figma fournis par Nadir).
 import ProjectReveal from "../ProjectReveal.astro";
 import type { Project } from "../../lib/supabase";
@@ -29,7 +29,7 @@ interface Props {
 }
 
 const { project } = Astro.props;
-const assets = "/projets/el-magico";
+const assets = "/projects/elmagico";
 
 // Nom de domaine affiché sous l'accroche (ex : elmagicobarber.be)
 let siteHost: string | null = null;
