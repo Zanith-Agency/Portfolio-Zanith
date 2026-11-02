@@ -96,6 +96,16 @@ const spotlightJson = JSON.stringify(spotlightData).replace(/</g, "\\u003c");
       <!-- Points forts du projet actif (à droite, en bas de la roue) -->
       <div class="work-highlights is-empty" data-spot-highlights></div>
 
+      <!-- Indication discrète : la roue se fait tourner en la glissant.
+           Elle apparaît une fois la roulette d'ouverture terminée. -->
+      <p class="work-drag-hint" aria-hidden="true">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none">
+          <path d="M13 8a5 5 0 1 1-1.46-3.54" />
+          <path d="M11.9 1.7l-.3 2.9-2.9-.3" />
+        </svg>
+        <span>Glisser pour faire tourner</span>
+      </p>
+
       <script type="application/json" data-spotlight-data set:html={spotlightJson}></script>
     </section>
   </div>
@@ -414,6 +424,45 @@ const spotlightJson = JSON.stringify(spotlightData).replace(/</g, "\\u003c");
     opacity: 0.75;
   }
 
+  /* --- Indication « Glisser pour faire tourner » --- */
+  .work-drag-hint {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: start;
+    justify-self: end;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.8s var(--ease-default);
+  }
+  .work.is-interactive .work-drag-hint {
+    opacity: 0.55;
+  }
+  .work.is-closing .work-drag-hint {
+    opacity: 0;
+    transition-duration: 0.4s;
+  }
+  .work-drag-hint svg {
+    flex: none;
+    stroke: var(--accent);
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    animation: drag-hint-swing 2.8s ease-in-out infinite;
+  }
+  @keyframes drag-hint-swing {
+    0%, 100% { transform: rotate(-35deg); }
+    50% { transform: rotate(35deg); }
+  }
+
   /* --- Contour des 12 h --- */
   .orbit-frame {
     position: absolute;
@@ -539,15 +588,22 @@ const spotlightJson = JSON.stringify(spotlightData).replace(/</g, "\\u003c");
       column-gap: 1.5rem;
     }
     .work-stage {
-      grid-row: 2;
+      grid-row: 3;
     }
     .project-orbit {
       width: min(84vw, 560px);
       height: min(84vw, 560px);
     }
+    /* Juste au-dessus de la roue, à droite : visible sans défiler */
+    .work-drag-hint {
+      grid-column: 1;
+      grid-row: 2;
+      justify-self: end;
+      margin-bottom: calc(-1 * clamp(0.75rem, 3vh, 1.75rem));
+    }
     .work-highlights {
       grid-column: 1;
-      grid-row: 3;
+      grid-row: 4;
       align-self: start;
       justify-self: center;
       width: min(100%, 40rem);
@@ -589,6 +645,10 @@ const spotlightJson = JSON.stringify(spotlightData).replace(/</g, "\\u003c");
       justify-self: stretch;
       width: auto;
       grid-template-columns: minmax(0, 1fr);
+    }
+    .work-drag-hint {
+      grid-column: 2;
+      grid-row: 3;
     }
   }
 
@@ -704,9 +764,13 @@ const spotlightJson = JSON.stringify(spotlightData).replace(/</g, "\\u003c");
     .project-orbit-item {
       width: 68px;
     }
+    .work-drag-hint {
+      grid-column: 2;
+      grid-row: 2;
+    }
     .work-highlights {
       grid-column: 1 / -1;
-      grid-row: 2;
+      grid-row: 3;
       justify-self: stretch;
       width: auto;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -714,7 +778,8 @@ const spotlightJson = JSON.stringify(spotlightData).replace(/</g, "\\u003c");
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .home-hero-scroll-line::after {
+    .home-hero-scroll-line::after,
+    .work-drag-hint svg {
       animation: none;
     }
   }

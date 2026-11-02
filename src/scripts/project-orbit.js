@@ -459,7 +459,11 @@ export function initProjectOrbit() {
     if (phase === "fill") {
       angle += fillSpeed * dt;
       revealDue();
-      if (items.every((item) => item.revealed)) phase = "decel";
+      if (items.every((item) => item.revealed)) {
+        phase = "decel";
+        // La roue peut maintenant être tournée : on l'indique
+        stage?.classList.add("is-interactive");
+      }
     } else if (phase === "decel") {
       decelElapsed += dt;
       const u = Math.min(1, decelElapsed / DECEL_DURATION);
