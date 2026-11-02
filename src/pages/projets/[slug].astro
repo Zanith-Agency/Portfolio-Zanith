@@ -4,6 +4,7 @@ import DefaultReveal from "../../components/projects/DefaultReveal.astro";
 import ElMagicoReveal from "../../components/projects/ElMagicoReveal.astro";
 import ElMagicoExtras from "../../components/projects/ElMagicoExtras.astro";
 import ProjectAscent from "../../components/ProjectAscent.astro";
+import CaseGallery from "../../components/CaseGallery.astro";
 import { getProjectBySlug, getProjects } from "../../lib/supabase";
 
 export const prerender = false;
@@ -210,13 +211,7 @@ const sections = [
             {Extras && <Extras section={section.id} />}
 
             {section.id === "development" && gallery.length > 0 && (
-              <div class="case-gallery">
-                {gallery.map((url) => (
-                  <figure class="case-gallery-item" data-case-reveal>
-                    <img src={url} alt="" loading="lazy" decoding="async" />
-                  </figure>
-                ))}
-              </div>
+              <CaseGallery images={gallery} title={project.title} />
             )}
           </section>
         ))}
@@ -377,27 +372,6 @@ const sections = [
     line-height: 1.5;
   }
 
-  /* --- 04 : galerie en grand format, sur toute la largeur --- */
-  .case-gallery {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: clamp(0.75rem, 1.5vw, 1.25rem);
-    margin-top: clamp(2rem, 4vw, 3rem);
-  }
-  .case-gallery-item {
-    margin: 0;
-  }
-  /* La première image ouvre la galerie en pleine largeur */
-  .case-gallery-item:first-child {
-    grid-column: 1 / -1;
-  }
-  .case-gallery-item img {
-    display: block;
-    width: 100%;
-    height: auto;
-    border-radius: 4px;
-  }
-
   /* --- 05 : lien vers le site --- */
   .case-link {
     display: inline-flex;
@@ -429,9 +403,6 @@ const sections = [
       position: static;
     }
     .case-facts {
-      grid-template-columns: minmax(0, 1fr);
-    }
-    .case-gallery {
       grid-template-columns: minmax(0, 1fr);
     }
   }

@@ -17,10 +17,10 @@ interface Props {
 const { section } = Astro.props;
 
 const palette = [
-  { name: "Anthracite", hex: "#232323", use: "Fond" },
-  { name: "Doré", hex: "#C19A6B", use: "Accents" },
-  { name: "Crème", hex: "#F3ECE0", use: "Texte secondaire" },
-  { name: "Blanc", hex: "#FFFFFF", use: "Titres et texte" },
+  { name: "Anthracite", hex: "#232323", use: "Fond", role: "anthracite" },
+  { name: "Doré", hex: "#C19A6B", use: "Accents", role: "dore" },
+  { name: "Crème", hex: "#F3ECE0", use: "Texte secondaire", role: "creme" },
+  { name: "Blanc", hex: "#FFFFFF", use: "Titres", role: "blanc" },
 ];
 
 const styles = [
@@ -110,15 +110,22 @@ const captures = [
 
 {section === "process" && (
   <div class="case-extra elm-lab" data-elm-lab data-case-reveal>
-    <div class="extra-head">
-      <span class="extra-kicker">Atelier</span>
-      <h3 class="extra-title">Essayez la typographie et la palette</h3>
+    <div class="extra-head extra-head--row">
+      <div>
+        <span class="extra-kicker">Atelier</span>
+        <h3 class="extra-title">Essayez la charte El Mágico</h3>
+      </div>
+      <!-- Avec / sans la charte : montre ce que l'identité apporte -->
+      <div class="lab-switch" role="group" aria-label="Affichage de l'aperçu">
+        <button type="button" data-lab-theme="brand" aria-pressed="true">Avec la charte</button>
+        <button type="button" data-lab-theme="plain" aria-pressed="false">Sans la charte</button>
+      </div>
     </div>
 
     <div class="lab-grid">
       <div class="lab-controls">
         <label class="lab-field">
-          <span>Votre texte</span>
+          <span>Votre titre</span>
           <input
             type="text"
             value="Une coupe nette. Un vrai barbier."
@@ -128,32 +135,60 @@ const captures = [
             data-lab-input
           />
         </label>
+        <p class="lab-hint">Un point sépare les deux lignes du titre, comme sur le site.</p>
 
-        <div class="lab-styles" role="group" aria-label="Style du titre">
-          {styles.map((style, index) => (
-            <button type="button" data-lab-style={style.id} aria-pressed={index === 1 ? "true" : "false"}>
-              {style.label}
-            </button>
-          ))}
+        <div class="lab-field">
+          <span>Seconde ligne</span>
+          <div class="lab-styles" role="group" aria-label="Style de la seconde ligne">
+            {styles.map((style, index) => (
+              <button type="button" data-lab-style={style.id} aria-pressed={index === 1 ? "true" : "false"}>
+                {style.label}
+              </button>
+            ))}
+          </div>
         </div>
+
+        <dl class="lab-fonts">
+          <div>
+            <dt>Titres</dt>
+            <dd class="lab-font-serif">Cormorant Garamond</dd>
+          </div>
+          <div>
+            <dt>Texte courant</dt>
+            <dd class="lab-font-sans">Work Sans</dd>
+          </div>
+        </dl>
       </div>
 
-      <div class="lab-previews">
-        <figure class="lab-specimen">
-          <figcaption>Cormorant Garamond — titres</figcaption>
-          <p class="lab-serif is-italic" data-lab-serif>Une coupe nette. Un vrai barbier.</p>
-        </figure>
-        <figure class="lab-specimen">
-          <figcaption>Work Sans — texte courant</figcaption>
-          <p class="lab-sans" data-lab-sans>Une coupe nette. Un vrai barbier.</p>
-        </figure>
+      <!-- Aperçu : le haut de la page d'accueil, reconstruit en HTML -->
+      <div class="lab-card is-brand" data-lab-card data-role="anthracite" aria-label="Aperçu de la page d'accueil">
+        <div class="lab-card-nav">
+          <span class="lab-card-logo" data-role="dore" aria-hidden="true">EM</span>
+          <span class="lab-card-links" data-role="creme">Réservation&nbsp;&nbsp;LookBook&nbsp;&nbsp;À propos</span>
+          <span class="lab-card-clock" data-role="creme">BXL&nbsp;<span data-lab-clock>--:--</span></span>
+          <span class="lab-card-button" data-role="dore">
+            <span>Services</span>
+            <span class="lab-card-button-dot" aria-hidden="true">→</span>
+          </span>
+        </div>
+        <div class="lab-card-body">
+          <span class="lab-card-kicker" data-role="creme">Barber shop — Bruxelles</span>
+          <p class="lab-card-title">
+            <span class="lab-card-line" data-role="blanc" data-lab-line1>Une coupe nette.</span>
+            <span class="lab-card-line lab-card-line--2 is-italic" data-role="dore" data-lab-line2>Un vrai barbier.</span>
+          </p>
+          <p class="lab-card-text" data-role="creme">
+            Dégradés, barbe, contours. Ton barbier à Bruxelles, au centre-ville et à Uccle.
+          </p>
+        </div>
       </div>
     </div>
 
+    <p class="lab-palette-label"><span class="lab-on-mouse">Survolez</span><span class="lab-on-touch">Touchez</span> une couleur pour voir où elle vit et copier son code</p>
     <ul class="lab-palette" aria-label="Palette — cliquez pour copier un code couleur">
       {palette.map((color) => (
         <li>
-          <button type="button" class="lab-swatch" data-lab-copy={color.hex}>
+          <button type="button" class="lab-swatch" data-lab-copy={color.hex} data-lab-role={color.role}>
             <span class="lab-swatch-color" style={`background: ${color.hex}`}></span>
             <span class="lab-swatch-text">
               <strong>{color.name}</strong>
@@ -364,64 +399,271 @@ const captures = [
     color: #141414;
   }
 
-  .lab-previews {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+  .lab-hint {
+    margin: -0.6rem 0 0;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    opacity: 0.55;
   }
 
-  .lab-specimen {
-    margin: 0;
-    padding-bottom: 1.25rem;
-    border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  .lab-fonts {
+    display: grid;
+    gap: 0.75rem;
+    margin: auto 0 0;
+    padding-top: 1.25rem;
+    border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent);
   }
-  .lab-specimen:last-child {
-    padding-bottom: 0;
-    border-bottom: 0;
+  .lab-fonts div {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
   }
-  .lab-specimen figcaption {
-    margin-bottom: 0.6rem;
+  .lab-fonts dt {
     font-family: var(--font-mono);
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     opacity: 0.55;
   }
-
-  .lab-serif,
-  .lab-sans {
+  .lab-fonts dd {
     margin: 0;
-    min-height: 1.2em;
+  }
+  .lab-font-serif {
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: 1.15rem;
+  }
+  .lab-font-sans {
+    font-family: "Work Sans", system-ui, sans-serif;
+    font-size: 0.9rem;
+  }
+
+  /* --- Avec / sans la charte --- */
+  .lab-switch {
+    display: inline-flex;
+    padding: 0.25rem;
+    border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+    border-radius: 999px;
+  }
+  .lab-switch button {
+    padding: 0.5rem 0.95rem;
+    border: 0;
+    border-radius: 999px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition:
+      background-color 0.3s var(--ease-default),
+      color 0.3s var(--ease-default);
+  }
+  .lab-switch button[aria-pressed="true"] {
+    background: var(--accent);
+    color: #141414;
+  }
+  .lab-switch button:focus-visible,
+  .lab-styles button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* --- Aperçu : le haut de la page d'accueil du site --- */
+  .lab-card {
+    --c-bg: #232323;
+    --c-gold: #c19a6b;
+    --c-cream: #f3ece0;
+    --c-white: #ffffff;
+    --f-serif: "Cormorant Garamond", Georgia, serif;
+    --f-sans: "Work Sans", system-ui, sans-serif;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: clamp(18rem, 30vw, 24rem);
+    padding: clamp(1rem, 2vw, 1.5rem) clamp(1.1rem, 2.5vw, 2rem) clamp(1.5rem, 3vw, 2.5rem);
+    border-radius: 12px;
+    overflow: hidden;
+    background:
+      radial-gradient(90% 70% at 85% 10%, rgba(193, 154, 107, 0.12), transparent 60%),
+      var(--c-bg);
+    color: var(--c-white);
+    font-family: var(--f-sans);
+    outline: 1px dashed transparent;
+    outline-offset: 5px;
+    transition:
+      background-color 0.6s var(--ease-default),
+      color 0.6s var(--ease-default),
+      outline-color 0.3s var(--ease-default);
+  }
+  /* Sans la charte : couleurs et polices « par défaut » */
+  .lab-card.is-plain {
+    --c-bg: #ffffff;
+    --c-gold: #1a5fd6;
+    --c-cream: #555555;
+    --c-white: #111111;
+    --f-serif: Arial, Helvetica, sans-serif;
+    --f-sans: Arial, Helvetica, sans-serif;
+    background: var(--c-bg);
+  }
+
+  .lab-card [data-role] {
+    transition:
+      opacity 0.35s var(--ease-default),
+      outline-color 0.3s var(--ease-default),
+      color 0.6s var(--ease-default),
+      border-color 0.6s var(--ease-default),
+      background-color 0.6s var(--ease-default);
+    outline: 1px dashed transparent;
+    outline-offset: 4px;
+    border-radius: 3px;
+  }
+
+  .lab-card-nav {
+    display: flex;
+    align-items: center;
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+    font-size: 0.7rem;
+  }
+  .lab-card-logo {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid var(--c-gold);
+    border-radius: 50% !important;
+    color: var(--c-gold);
+    font-family: var(--f-serif);
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+  }
+  .lab-card-links {
+    color: var(--c-cream);
+    font-family: var(--f-serif);
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+  .lab-card-clock {
+    margin-left: auto;
+    color: var(--c-cream);
+    font-family: var(--f-serif);
+    font-size: 0.78rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .lab-card-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.3rem 0.3rem 0.3rem 0.85rem;
+    border: 1px solid var(--c-gold);
+    border-radius: 999px !important;
+    color: var(--c-white);
+    font-family: var(--f-serif);
+    font-size: 0.85rem;
+  }
+  .lab-card-button-dot {
+    display: grid;
+    place-items: center;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 50%;
+    background: var(--c-gold);
+    color: var(--c-bg);
+    font-size: 0.7rem;
+    transition: background-color 0.6s var(--ease-default), color 0.6s var(--ease-default);
+  }
+
+  .lab-card-body {
+    margin-top: auto;
+    padding-top: clamp(2rem, 5vw, 3.5rem);
+  }
+  .lab-card-kicker {
+    display: inline-block;
+    margin-bottom: 0.9rem;
+    color: var(--c-cream);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+  }
+  .lab-card-title {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    font-family: var(--f-serif);
+    font-weight: 400;
+    font-size: clamp(1.9rem, 4.2vw, 3.3rem);
+    line-height: 1.05;
     overflow-wrap: anywhere;
   }
-
-  .lab-serif {
-    font-family: "Cormorant Garamond", Georgia, serif;
-    font-weight: 400;
-    font-size: clamp(2rem, 5vw, 3.6rem);
-    line-height: 1.05;
-    transition: color 0.3s var(--ease-default);
+  .lab-card-line {
+    align-self: flex-start;
+    color: var(--c-white);
   }
-  .lab-serif.is-italic {
+  .lab-card-line--2 {
+    color: var(--c-white);
+  }
+  .lab-card-line--2.is-italic {
     font-style: italic;
-    color: var(--accent);
+    color: var(--c-gold);
   }
-  .lab-serif.is-semibold {
+  .lab-card-line--2.is-semibold {
     font-weight: 600;
   }
-
-  .lab-sans {
-    font-family: "Work Sans", system-ui, sans-serif;
-    font-size: clamp(1rem, 1.4vw, 1.15rem);
+  .lab-card-line:empty {
+    display: none;
+  }
+  .lab-card-text {
+    max-width: 26rem;
+    margin: 1rem 0 0;
+    color: var(--c-cream);
+    font-size: 0.82rem;
     line-height: 1.6;
     opacity: 0.85;
   }
 
+  /* --- Couleur survolée : on montre où elle est utilisée --- */
+  .lab-card[data-spot] [data-role] {
+    opacity: 0.18;
+  }
+  .lab-card[data-spot="dore"] [data-role="dore"],
+  .lab-card[data-spot="creme"] [data-role="creme"],
+  .lab-card[data-spot="blanc"] [data-role="blanc"] {
+    opacity: 1;
+    outline-color: var(--c-gold);
+  }
+  .lab-card[data-spot="creme"] [data-role="creme"],
+  .lab-card[data-spot="blanc"] [data-role="blanc"] {
+    outline-color: var(--c-cream);
+  }
+  /* Le fond : c'est toute la carte qu'on encadre */
+  .lab-card[data-spot="anthracite"] {
+    outline-color: var(--accent);
+  }
+
+  .lab-palette-label {
+    margin: clamp(1.75rem, 3vw, 2.5rem) 0 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.55;
+  }
+  .lab-on-touch {
+    display: none;
+  }
+  @media (hover: none) {
+    .lab-on-mouse {
+      display: none;
+    }
+    .lab-on-touch {
+      display: inline;
+    }
+  }
   .lab-palette {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.75rem;
-    margin: clamp(1.75rem, 3vw, 2.5rem) 0 0;
+    margin: 0;
     padding: 0;
     list-style: none;
   }
@@ -638,6 +880,16 @@ const captures = [
   }
 
   /* ============ Mobile ============ */
+  @media (max-width: 560px) {
+    .lab-card-links,
+    .lab-card-clock {
+      display: none;
+    }
+    .lab-card-button {
+      margin-left: auto;
+    }
+  }
+
   @media (max-width: 800px) {
     .lab-grid,
     .notes-capture {
@@ -645,6 +897,9 @@ const captures = [
     }
     .lab-palette {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .lab-fonts {
+      margin-top: 0.25rem;
     }
     .notes-dot {
       width: 1.6rem;

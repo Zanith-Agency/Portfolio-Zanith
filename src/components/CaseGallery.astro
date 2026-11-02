@@ -1,0 +1,350 @@
+---
+// Galerie d'une page projet (section 04).
+//
+// - Un carrousel horizontal qu'on fait glisser (souris ou doigt), avec
+//   flèches, compteur et barre de progression.
+// - Un clic sur une image l'ouvre en grand (visionneuse plein écran) :
+//   flèches, clavier (← → Échap) et glissement au doigt.
+// Interactions : src/scripts/case-gallery.js
+
+interface Props {
+  images: string[];
+  title: string;
+}
+
+const { images, title } = Astro.props;
+const total = String(images.length).padStart(2, "0");
+const alt = (index: number) => `${title} — image ${index + 1} sur ${images.length}`;
+---
+
+<div class="cg" data-case-gallery data-case-reveal>
+  <div class="cg-head">
+    <span class="cg-kicker">Galerie</span>
+    <span class="cg-count" aria-hidden="true"><span data-cg-current>01</span> / {total}</span>
+    <div class="cg-nav">
+      <button type="button" class="cg-arrow" data-cg-step="-1" aria-label="Images précédentes">←</button>
+      <button type="button" class="cg-arrow" data-cg-step="1" aria-label="Images suivantes">→</button>
+    </div>
+  </div>
+
+  <div class="cg-track" data-cg-track>
+    {images.map((url, index) => (
+      <button type="button" class="cg-slide" data-cg-open={index} aria-label={`Agrandir l'image ${index + 1}`}>
+        <img src={url} alt={alt(index)} loading="lazy" decoding="async" draggable="false" />
+        <span class="cg-zoom" aria-hidden="true">Agrandir ↗</span>
+      </button>
+    ))}
+  </div>
+
+  <div class="cg-progress" aria-hidden="true"><span data-cg-bar></span></div>
+
+  <!-- Visionneuse plein écran -->
+  <dialog class="cg-lightbox" data-cg-lightbox aria-label={`Galerie — ${title}`}>
+    <figure class="cg-lightbox-figure">
+      <img data-cg-full alt="" />
+    </figure>
+    <span class="cg-lightbox-count" data-cg-full-count></span>
+    <button type="button" class="cg-lightbox-close" data-cg-close aria-label="Fermer">Fermer ✕</button>
+    <button type="button" class="cg-lightbox-arrow cg-lightbox-arrow--prev" data-cg-full-step="-1" aria-label="Image précédente">←</button>
+    <button type="button" class="cg-lightbox-arrow cg-lightbox-arrow--next" data-cg-full-step="1" aria-label="Image suivante">→</button>
+  </dialog>
+
+  <script type="application/json" data-cg-images set:html={JSON.stringify(images.map((src, index) => ({ src, alt: alt(index) }))).replace(/</g, "\\u003c")}></script>
+</div>
+
+<script>
+  import { initCaseGalleries } from "../scripts/case-gallery";
+  initCaseGalleries();
+</script>
+
+<style>
+  .cg {
+    grid-column: 1 / -1;
+    margin-top: clamp(2rem, 4vw, 3rem);
+  }
+
+  /* --- En-tête : titre, compteur, flèches --- */
+  .cg-head {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .cg-kicker {
+    color: var(--accent);
+  }
+  .cg-count {
+    opacity: 0.6;
+  }
+  .cg-nav {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: auto;
+  }
+  .cg-arrow {
+    width: 2.6rem;
+    height: 2.6rem;
+    border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+    border-radius: 50%;
+    background: none;
+    color: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    transition:
+      border-color 0.3s var(--ease-default),
+      background-color 0.3s var(--ease-default),
+      opacity 0.3s var(--ease-default);
+  }
+  .cg-arrow:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+  }
+  .cg-arrow:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+  .cg-arrow:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* --- Carrousel --- */
+  .cg-track {
+    position: relative; /* repère des positions des images (JS) */
+    display: flex;
+    gap: clamp(0.75rem, 1.5vw, 1.25rem);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .cg-track::-webkit-scrollbar {
+    display: none;
+  }
+  /* Pendant le glissement à la souris, le calage est suspendu */
+  .cg-track.is-dragging {
+    scroll-snap-type: none;
+    cursor: grabbing;
+  }
+  .cg-track.is-dragging .cg-slide {
+    pointer-events: none;
+  }
+
+  .cg-slide {
+    position: relative;
+    flex: none;
+    height: clamp(220px, 34vw, 520px);
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    overflow: hidden;
+    background: color-mix(in srgb, currentColor 6%, transparent);
+    cursor: inherit;
+    scroll-snap-align: start;
+  }
+  .cg-slide img {
+    display: block;
+    height: 100%;
+    width: auto;
+    transition: transform 0.8s var(--ease-default);
+  }
+  .cg-slide:hover img {
+    transform: scale(1.03);
+  }
+  .cg-slide:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  .cg-zoom {
+    position: absolute;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    padding: 0.45rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(10, 10, 14, 0.7);
+    backdrop-filter: blur(6px);
+    color: #f5f1ed;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0;
+    transform: translateY(6px);
+    transition:
+      opacity 0.3s var(--ease-default),
+      transform 0.3s var(--ease-default);
+  }
+  .cg-slide:hover .cg-zoom,
+  .cg-slide:focus-visible .cg-zoom {
+    opacity: 1;
+    transform: none;
+  }
+
+  .cg-progress {
+    position: relative;
+    height: 1px;
+    margin-top: 1.25rem;
+    background: color-mix(in srgb, currentColor 15%, transparent);
+  }
+  .cg-progress span {
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    transform: scaleX(var(--progress, 0));
+    transform-origin: left;
+  }
+
+  /* --- Visionneuse --- */
+  .cg-lightbox {
+    width: 100vw;
+    max-width: none;
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: clamp(3.5rem, 7vh, 5rem) clamp(1rem, 6vw, 6rem);
+    border: 0;
+    background: rgba(8, 8, 14, 0.97);
+    color: #f5f1ed;
+    overflow: hidden;
+  }
+  .cg-lightbox::backdrop {
+    background: transparent;
+  }
+  .cg-lightbox[open] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: cg-fade 0.35s var(--ease-default);
+  }
+  .cg-lightbox.is-closing {
+    animation: cg-fade-out 0.25s var(--ease-default) forwards;
+  }
+  @keyframes cg-fade {
+    from { opacity: 0; }
+  }
+  @keyframes cg-fade-out {
+    to { opacity: 0; }
+  }
+
+  .cg-lightbox-figure {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: pan-y;
+  }
+  .cg-lightbox-figure img {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 6px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .cg-lightbox-figure img.is-entering {
+    animation: cg-enter 0.45s var(--ease-default);
+  }
+  @keyframes cg-enter {
+    from {
+      opacity: 0;
+      transform: translateX(calc(var(--dir, 1) * 40px)) scale(0.98);
+    }
+  }
+
+  .cg-lightbox-count {
+    position: absolute;
+    top: 1.5rem;
+    left: clamp(1rem, 6vw, 6rem);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    opacity: 0.7;
+  }
+  .cg-lightbox-close {
+    position: absolute;
+    top: 1rem;
+    right: clamp(1rem, 6vw, 6rem);
+    padding: 0.6rem 1rem;
+    border: 1px solid rgba(245, 241, 237, 0.25);
+    border-radius: 999px;
+    background: none;
+    color: inherit;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+  }
+  .cg-lightbox-arrow {
+    position: absolute;
+    top: 50%;
+    width: 3rem;
+    height: 3rem;
+    margin-top: -1.5rem;
+    border: 1px solid rgba(245, 241, 237, 0.25);
+    border-radius: 50%;
+    background: rgba(8, 8, 14, 0.6);
+    color: inherit;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: border-color 0.3s var(--ease-default);
+  }
+  .cg-lightbox-arrow--prev {
+    left: clamp(0.5rem, 2vw, 2rem);
+  }
+  .cg-lightbox-arrow--next {
+    right: clamp(0.5rem, 2vw, 2rem);
+  }
+  .cg-lightbox-close:hover,
+  .cg-lightbox-arrow:hover {
+    border-color: var(--accent);
+  }
+  .cg-lightbox-close:focus-visible,
+  .cg-lightbox-arrow:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 700px) {
+    .cg-slide {
+      height: auto;
+      width: 86%;
+    }
+    .cg-slide img {
+      width: 100%;
+      height: auto;
+    }
+    .cg-zoom {
+      display: none;
+    }
+    /* Au doigt, on change d'image en glissant : les flèches gênent */
+    .cg-lightbox-arrow {
+      display: none;
+    }
+    .cg-lightbox {
+      padding: 4rem 0.75rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cg-lightbox[open],
+    .cg-lightbox.is-closing,
+    .cg-lightbox-figure img.is-entering {
+      animation: none;
+    }
+    .cg-slide img {
+      transition: none;
+    }
+  }
+</style>
