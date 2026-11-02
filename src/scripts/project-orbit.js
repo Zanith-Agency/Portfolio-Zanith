@@ -28,6 +28,13 @@
 // qui passe dans ce contour devient le projet actif : sa fiche s'affiche
 // en haut à gauche et ses deux points forts sous la roue. Il le reste
 // jusqu'à ce que le projet suivant entre à son tour dans le contour.
+//
+// Interactions :
+// - Glisser (souris ou doigt) fait tourner la roue. Au lâcher, elle
+//   garde un peu d'élan puis s'arrête pile avec un projet à 12 h ; un
+//   geste rapide passe au moins au projet suivant.
+// - La roue s'arrête de tourner tant que la souris est dans le contour
+//   des 12 h.
 
 import { gsap } from "gsap";
 import { diagonalClipPath, markDiagonalTransition } from "./page-transition";
@@ -49,6 +56,12 @@ const CLOSE_SPEED = 150; // degrés/s (moyenne) pour rejoindre le projet cliqué
 const CLOSE_MIN_DURATION = 0.25; // s, plancher pour un projet déjà tout proche
 const ABSORB_DURATION = 0.25; // s pour disparaître derrière le projet cliqué
 const WIPE_DURATION = 0.75; // s pour la fermeture diagonale finale
+
+// Glisser pour faire tourner
+const DRAG_THRESHOLD = 6; // px avant de considérer que c'est un glissement
+const SNAP_PROJECTION = 0.25; // s d'élan pris en compte au lâcher
+const FLICK_SPEED = 60; // degrés/s : au-delà, on passe au projet suivant
+const SNAP_DURATION = 0.7; // s pour se caler sur un projet
 
 // Ramène un angle dans [0, 360) : écart « vers l'avant », dans le sens
 // de rotation de la roue.
@@ -97,7 +110,8 @@ export function initProjectOrbit() {
   let angle = START_ANGLE;
   let phase = "fill"; // fill → decel → cruise → closing
   let decelElapsed = 0;
-  let paused = false;
+  let paused = false; // souris dans le contour des 12 h
+  let controlled = false; // glissement ou recalage en cours
 
   const computeRadius = () => {
     // offsetWidth/offsetHeight : taille réelle, sans l'effet des
@@ -234,6 +248,7 @@ export function initProjectOrbit() {
     selected.el.style.zIndex = "10";
     selected.el.classList.add("is-selected");
     track.classList.add("is-closing");
+    cancelDrag();
     spotlight?.hide();
     sketch?.stop();
 
@@ -293,28 +308,136 @@ export function initProjectOrbit() {
   });
 
   // --- Interactions ---
-  let hoveredCount = 0;
-  const setHover = (delta) => {
-    hoveredCount = Math.max(0, hoveredCount + delta);
-    paused = hoveredCount > 0;
+
+  // Pause quand la souris est dans le contour des 12 h. Le contour ne
+  // capte pas la souris (il laisse passer les clics) : on compare donc
+  // la position du pointeur avec son rectangle.
+  const pointerArea = stage || track;
+  pointerArea.addEventListener("pointermove", (event) => {
+    if (event.pointerType !== "mouse" || !frameEl) return;
+    const r = frameEl.getBoundingClientRect();
+    paused =
+      event.clientX >= r.left && event.clientX <= r.right &&
+      event.clientY >= r.top && event.clientY <= r.bottom;
+  });
+  pointerArea.addEventListener("pointerleave", () => {
+    paused = false;
+  });
+
+  // --- Glisser pour faire tourner la roue ---
+  const proxy = { angle: 0 };
+  let snapTween = null;
+  let drag = null;
+  let suppressClick = false;
+
+  // Angle du pointeur autour du centre, dans le repère de l'ovale
+  const pointerAngle = (event) => {
+    const r = track.getBoundingClientRect();
+    const dx = (event.clientX - (r.left + r.width / 2)) / (radiusX || 1);
+    const dy = (event.clientY - (r.top + r.height / 2)) / (radiusY || 1);
+    return (Math.atan2(dy, dx) * 180) / Math.PI;
   };
+
+  // Au lâcher : on prolonge un peu l'élan, puis on se cale pour qu'un
+  // projet soit exactement à 12 h.
+  const snap = (velocity) => {
+    const current = Math.round((angle - START_ANGLE) / step);
+    const reach = Math.max(-step * 1.5, Math.min(step * 1.5, velocity * SNAP_PROJECTION));
+    let target = Math.round((angle + reach - START_ANGLE) / step);
+    if (target === current && Math.abs(velocity) > FLICK_SPEED) target += Math.sign(velocity);
+    proxy.angle = angle;
+    snapTween = gsap.to(proxy, {
+      angle: START_ANGLE + target * step,
+      duration: SNAP_DURATION,
+      ease: "power3.out",
+      onUpdate: () => {
+        angle = proxy.angle;
+      },
+      onComplete: () => {
+        snapTween = null;
+        controlled = false;
+      },
+    });
+  };
+
+  const cancelDrag = () => {
+    snapTween?.kill();
+    snapTween = null;
+    drag = null;
+    controlled = false;
+    track.classList.remove("is-dragging");
+  };
+
+  track.addEventListener("pointerdown", (event) => {
+    // Pendant l'ouverture, la roulette va jusqu'au bout.
+    if (phase === "fill" || phase === "closing" || !event.isPrimary || event.button !== 0) return;
+    drag = {
+      id: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      last: pointerAngle(event),
+      time: performance.now(),
+      velocity: 0,
+      moved: false,
+    };
+  });
+
+  track.addEventListener("pointermove", (event) => {
+    if (!drag || event.pointerId !== drag.id) return;
+    if (!drag.moved) {
+      if (Math.hypot(event.clientX - drag.x, event.clientY - drag.y) < DRAG_THRESHOLD) return;
+      drag.moved = true;
+      snapTween?.kill();
+      snapTween = null;
+      controlled = true;
+      phase = "cruise"; // un glissement pendant le ralentissement le termine
+      track.classList.add("is-dragging");
+      track.setPointerCapture?.(event.pointerId);
+    }
+    const now = performance.now();
+    const current = pointerAngle(event);
+    // Écart ramené dans [-180, 180) pour passer proprement le ±180°
+    const delta = ((((current - drag.last) % 360) + 540) % 360) - 180;
+    angle += delta;
+    const dt = Math.max(0.001, (now - drag.time) / 1000);
+    // Vitesse lissée (degrés/s), pour l'élan au lâcher
+    drag.velocity = drag.velocity * 0.6 + (delta / dt) * 0.4;
+    drag.last = current;
+    drag.time = now;
+  });
+
+  const endDrag = (event) => {
+    if (!drag || event.pointerId !== drag.id) return;
+    const { moved, velocity, time } = drag;
+    drag = null;
+    track.classList.remove("is-dragging");
+    if (!moved) return;
+    // Le clic qui suit un glissement n'ouvre pas le projet
+    suppressClick = true;
+    setTimeout(() => {
+      suppressClick = false;
+    }, 0);
+    // Pointeur resté immobile avant de lâcher : pas d'élan
+    snap(performance.now() - time > 120 ? 0 : velocity);
+  };
+  track.addEventListener("pointerup", endDrag);
+  track.addEventListener("pointercancel", endDrag);
+
+  // Les images et liens ne doivent pas être « déplacés » par le navigateur
+  track.addEventListener("dragstart", (event) => event.preventDefault());
+
+  track.addEventListener(
+    "click",
+    (event) => {
+      if (!suppressClick) return;
+      event.preventDefault();
+      event.stopPropagation();
+    },
+    true
+  );
 
   items.forEach((item) => {
     const { el } = item;
-
-    // La pause au survol ne s'applique qu'en rotation continue (voir
-    // tick) : l'ouverture va toujours jusqu'au bout.
-    el.addEventListener("mouseenter", () => setHover(1));
-    el.addEventListener("mouseleave", () => setHover(-1));
-
-    // Équivalent tactile : il n'y a pas de mouseenter/mouseleave au
-    // doigt, donc sans ça un visiteur mobile ne peut jamais stabiliser
-    // le cercle pour lire la légende d'un projet. On met en pause
-    // pendant que le doigt reste posé ; { passive: true } car on ne
-    // bloque jamais le scroll ni le tap.
-    el.addEventListener("touchstart", () => setHover(1), { passive: true });
-    el.addEventListener("touchend", () => setHover(-1), { passive: true });
-
     el.addEventListener("click", (event) => {
       // Ctrl/Cmd-clic, Maj-clic… : le navigateur ouvre un nouvel
       // onglet normalement, sans animation.
@@ -345,7 +468,7 @@ export function initProjectOrbit() {
       angle += speed * dt;
       if (u >= 1) phase = "cruise";
     } else if (phase === "cruise") {
-      if (!paused) angle += CRUISE_SPEED * dt;
+      if (!paused && !controlled) angle += CRUISE_SPEED * dt;
     }
 
     render();

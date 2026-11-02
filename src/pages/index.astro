@@ -84,24 +84,17 @@ const spotlightJson = JSON.stringify(spotlightData).replace(/</g, "\\u003c");
           </div>
 
           {projects.map((project) => (
-            <a href={`/projets/${project.slug}`} class="project-orbit-item">
-              <span class="project-orbit-hint">
-               Clic pour découvrir le projet <span class="project-orbit-hint-arrow">→</span>
-              </span>
+            <a href={`/projets/${project.slug}`} class="project-orbit-item" draggable="false">
               <span class="project-orbit-item-inner">
-                <img src={project.image_path} alt={project.title} loading="eager" />
-              </span>
-              <span class="project-orbit-caption">
-                <span class="project-orbit-title">{project.title}</span>
-                <span class="project-orbit-category">{project.category}</span>
+                <img src={project.image_path} alt={project.title} loading="eager" draggable="false" />
               </span>
             </a>
           ))}
         </div>
-
-        <!-- Points forts du projet actif -->
-        <div class="work-highlights is-empty" data-spot-highlights></div>
       </div>
+
+      <!-- Points forts du projet actif (à droite, en bas de la roue) -->
+      <div class="work-highlights is-empty" data-spot-highlights></div>
 
       <script type="application/json" data-spotlight-data set:html={spotlightJson}></script>
     </section>
@@ -284,14 +277,15 @@ const spotlightJson = JSON.stringify(spotlightData).replace(/</g, "\\u003c");
   .work {
     /* Taille de la roue : la colonne du milieu fait exactement sa
        largeur, la roue reste donc centrée dans la page. */
-    --orbit-size: min(46vw, 580px, max(340px, calc(100svh - 330px)));
+    --orbit-size: min(44vw, 640px, max(360px, calc(100svh - 170px)));
     position: relative;
     min-height: 100vh;
     min-height: 100svh;
     display: grid;
     grid-template-columns: minmax(0, 1fr) var(--orbit-size) minmax(0, 1fr);
-    column-gap: clamp(1.5rem, 3vw, 3rem);
+    column-gap: clamp(1.5rem, 2.5vw, 2.5rem);
     align-items: start;
+    align-content: start; /* la ligne fait la hauteur de la roue */
     padding: 112px var(--container-padding) clamp(2.5rem, 5vh, 3.5rem);
     scroll-margin-top: 0;
   }
@@ -308,6 +302,17 @@ const spotlightJson = JSON.stringify(spotlightData).replace(/</g, "\\u003c");
     position: relative;
     width: var(--orbit-size);
     height: var(--orbit-size);
+    /* On peut faire tourner la roue en la faisant glisser
+       (project-orbit.js). Au doigt, seul le glissement horizontal fait
+       tourner la roue : le glissement vertical fait défiler la page. */
+    cursor: grab;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .project-orbit.is-dragging,
+  .project-orbit.is-dragging .project-orbit-item {
+    cursor: grabbing;
   }
 
   /* --- Fiche du projet actif --- */
@@ -374,13 +379,16 @@ const spotlightJson = JSON.stringify(spotlightData).replace(/</g, "\\u003c");
     line-height: 1.45;
   }
 
-  /* --- Points forts sous la roue --- */
+  /* --- Points forts : à droite, alignés sur le bas de la roue --- */
   .work-highlights {
-    width: min(100%, 34rem);
+    grid-column: 3;
+    grid-row: 1;
+    align-self: end;
+    justify-self: end;
+    width: min(100%, 19rem);
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem clamp(1.25rem, 3vw, 2.5rem);
-    min-height: 5.5rem;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
   }
   .work-highlights :global(.work-highlight) {
     padding-top: 0.9rem;
@@ -469,7 +477,7 @@ const spotlightJson = JSON.stringify(spotlightData).replace(/</g, "\\u003c");
   .project-orbit-item {
     position: absolute;
     top: 50%; left: 50%;
-    width: 170px;
+    width: clamp(110px, 9.5vw, 140px);
     display: block;
     text-decoration: none;
     z-index: 2;
@@ -480,19 +488,15 @@ const spotlightJson = JSON.stringify(spotlightData).replace(/</g, "\\u003c");
        frame. */
     opacity: 0;
     pointer-events: none;
+    will-change: transform, opacity;
   }
   .project-orbit-item.is-revealed {
     pointer-events: auto;
   }
 
-  /* Pendant la fermeture : plus aucun clic possible, et on masque les
-     légendes/indices qui resteraient affichés sous la souris. */
+  /* Pendant la fermeture : plus aucun clic possible */
   .project-orbit.is-closing .project-orbit-item {
     pointer-events: none;
-  }
-  .project-orbit.is-closing .project-orbit-caption,
-  .project-orbit.is-closing .project-orbit-hint {
-    opacity: 0 !important;
   }
 
   .project-orbit-item-inner {
@@ -509,53 +513,6 @@ const spotlightJson = JSON.stringify(spotlightData).replace(/</g, "\\u003c");
   .project-orbit-item-inner img {
     width: 100%; height: 100%; object-fit: cover; display: block;
   }
-
-  .project-orbit-caption {
-    position: absolute;
-    top: 100%; left: 50%;
-    transform: translateX(-50%);
-    margin-top: 0.6rem;
-    display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
-    text-align: center;
-    opacity: 0;
-    transition: opacity 0.3s var(--ease-default);
-    white-space: nowrap;
-  }
-  .project-orbit-item:hover .project-orbit-caption {
-    opacity: 1;
-  }
-  .project-orbit-title {
-    font-weight: 700; font-size: 0.85rem; color: var(--text-inverse);
-  }
-  .project-orbit-category {
-    font-family: var(--font-mono); font-size: 0.65rem;
-    text-transform: uppercase; letter-spacing: 0.05em;
-    color: var(--text-inverse); opacity: 0.7;
-  }
-
-  .project-orbit-hint {
-  position: absolute;
-  bottom: 100%; left: 50%;
-  transform: translateX(-50%);
-  margin-bottom: 0.6rem;
-  display: flex; align-items: center; gap: 0.35rem;
-  white-space: nowrap;
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-inverse);
-  opacity: 0;
-  transition: opacity 0.3s var(--ease-default);
-  pointer-events: none;
-}
-.project-orbit-item:hover .project-orbit-hint {
-  opacity: 0.85;
-}
-.project-orbit-hint-arrow {
-  display: inline-block;
-}
-
 
   /* ============ Tablette : la fiche passe au-dessus de la roue ============ */
   @media (max-width: 1180px) {
@@ -589,7 +546,12 @@ const spotlightJson = JSON.stringify(spotlightData).replace(/</g, "\\u003c");
       height: min(84vw, 560px);
     }
     .work-highlights {
+      grid-column: 1;
+      grid-row: 3;
+      align-self: start;
+      justify-self: center;
       width: min(100%, 40rem);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
@@ -614,11 +576,19 @@ const spotlightJson = JSON.stringify(spotlightData).replace(/</g, "\\u003c");
     }
     .work-stage {
       grid-column: 2;
-      grid-row: 1;
+      grid-row: 1 / span 2;
     }
     .project-orbit {
       width: var(--orbit-size);
       height: var(--orbit-size);
+    }
+    .work-highlights {
+      grid-column: 1;
+      grid-row: 2;
+      align-self: end;
+      justify-self: stretch;
+      width: auto;
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 
@@ -676,16 +646,7 @@ const spotlightJson = JSON.stringify(spotlightData).replace(/</g, "\\u003c");
       height: min(66svh, 560px);
     }
     .project-orbit-item {
-      width: clamp(84px, 26vw, 112px);
-    }
-    .project-orbit-caption {
-      margin-top: 0.45rem;
-    }
-    .project-orbit-title {
-      font-size: 0.78rem;
-    }
-    .project-orbit-category {
-      display: none;
+      width: clamp(72px, 22vw, 96px);
     }
 
     .work-highlights {
@@ -741,36 +702,14 @@ const spotlightJson = JSON.stringify(spotlightData).replace(/</g, "\\u003c");
       height: calc(100svh - 72px - 1.5rem);
     }
     .project-orbit-item {
-      width: 76px;
+      width: 68px;
     }
-    .project-orbit-title {
-      font-size: 0.72rem;
-    }
-    .project-orbit-caption {
-      margin-top: 0.3rem;
-    }
-    .project-orbit-category {
-      display: none;
-    }
-  }
-
-  /* --- Tactile : .project-orbit-caption et .project-orbit-hint ne
-     s'affichent qu'au :hover, qui n'existe pas au doigt — sans ça, un
-     visiteur mobile voit juste des photos qui flottent, sans titre, ni
-     indication que ce sont des liens cliquables. On rend la légende
-     (titre + catégorie) permanente sur ces appareils ; on laisse le
-     hint "Clic pour découvrir..." hover-only, son texte est trop long
-     pour rester lisible en permanence sur des vignettes de 110px sans
-     se chevaucher entre projets voisins sur l'orbite. --- */
-  @media (hover: none) {
-    .project-orbit-caption {
-      opacity: 1;
-    }
-    /* L'indication "Clic pour découvrir…" n'apparaît qu'au survol de la
-       souris : inutile au doigt, et elle dépassait de l'écran près des
-       bords (la page se retrouvait plus large que le téléphone). */
-    .project-orbit-hint {
-      display: none;
+    .work-highlights {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      justify-self: stretch;
+      width: auto;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
