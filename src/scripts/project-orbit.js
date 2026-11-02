@@ -22,15 +22,24 @@
 // 3. Fermeture — au clic, la roue se fige. Les autres projets avancent
 //    jusqu'au projet cliqué, passent derrière lui et s'effacent un à
 //    un ; il se referme ensuite en diagonale, puis on navigue.
+//
+// Mise en avant (si la page la prévoit) : une zone fixe à 12 h, marquée
+// par un contour dessiné à la main qui tremble légèrement. Le projet
+// qui passe dans ce contour devient le projet actif : sa fiche s'affiche
+// en haut à gauche et ses deux points forts sous la roue. Il le reste
+// jusqu'à ce que le projet suivant entre à son tour dans le contour.
 
 import { gsap } from "gsap";
 import { diagonalClipPath, markDiagonalTransition } from "./page-transition";
+import { createSketchFrame } from "./sketch-frame";
+import { createSpotlight } from "./orbit-spotlight";
 
 const START_ANGLE = -90; // 12 heures : point d'entrée de tous les projets
 const CRUISE_SPEED = 5; // degrés/s — rotation continue (inchangée)
 
 // Ouverture
-const REVEAL_INTERVAL = 0.35; // s entre l'entrée de deux projets
+const REVEAL_INTERVAL = 0.6; // s entre l'entrée de deux projets (le temps
+// d'afficher brièvement la fiche de chacun à son arrivée)
 const MAX_FILL_SPEED = 200; // degrés/s, plafond pendant le remplissage
 const DECEL_DURATION = 1.6; // s pour revenir à la vitesse de croisière
 const REVEAL_FADE = 0.3; // s de fondu à l'entrée
@@ -77,6 +86,14 @@ export function initProjectOrbit() {
   // cercle limité par la largeur où les projets se chevauchent.
   let radiusX = 0;
   let radiusY = 0;
+
+  // Mise en avant (facultative : seulement si la page contient la zone)
+  const stage = track.closest("[data-work]");
+  const spotlight = stage ? createSpotlight(stage) : null;
+  const frameEl = track.querySelector("[data-orbit-frame]");
+  const sketch = frameEl ? createSketchFrame(frameEl.querySelector("svg")) : null;
+  let zoneHalfWidth = 0; // demi-largeur de la zone des 12 h (px)
+  let activeIndex = -1;
   let angle = START_ANGLE;
   let phase = "fill"; // fill → decel → cruise → closing
   let decelElapsed = 0;
@@ -90,6 +107,46 @@ export function initProjectOrbit() {
     const itemSize = anchors[0].offsetWidth;
     radiusX = Math.max(0, width / 2 - itemSize / 2);
     radiusY = Math.max(0, height / 2 - itemSize / 2);
+
+    // Le contour est centré sur la position des 12 h, un peu plus grand
+    // que la vignette d'un projet.
+    if (frameEl) {
+      const thumb = anchors[0].querySelector(".project-orbit-item-inner");
+      const thumbHeight = thumb ? thumb.offsetHeight : itemSize * 0.75;
+      const pad = Math.max(10, itemSize * 0.1);
+      const frameWidth = itemSize + pad * 2;
+      const frameHeight = thumbHeight + pad * 2;
+      frameEl.style.width = `${frameWidth}px`;
+      frameEl.style.height = `${frameHeight}px`;
+      frameEl.style.left = `${width / 2 - frameWidth / 2}px`;
+      frameEl.style.top = `${height / 2 - radiusY - frameHeight / 2}px`;
+      sketch?.resize(frameWidth, frameHeight);
+      zoneHalfWidth = frameWidth / 2;
+    }
+  };
+
+  // Projet actif = celui dont le centre est dans le contour des 12 h. Il
+  // reste actif après en être sorti, jusqu'à l'entrée du suivant.
+  const updateSpotlight = () => {
+    if (!spotlight || phase === "closing") return;
+    let best = null;
+    let bestDelta = Infinity;
+    items.forEach((item) => {
+      if (!item.revealed || item.closed) return;
+      // Écart angulaire avec 12 h, dans [-180, 180)
+      const delta = ((((angle - item.i * step + item.extra - START_ANGLE) % 360) + 540) % 360) - 180;
+      if (Math.abs(delta) >= 90) return; // moitié basse de la roue
+      const offsetX = Math.abs(Math.sin((delta * Math.PI) / 180)) * radiusX;
+      if (offsetX < zoneHalfWidth && Math.abs(delta) < bestDelta) {
+        best = item;
+        bestDelta = Math.abs(delta);
+      }
+    });
+    frameEl?.classList.toggle("is-occupied", Boolean(best));
+    if (best && best.i !== activeIndex) {
+      activeIndex = best.i;
+      spotlight.setActive(best.i);
+    }
   };
 
   const render = () => {
@@ -121,6 +178,7 @@ export function initProjectOrbit() {
       item.el.classList.add("is-revealed");
     });
     render();
+    updateSpotlight();
     return;
   }
 
@@ -176,6 +234,8 @@ export function initProjectOrbit() {
     selected.el.style.zIndex = "10";
     selected.el.classList.add("is-selected");
     track.classList.add("is-closing");
+    spotlight?.hide();
+    sketch?.stop();
 
     const finish = () => {
       diagonalClose(selected).then(() => {
@@ -289,35 +349,36 @@ export function initProjectOrbit() {
     }
 
     render();
+    updateSpotlight();
     requestAnimationFrame(tick);
   };
 
-  // Pendant l'intro, la section n'est pas transparente : intro.js la
-  // pousse SOUS l'écran (yPercent: 100) pendant que le header plein
-  // écran joue son animation, puis la fait remonter. On attend donc que
-  // le cercle soit réellement remonté dans l'écran — son centre dans
-  // les trois quarts supérieurs — pour lancer le remplissage. Sinon la
-  // roulette se remplit derrière l'intro et apparaît déjà pleine.
-  // Sans intro (déjà jouée dans la session), le cercle est visible dès
-  // le chargement et le remplissage démarre aussitôt.
-  // Filet de sécurité : on démarre quoi qu'il arrive après 10 s.
+  // La roue démarre vide et ne se remplit qu'une fois réellement visible
+  // à l'écran (au moins 40 % du cercle) : elle se trouve sous le hero,
+  // et pendant l'intro, intro.js pousse toute la page sous l'écran. Le
+  // visiteur voit donc toujours les projets arriver un par un.
+  // IntersectionObserver tient compte des déplacements (transform) de
+  // l'intro. Il sert aussi à mettre en pause le tremblement du contour
+  // quand la roue n'est pas à l'écran.
   const waitForStage = () =>
     new Promise((resolve) => {
-      const startedAt = performance.now();
-      const check = () => {
-        const stage = track.closest("[data-reveal-after-intro]") ?? track;
-        const style = getComputedStyle(stage);
-        const rect = track.getBoundingClientRect();
-        const center = rect.top + rect.height / 2;
-        const visible =
-          style.display !== "none" &&
-          style.visibility !== "hidden" &&
-          parseFloat(style.opacity) > 0.2 &&
-          center < window.innerHeight * 0.75;
-        if (visible || performance.now() - startedAt > 10000) resolve();
-        else requestAnimationFrame(check);
-      };
-      check();
+      if (!("IntersectionObserver" in window)) {
+        sketch?.start();
+        return resolve();
+      }
+      let started = false;
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting && phase !== "closing") sketch?.start();
+          else sketch?.stop();
+          if (!started && entry.intersectionRatio >= 0.4) {
+            started = true;
+            resolve();
+          }
+        },
+        { threshold: [0, 0.4] }
+      );
+      observer.observe(track);
     });
 
   waitForStage().then(() => {

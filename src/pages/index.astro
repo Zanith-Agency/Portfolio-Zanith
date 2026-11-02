@@ -5,55 +5,450 @@ import { getProjects } from "../lib/supabase";
 export const prerender = false;
 
 const projects = await getProjects();
+
+// --- Données de la mise en avant (fiche + points forts) ---
+// Une liste devient une ligne de texte : ["Figma", "WordPress"] → "Figma, WordPress"
+const joinList = (value: unknown) =>
+  Array.isArray(value) ? value.filter(Boolean).join(", ") || null : (value as string) || null;
+
+const spotlightData = projects.map((project) => ({
+  title: project.title,
+  // Phrase courte : `summary`, sinon l'accroche de la page projet,
+  // sinon la catégorie.
+  summary: project.summary || project.tagline || project.category || null,
+  client: project.title,
+  year: project.project_year || null,
+  sector: project.client_sector || null,
+  services: joinList(project.services),
+  tools: joinList(project.tools),
+  highlights: (Array.isArray(project.highlights) ? project.highlights : [])
+    .filter((item: any) => item && (item.title || item.text))
+    .slice(0, 2)
+    .map((item: any) => ({ title: String(item.title ?? ""), text: String(item.text ?? "") })),
+}));
+// JSON inséré dans la page : on neutralise "<" pour qu'un texte ne
+// puisse jamais refermer la balise <script>.
+const spotlightJson = JSON.stringify(spotlightData).replace(/</g, "\\u003c");
 ---
 
 <Layout title="Zanith — Nadir Gherich" isHome headerVariant="dark" pageLabel="Travail">
-  <section class="hero" data-reveal-after-intro>
-    <div class="project-orbit" id="project-orbit">
-      <div class="project-orbit-center">
-        <span class="project-orbit-mark">Zanith</span>
+  <!-- Toute la page monte ensemble à la fin de l'intro (intro.js) -->
+  <div class="home" data-reveal-after-intro>
+    <!-- ============ Hero ============ -->
+    <section class="home-hero" aria-labelledby="home-hero-title">
+      <div class="home-hero-inner">
+        <span class="home-hero-kicker">Zanith — Développement web &amp; publicité en ligne · Bruxelles</span>
+        <h1 class="home-hero-title" id="home-hero-title">
+          Sites web &amp; campagnes publicitaires pour les PME qui visent <span>le sommet.</span>
+        </h1>
+        <p class="home-hero-lead">
+          Je conçois des sites sur mesure et je pilote vos campagnes Google Ads et Meta Ads :
+          un seul interlocuteur, du premier clic jusqu'au client.
+        </p>
+        <div class="home-hero-actions">
+          <a href="#projets" class="home-button home-button--primary" data-scroll-to="#projets">
+            Voir les projets <span aria-hidden="true">↓</span>
+          </a>
+          <a href="/contact" class="home-button home-button--ghost">
+            Prendre contact <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+      <div class="home-hero-foot" aria-hidden="true">
+        <span>Reach the Peak</span>
+        <span class="home-hero-scroll">Défiler <span class="home-hero-scroll-line"></span></span>
+      </div>
+    </section>
+
+    <!-- ============ Roue des projets ============ -->
+    <section class="work" id="projets" data-work aria-labelledby="work-title">
+      <h2 class="visually-hidden" id="work-title">Projets</h2>
+
+      <!-- Fiche du projet actif (remplie par orbit-spotlight.js) -->
+      <div class="work-info" data-spot-panel>
+        <span class="work-info-index" data-spot-index></span>
+        <p class="work-info-title" data-spot-title></p>
+        <p class="work-info-summary" data-spot-summary></p>
+        <dl class="work-info-facts" data-spot-facts></dl>
       </div>
 
-      {projects.map((project) => (
-        <a href={`/projets/${project.slug}`} class="project-orbit-item">
-          <span class="project-orbit-hint">
-           Clic pour découvrir le projet <span class="project-orbit-hint-arrow">→</span>
-          </span>
-          <span class="project-orbit-item-inner">
-            <img src={project.image_path} alt={project.title} loading="eager" />
-          </span>
-          <span class="project-orbit-caption">
-            <span class="project-orbit-title">{project.title}</span>
-            <span class="project-orbit-category">{project.category}</span>
-          </span>
-        </a>
-      ))}
-    </div>
-  </section>
+      <div class="work-stage">
+        <div class="project-orbit" id="project-orbit">
+          <div class="project-orbit-center">
+            <span class="project-orbit-mark">Zanith</span>
+          </div>
+
+          <!-- Zone de sélection des 12 h : contour dessiné à la main -->
+          <div class="orbit-frame" data-orbit-frame aria-hidden="true">
+            <svg preserveAspectRatio="none"></svg>
+          </div>
+
+          {projects.map((project) => (
+            <a href={`/projets/${project.slug}`} class="project-orbit-item">
+              <span class="project-orbit-hint">
+               Clic pour découvrir le projet <span class="project-orbit-hint-arrow">→</span>
+              </span>
+              <span class="project-orbit-item-inner">
+                <img src={project.image_path} alt={project.title} loading="eager" />
+              </span>
+              <span class="project-orbit-caption">
+                <span class="project-orbit-title">{project.title}</span>
+                <span class="project-orbit-category">{project.category}</span>
+              </span>
+            </a>
+          ))}
+        </div>
+
+        <!-- Points forts du projet actif -->
+        <div class="work-highlights is-empty" data-spot-highlights></div>
+      </div>
+
+      <script type="application/json" data-spotlight-data set:html={spotlightJson}></script>
+    </section>
+  </div>
 
   <script>
     import { initIntro } from "../scripts/intro";
     import { initProjectOrbit } from "../scripts/project-orbit";
     initIntro();
     initProjectOrbit();
+
+    // « Voir les projets » : défilement doux jusqu'à la roue
+    document.querySelectorAll<HTMLAnchorElement>("[data-scroll-to]").forEach((link) => {
+      link.addEventListener("click", (event) => {
+        const target = document.querySelector(link.dataset.scrollTo || "");
+        if (!target) return;
+        event.preventDefault();
+        const lenis = (window as any).__lenis;
+        if (lenis) lenis.scrollTo(target, { duration: 1.4 });
+        else target.scrollIntoView({ behavior: "smooth" });
+      });
+    });
   </script>
 </Layout>
 
 <style>
-  .hero {
-    position: relative; min-height: 100vh;
+  .home {
+    background: var(--bg-inverse);
+    color: var(--text-inverse);
     /* Rien ne doit dépasser sur les côtés (projets près du bord) : sur
        téléphone, un débordement même invisible élargit la page. */
     overflow-x: clip;
-    background: var(--bg-inverse);
-    padding-top: 80px;
-    display: flex; align-items: center; justify-content: center;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  /* ============ Hero ============ */
+
+  .home-hero {
+    position: relative;
+    min-height: 100vh;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 120px var(--container-padding) clamp(2rem, 5vh, 3.5rem);
+  }
+
+  .home-hero-inner {
+    max-width: 1240px;
+    width: 100%;
+    margin: 0 auto auto;
+    padding-top: clamp(1rem, 7vh, 6rem);
+  }
+
+  .home-hero-kicker {
+    display: block;
+    margin-bottom: clamp(1.25rem, 3vh, 2rem);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+  }
+
+  .home-hero-title {
+    max-width: 18ch;
+    margin: 0;
+    font-weight: 700;
+    /* Limité aussi par la hauteur : le hero doit tenir dans l'écran */
+    font-size: clamp(2.4rem, min(5.8vw, 9.5svh), 5.8rem);
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+  }
+  .home-hero-title span {
+    color: var(--accent);
+  }
+
+  .home-hero-lead {
+    max-width: 38rem;
+    margin: clamp(1.5rem, 3.5vh, 2.25rem) 0 0;
+    font-weight: 300;
+    font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+    line-height: 1.6;
+    opacity: 0.8;
+  }
+
+  .home-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: clamp(2rem, 4.5vh, 3rem);
+  }
+
+  .home-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1rem 1.6rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition:
+      background-color 0.3s var(--ease-default),
+      border-color 0.3s var(--ease-default),
+      color 0.3s var(--ease-default);
+  }
+  .home-button span {
+    transition: transform 0.4s var(--ease-default);
+  }
+  .home-button--primary {
+    background: var(--accent);
+    color: var(--color-night);
+  }
+  .home-button--primary:hover span {
+    transform: translateY(3px);
+  }
+  .home-button--ghost {
+    border: 1px solid color-mix(in srgb, var(--color-cream) 35%, transparent);
+  }
+  .home-button--ghost:hover {
+    border-color: var(--color-cream);
+  }
+  .home-button--ghost:hover span {
+    transform: translateX(4px);
+  }
+  .home-button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  .home-hero-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1240px;
+    width: 100%;
+    margin: clamp(2.5rem, 6vh, 4rem) auto 0;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    opacity: 0.5;
+  }
+  .home-hero-scroll {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .home-hero-scroll-line {
+    position: relative;
+    width: 3rem;
+    height: 1px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--color-cream) 25%, transparent);
+  }
+  .home-hero-scroll-line::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--color-cream);
+    transform: translateX(-100%);
+    animation: hero-scroll 2.4s var(--ease-default) infinite;
+  }
+  @keyframes hero-scroll {
+    0% { transform: translateX(-100%); }
+    60%, 100% { transform: translateX(100%); }
+  }
+
+  /* ============ Roue des projets ============ */
+
+  .work {
+    /* Taille de la roue : la colonne du milieu fait exactement sa
+       largeur, la roue reste donc centrée dans la page. */
+    --orbit-size: min(46vw, 580px, max(340px, calc(100svh - 330px)));
+    position: relative;
+    min-height: 100vh;
+    min-height: 100svh;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--orbit-size) minmax(0, 1fr);
+    column-gap: clamp(1.5rem, 3vw, 3rem);
+    align-items: start;
+    padding: 112px var(--container-padding) clamp(2.5rem, 5vh, 3.5rem);
+    scroll-margin-top: 0;
+  }
+
+  .work-stage {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(1.5rem, 3.5vh, 2.5rem);
   }
 
   .project-orbit {
     position: relative;
-    width: min(65vw, 620px);
-    height: min(65vw, 620px);
+    width: var(--orbit-size);
+    height: var(--orbit-size);
+  }
+
+  /* --- Fiche du projet actif --- */
+  .work-info {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+    max-width: 22rem;
+    opacity: 0;
+    transition: opacity 0.4s var(--ease-default);
+  }
+  .work.has-spotlight .work-info {
+    opacity: 1;
+  }
+
+  .work-info-index {
+    display: block;
+    margin-bottom: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+  }
+
+  .work-info-title {
+    margin: 0;
+    font-weight: 800;
+    font-size: clamp(1.9rem, 2.8vw, 2.8rem);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+
+  .work-info-summary {
+    margin: 1rem 0 0;
+    font-weight: 300;
+    font-size: 1rem;
+    line-height: 1.55;
+    opacity: 0.8;
+  }
+
+  .work-info-facts {
+    margin: 1.75rem 0 0;
+    border-top: 1px solid color-mix(in srgb, var(--color-cream) 16%, transparent);
+  }
+  .work-info-facts :global(.work-fact) {
+    display: grid;
+    grid-template-columns: 7.5rem minmax(0, 1fr);
+    gap: 1rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-cream) 16%, transparent);
+  }
+  .work-info-facts :global(dt) {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    opacity: 0.55;
+    padding-top: 0.15rem;
+  }
+  .work-info-facts :global(dd) {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+
+  /* --- Points forts sous la roue --- */
+  .work-highlights {
+    width: min(100%, 34rem);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem clamp(1.25rem, 3vw, 2.5rem);
+    min-height: 5.5rem;
+  }
+  .work-highlights :global(.work-highlight) {
+    padding-top: 0.9rem;
+    border-top: 1px solid color-mix(in srgb, var(--color-cream) 22%, transparent);
+  }
+  .work-highlights :global(.work-highlight-number) {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-right: 0.6rem;
+  }
+  .work-highlights :global(.work-highlight-title) {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .work-highlights :global(.work-highlight-text) {
+    margin: 0.55rem 0 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    opacity: 0.75;
+  }
+
+  /* --- Contour des 12 h --- */
+  .orbit-frame {
+    position: absolute;
+    z-index: 3; /* au-dessus des projets, sans bloquer les clics */
+    pointer-events: none;
+    opacity: 0.45;
+    transition: opacity 0.6s var(--ease-default);
+  }
+  .orbit-frame.is-occupied {
+    opacity: 1;
+  }
+  .orbit-frame svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .orbit-frame :global(.sketch-stroke) {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+  .orbit-frame :global(.sketch-stroke--1) {
+    stroke: var(--color-cream);
+    stroke-width: 1.4;
+  }
+  .orbit-frame :global(.sketch-stroke--2) {
+    stroke: var(--accent);
+    stroke-width: 1.2;
+  }
+  .orbit-frame :global(.sketch-stroke--3) {
+    stroke: var(--color-cream);
+    stroke-width: 0.8;
+    opacity: 0.55;
+  }
+
+  /* Fermeture de la roue : la mise en avant s'efface */
+  .work.is-closing .work-info,
+  .work.is-closing .work-highlights,
+  .work.is-closing .orbit-frame {
+    opacity: 0;
+    transition: opacity 0.4s var(--ease-default);
   }
 
   .project-orbit-center {
@@ -138,62 +533,6 @@ const projects = await getProjects();
     color: var(--text-inverse); opacity: 0.7;
   }
 
-  /* --- Téléphone (portrait) ---
-     L'écran est bien plus haut que large : un cercle limité par la
-     largeur (~310 px) serre les projets au point qu'ils se chevauchent.
-     On donne à l'orbite toute la largeur utile ET la hauteur de l'écran
-     sous le header : project-orbit.js en fait un ovale vertical. */
-  @media (max-width: 700px) {
-    .hero {
-      min-height: 100vh;
-      min-height: 100svh;
-    }
-    .project-orbit {
-      width: calc(100vw - 2 * var(--container-padding));
-      height: min(calc(100svh - 80px - 7rem), 640px);
-    }
-    .project-orbit-item {
-      width: clamp(84px, 26vw, 112px);
-    }
-    /* Légende réduite au titre : la catégorie chargerait l'écran */
-    .project-orbit-caption {
-      margin-top: 0.45rem;
-    }
-    .project-orbit-title {
-      font-size: 0.78rem;
-    }
-    .project-orbit-category {
-      display: none;
-    }
-  }
-
-  /* --- Téléphone en paysage / écrans très bas ---
-     Même principe dans l'autre sens : ovale horizontal. */
-  @media (max-height: 560px) and (orientation: landscape) {
-    .hero {
-      min-height: 100svh;
-    }
-    .hero {
-      padding-top: 64px;
-    }
-    .project-orbit {
-      width: min(84vw, 760px);
-      height: calc(100svh - 64px - 1.5rem);
-    }
-    .project-orbit-item {
-      width: 76px;
-    }
-    .project-orbit-title {
-      font-size: 0.72rem;
-    }
-    .project-orbit-caption {
-      margin-top: 0.3rem;
-    }
-    .project-orbit-category {
-      display: none;
-    }
-  }
-
   .project-orbit-hint {
   position: absolute;
   bottom: 100%; left: 50%;
@@ -217,6 +556,204 @@ const projects = await getProjects();
   display: inline-block;
 }
 
+
+  /* ============ Tablette : la fiche passe au-dessus de la roue ============ */
+  @media (max-width: 1180px) {
+    .work {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: clamp(1.5rem, 4vh, 2.5rem);
+    }
+    .work-info,
+    .work-stage {
+      grid-column: 1;
+    }
+    .work-info {
+      grid-row: 1;
+      justify-self: center;
+      width: min(100%, 40rem);
+      max-width: none;
+      /* Hauteur réservée : la roue ne doit pas monter et descendre à
+         chaque changement de projet. */
+      min-height: 16rem;
+    }
+    .work-info-facts {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 1.5rem;
+    }
+    .work-stage {
+      grid-row: 2;
+    }
+    .project-orbit {
+      width: min(84vw, 560px);
+      height: min(84vw, 560px);
+    }
+    .work-highlights {
+      width: min(100%, 40rem);
+    }
+  }
+
+  /* ============ Tablette en paysage ============
+     Écran large mais peu haut : la fiche reste à gauche de la roue
+     pour que les deux soient visibles ensemble. */
+  @media (max-width: 1180px) and (min-width: 701px) and (min-height: 561px) and (orientation: landscape) {
+    .work {
+      --orbit-size: min(calc(100vw - 2 * var(--container-padding) - 17rem - 2rem), calc(100svh - 112px - 2.5rem), 580px);
+      grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
+      column-gap: 2rem;
+    }
+    .work-info {
+      grid-column: 1;
+      grid-row: 1;
+      justify-self: stretch;
+      width: auto;
+      min-height: 0;
+    }
+    .work-info-facts {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .work-stage {
+      grid-column: 2;
+      grid-row: 1;
+    }
+    .project-orbit {
+      width: var(--orbit-size);
+      height: var(--orbit-size);
+    }
+  }
+
+  /* ============ Téléphone (portrait) ============
+     L'écran est bien plus haut que large : l'orbite prend toute la
+     largeur et une bonne partie de la hauteur, et project-orbit.js en
+     fait un ovale vertical. */
+  @media (max-width: 700px) {
+    .home-hero {
+      padding-top: 104px;
+    }
+    .home-hero-inner {
+      padding-top: 0;
+      margin-top: auto;
+    }
+    .home-hero-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .home-button {
+      justify-content: space-between;
+    }
+
+    .work {
+      padding-top: 96px;
+    }
+    .work-info {
+      min-height: 13.5rem;
+    }
+    .work-info-title {
+      font-size: clamp(1.7rem, 8vw, 2.2rem);
+    }
+    .work-info-summary {
+      font-size: 0.92rem;
+    }
+    .work-info-facts {
+      margin-top: 1.1rem;
+    }
+    .work-info-facts :global(.work-fact) {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.2rem;
+      padding: 0.5rem 0;
+    }
+    /* Fiche allégée : le client est déjà dans le titre */
+    .work-info-facts :global(.work-fact[data-fact="client"]),
+    .work-info-facts :global(.work-fact[data-fact="tools"]) {
+      display: none;
+    }
+    .work-info-facts :global(dd) {
+      font-size: 0.8rem;
+    }
+
+    .project-orbit {
+      width: calc(100vw - 2 * var(--container-padding));
+      height: min(66svh, 560px);
+    }
+    .project-orbit-item {
+      width: clamp(84px, 26vw, 112px);
+    }
+    .project-orbit-caption {
+      margin-top: 0.45rem;
+    }
+    .project-orbit-title {
+      font-size: 0.78rem;
+    }
+    .project-orbit-category {
+      display: none;
+    }
+
+    .work-highlights {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* ============ Téléphone en paysage / écrans très bas ============
+     Même principe dans l'autre sens : ovale horizontal. */
+  @media (max-height: 560px) and (orientation: landscape) {
+    .home-hero {
+      padding-top: 88px;
+    }
+    .home-hero-inner {
+      padding-top: 0;
+    }
+    .home-hero-title {
+      font-size: clamp(2rem, 5.5vw, 3rem);
+    }
+    /* La fiche passe à gauche de la roue, sinon la roue sort de
+       l'écran. */
+    .work {
+      grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+      column-gap: 1.25rem;
+      padding-top: 72px;
+    }
+    .work-info {
+      grid-column: 1;
+      grid-row: 1;
+      min-height: 0;
+      width: auto;
+      justify-self: stretch;
+    }
+    .work-info-title {
+      font-size: 1.5rem;
+    }
+    .work-info-summary {
+      font-size: 0.85rem;
+    }
+    .work-info-facts {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .work-info-facts :global(.work-fact[data-fact="client"]),
+    .work-info-facts :global(.work-fact[data-fact="tools"]) {
+      display: none;
+    }
+    .work-stage {
+      grid-column: 2;
+      grid-row: 1;
+    }
+    .project-orbit {
+      width: 100%;
+      height: calc(100svh - 72px - 1.5rem);
+    }
+    .project-orbit-item {
+      width: 76px;
+    }
+    .project-orbit-title {
+      font-size: 0.72rem;
+    }
+    .project-orbit-caption {
+      margin-top: 0.3rem;
+    }
+    .project-orbit-category {
+      display: none;
+    }
+  }
+
   /* --- Tactile : .project-orbit-caption et .project-orbit-hint ne
      s'affichent qu'au :hover, qui n'existe pas au doigt — sans ça, un
      visiteur mobile voit juste des photos qui flottent, sans titre, ni
@@ -234,6 +771,12 @@ const projects = await getProjects();
        bords (la page se retrouvait plus large que le téléphone). */
     .project-orbit-hint {
       display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .home-hero-scroll-line::after {
+      animation: none;
     }
   }
 </style>

@@ -31,6 +31,16 @@ export interface Project {
   development: string | null; // section 04
   outcome: string | null; // section 05
   gallery: string[] | null; // images de la section 04 (URLs)
+
+  // Page d'accueil — fiche du projet actif dans la roue
+  summary: string | null; // description courte (une phrase)
+  highlights: ProjectHighlight[] | null; // 2 points forts maximum
+}
+
+// Un point fort affiché sous la roue : « 01 — TITRE / texte »
+export interface ProjectHighlight {
+  title: string;
+  text: string;
 }
 
 export async function getProjects(): Promise<Project[]> {
