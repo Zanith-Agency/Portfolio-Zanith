@@ -29,83 +29,146 @@ const styles = [
   { id: "semibold", label: "SemiBold" },
 ];
 
-// Captures annotées : positions des points en % de l'image.
+// Captures annotées. Toutes les positions sont en % de l'image :
+// - `zones` : les zones mises en valeur (x, y = coin haut-gauche ; w, h
+//   = largeur, hauteur). Le zoom cadre l'ensemble des zones de la note.
+// - `dot` : position du point numéroté.
 const captures = [
   {
     id: "accueil",
     label: "Accueil",
-    image: "/projects/elmagico/galerie-01-accueil.webp",
-    width: 2000,
-    height: 1029,
+    image: "/projects/elmagico/site-accueil.webp",
+    width: 1800,
+    height: 927,
     alt: "Page d'accueil du site El Mágico Barber",
     notes: [
       {
-        x: 77.5,
-        y: 18.5,
-        title: "L'heure de Bruxelles, en direct",
-        text: "À côté du menu, une petite horloge affiche l'heure de Bruxelles en temps réel. Un détail vivant, qui ancre la marque dans sa ville.",
+        dot: { x: 17.5, y: 7 },
+        zones: [
+          { x: 17.5, y: 7, w: 8, h: 7 },
+          { x: 85, y: 5.5, w: 11.5, h: 9 },
+        ],
+        title: "Deux chemins vers la réservation",
+        text: "Le lien « Réservation » du menu et le bouton « Services » mènent tous les deux à l'outil de réservation d'El Mágico. Où que le visiteur regarde, il est à un clic de prendre rendez-vous.",
       },
       {
-        x: 90.5,
-        y: 18.5,
-        title: "Un bouton toujours à portée",
-        text: "Le bouton Services, cerclé de doré avec sa flèche dans une pastille pleine, reste visible en haut de chaque page : le visiteur accède aux prestations en un geste.",
+        dot: { x: 85, y: 5.5 },
+        zones: [{ x: 85, y: 5.5, w: 11.5, h: 9 }],
+        title: "Le bouton Services se démarque",
+        text: "Cerclé de doré, avec sa flèche dans une pastille pleine, c'est le seul élément du menu qui prend la forme d'un bouton. L'œil le repère avant les simples liens : c'est l'action principale de la page.",
       },
       {
-        x: 4.5,
-        y: 48,
-        title: "Deux voix pour un titre",
-        text: "Une ligne droite en blanc, une ligne en italique dorée. Le contraste du Cormorant Garamond donne au titre l'élégance d'une enseigne.",
+        dot: { x: 66.5, y: 23 },
+        zones: [{ x: 66.5, y: 23, w: 30, h: 65 }],
+        title: "Une galerie qui montre le savoir-faire",
+        text: "Dans une carte en verre, un diaporama de quatre photos montre le travail des barbiers et les caractéristiques du salon. Le visiteur juge la qualité technique et l'univers du lieu avant même de réserver.",
+      },
+    ],
+  },
+  {
+    id: "solution",
+    label: "La solution",
+    image: "/projects/elmagico/solution.webp",
+    width: 1800,
+    height: 770,
+    alt: "Section « La solution El Magico Barber » : les atouts du salon épinglés sur une photo",
+    notes: [
+      {
+        dot: { x: 41, y: 15.5 },
+        zones: [{ x: 41, y: 15.5, w: 57, h: 75 }],
+        title: "Les atouts posés sur une vraie photo",
+        text: "Plutôt qu'une liste d'icônes, les quatre atouts du salon (produits premium, style sur mesure, confort absolu, équipe passionnée) sont épinglés sur une photo réelle de l'intérieur, chacun relié par un fil à l'endroit qui l'illustre.",
       },
       {
-        x: 81,
-        y: 40,
-        title: "Une carte en verre",
-        text: "Le diaporama de photos est posé sur une surface translucide et floutée : on garde le salon visible derrière, sans gêner la lecture. Le compteur 03 / 04 indique où l'on en est.",
+        dot: { x: 9, y: 51 },
+        zones: [
+          { x: 9, y: 51, w: 16, h: 42 },
+          { x: 55.5, y: 36, w: 9.5, h: 9.5 },
+        ],
+        title: "Une liste et une photo qui se répondent",
+        text: "À gauche, une liste numérotée reprend les mêmes atouts. L'atout actif passe en doré, dans la liste comme sur la photo : le regard fait naturellement l'aller-retour entre le texte et l'image.",
       },
       {
-        x: 45,
-        y: 78,
-        title: "Le salon en toile de fond",
-        text: "Une vraie photo du salon, assombrie par un voile, sert de décor : le visiteur entre dans le lieu avant même de réserver.",
+        dot: { x: 2.5, y: 4 },
+        zones: [{ x: 2, y: 3, w: 38, h: 34 }],
+        title: "Une promesse en une phrase",
+        text: "Le titre et un court paragraphe posent le ton : de l'accueil à la dernière touche de style, chaque coupe est présentée comme un moment de détente et de précision.",
+      },
+    ],
+  },
+  {
+    id: "lookbook",
+    label: "LookBook",
+    image: "/projects/elmagico/lookbook.webp",
+    width: 1800,
+    height: 1200,
+    alt: "Page LookBook du site El Mágico Barber : une grille de coupes tendance",
+    notes: [
+      {
+        dot: { x: 69.5, y: 34 },
+        zones: [{ x: 43.5, y: 6.5, w: 52.5, h: 93 }],
+        title: "Les coupes du moment",
+        text: "Le LookBook présente une sélection de coupes tendance et intemporelles en grandes photos verticales : le client voit d'un coup d'œil ce qui se fait en ce moment.",
+      },
+      {
+        dot: { x: 43.5, y: 2.5 },
+        zones: [
+          { x: 43.5, y: 0.5, w: 10.5, h: 5 },
+          { x: 71, y: 0.5, w: 11.5, h: 5 },
+          { x: 43.5, y: 68.5, w: 10, h: 5 },
+          { x: 71, y: 68.5, w: 14, h: 5 },
+        ],
+        title: "Un vocabulaire commun",
+        text: "Chaque coupe porte son nom : Taper Fade, French Crop, Burst Fade, High Skin Fade… Le client peut montrer ou citer exactement ce qu'il veut à son barbier.",
+      },
+      {
+        dot: { x: 5, y: 44 },
+        zones: [
+          { x: 5, y: 44, w: 31, h: 16 },
+          { x: 43.5, y: 7, w: 24.5, h: 53 },
+        ],
+        title: "Survoler pour en savoir plus",
+        text: "Au survol d'une coupe, le visiteur découvre sa description et le résultat réalisé dans le salon. Le LookBook devient une vitrine du travail de l'équipe, pas seulement un catalogue d'inspirations.",
       },
     ],
   },
   {
     id: "tarifs",
     label: "Tarifs",
-    image: "/projects/elmagico/galerie-05-tarifs.webp",
-    width: 1400,
-    height: 721,
-    alt: "Grille tarifaire du site El Mágico Barber",
+    image: "/projects/elmagico/tarifs.webp",
+    width: 1100,
+    height: 775,
+    alt: "Grille des tarifs du site El Mágico Barber",
     notes: [
       {
-        x: 34.5,
-        y: 21.8,
+        dot: { x: 28.5, y: 2.5 },
+        zones: [{ x: 28.5, y: 1.5, w: 42.5, h: 8.5 }],
         title: "D'abord, le salon",
-        text: "Deux onglets séparent les salons d'Uccle et du centre-ville. L'onglet actif passe en doré pour que l'on sache toujours où l'on se trouve.",
+        text: "Deux onglets séparent les salons d'Uccle et du centre-ville : chacun affiche sa propre grille. L'onglet actif passe en doré, on sait toujours où l'on se trouve.",
       },
       {
-        x: 30,
-        y: 35,
+        dot: { x: 20.5, y: 18 },
+        zones: [{ x: 20.5, y: 18, w: 60, h: 8 }],
         title: "Puis, le barbier",
-        text: "Les tarifs varient d'un professionnel à l'autre. Le visiteur choisit son barbier et la grille se met à jour, sans changer de page.",
+        text: "Les tarifs varient d'un barbier à l'autre. Le visiteur choisit Jhonny, Farro ou Raymond et la grille se met à jour, sans changer de page.",
       },
       {
-        x: 23,
-        y: 46.7,
+        dot: { x: 9, y: 33 },
+        zones: [
+          { x: 9, y: 33, w: 24, h: 20 },
+          { x: 51.5, y: 33, w: 21.5, h: 20 },
+          { x: 51.5, y: 60, w: 21.5, h: 20 },
+        ],
         title: "Trois familles de prestations",
-        text: "Coupes et barbes, soins et détente, techniques : les prestations sont rangées en colonnes, comme sur la carte d'un restaurant.",
-      },
-      {
-        x: 77,
-        y: 70,
-        title: "Une carte claire sur fond sombre",
-        text: "La grille est posée sur un fond crème au milieu de la page anthracite : elle se détache et se lit comme un vrai menu.",
+        text: "Coupes et barbes, soins et détente, techniques : les prestations sont rangées comme sur la carte d'un restaurant, avec des prix clairs et des fourchettes pour les techniques.",
       },
     ],
   },
 ];
+
+// Masque sombre autour des zones d'une note (trou = zone)
+const veilPath = (zones: { x: number; y: number; w: number; h: number }[]) =>
+  "M0 0H100V100H0Z " + zones.map((z) => `M${z.x} ${z.y}h${z.w}v${z.h}h${-z.w}Z`).join(" ");
 ---
 
 {section === "process" && (
@@ -209,7 +272,7 @@ const captures = [
     <div class="extra-head extra-head--row">
       <div>
         <span class="extra-kicker">Captures annotées</span>
-        <h3 class="extra-title">Les choix de design, point par point</h3>
+        <h3 class="extra-title">Ce qui fait le site, point par point</h3>
       </div>
       <div class="notes-tabs" role="tablist" aria-label="Capture affichée">
         {captures.map((capture, index) => (
@@ -237,42 +300,71 @@ const captures = [
         data-notes-capture={capture.id}
         hidden={captureIndex !== 0}
       >
-        <figure class="notes-figure">
-          <img
-            src={capture.image}
-            alt={capture.alt}
-            width={capture.width}
-            height={capture.height}
-            loading="lazy"
-            decoding="async"
-          />
-          {capture.notes.map((note, index) => (
-            <button
-              type="button"
-              class="notes-dot"
-              style={`left: ${note.x}%; top: ${note.y}%`}
-              aria-label={`Note ${index + 1} : ${note.title}`}
-              aria-pressed={index === 0 ? "true" : "false"}
-              data-notes-dot={index}
-            >
-              <span>{index + 1}</span>
-            </button>
-          ))}
+        <figure class="notes-figure" style={`aspect-ratio: ${capture.width} / ${capture.height}`} data-notes-figure>
+          <!-- Tout ce qui est dans la « scène » zoome ensemble -->
+          <div class="notes-stage" data-notes-stage>
+            <img
+              src={capture.image}
+              alt={capture.alt}
+              width={capture.width}
+              height={capture.height}
+              loading="lazy"
+              decoding="async"
+              draggable="false"
+            />
+            {capture.notes.map((note, index) => (
+              <svg class="notes-veil" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" data-notes-veil={index} hidden={index !== 0}>
+                <path d={veilPath(note.zones)} fill-rule="evenodd" />
+              </svg>
+            ))}
+            {capture.notes.map((note, index) =>
+              note.zones.map((zone) => (
+                <span
+                  class={`notes-zone${index === 0 ? " is-active" : ""}`}
+                  style={`left: ${zone.x}%; top: ${zone.y}%; width: ${zone.w}%; height: ${zone.h}%`}
+                  data-zone-of={index}
+                  data-x={zone.x}
+                  data-y={zone.y}
+                  data-w={zone.w}
+                  data-h={zone.h}
+                  aria-hidden="true"
+                ></span>
+              ))
+            )}
+            {capture.notes.map((note, index) => (
+              <button
+                type="button"
+                class="notes-dot"
+                style={`left: ${Math.min(97, Math.max(2.5, note.dot.x))}%; top: ${Math.min(95, Math.max(4, note.dot.y))}%`}
+                aria-label={`Note ${index + 1} : ${note.title}`}
+                aria-pressed={index === 0 ? "true" : "false"}
+                data-notes-dot={index}
+              >
+                <span>{index + 1}</span>
+              </button>
+            ))}
+          </div>
         </figure>
 
         <div class="notes-panel">
-          {capture.notes.map((note, index) => (
-            <div class="notes-note" data-notes-note={index} hidden={index !== 0}>
-              <span class="notes-note-index">
-                {String(index + 1).padStart(2, "0")} / {String(capture.notes.length).padStart(2, "0")}
-              </span>
-              <h4>{note.title}</h4>
-              <p>{note.text}</p>
-            </div>
-          ))}
+          <div class="notes-notes">
+            {capture.notes.map((note, index) => (
+              <div class="notes-note" data-notes-note={index} hidden={index !== 0}>
+                <span class="notes-note-index">
+                  {String(index + 1).padStart(2, "0")} / {String(capture.notes.length).padStart(2, "0")}
+                </span>
+                <h4>{note.title}</h4>
+                <p>{note.text}</p>
+              </div>
+            ))}
+          </div>
           <div class="notes-nav">
             <button type="button" data-notes-step="-1" aria-label="Note précédente">←</button>
             <button type="button" data-notes-step="1" aria-label="Note suivante">→</button>
+            <button type="button" class="notes-zoom" data-notes-zoom aria-pressed="false">
+              <span class="notes-zoom-in">Zoomer</span>
+              <span class="notes-zoom-out">Vue d'ensemble</span>
+            </button>
           </div>
         </div>
       </div>
@@ -768,21 +860,67 @@ const captures = [
     display: none;
   }
 
+  /* --- Capture : cadre fixe, la « scène » à l'intérieur zoome --- */
   .notes-figure {
     position: relative;
     margin: 0;
-  }
-  .notes-figure img {
-    display: block;
-    width: 100%;
-    height: auto;
+    overflow: hidden;
     border-radius: 8px;
     border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+    background: #141414;
+    touch-action: pan-y; /* glissement horizontal = note suivante */
+  }
+  .notes-stage {
+    --zoom: 1;
+    position: absolute;
+    inset: 0;
+    transform-origin: 0 0;
+    transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+    will-change: transform;
+  }
+  .notes-stage img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
-  /* Points numérotés, avec une pulsation discrète pour inviter au clic */
+  /* Voile sombre autour des zones de la note active */
+  .notes-veil {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    fill: rgba(10, 10, 12, 0.55);
+    animation: notes-fade 0.5s var(--ease-default);
+  }
+  .notes-veil[hidden] {
+    display: none;
+  }
+  @keyframes notes-fade {
+    from { opacity: 0; }
+  }
+
+  /* Contour doré des zones mises en valeur */
+  .notes-zone {
+    position: absolute;
+    border: calc(1.5px / var(--zoom)) solid var(--accent);
+    border-radius: calc(6px / var(--zoom));
+    box-shadow: 0 0 calc(18px / var(--zoom)) color-mix(in srgb, var(--accent) 45%, transparent);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s var(--ease-default);
+  }
+  .notes-zone.is-active {
+    opacity: 1;
+  }
+
+  /* Points numérotés : taille constante quel que soit le zoom */
   .notes-dot {
     position: absolute;
+    z-index: 2;
     width: 2rem;
     height: 2rem;
     margin: -1rem 0 0 -1rem;
@@ -798,10 +936,11 @@ const captures = [
     font-family: var(--font-mono);
     font-size: 0.75rem;
     cursor: pointer;
+    transform: scale(calc(1 / var(--zoom)));
     transition:
       background-color 0.3s var(--ease-default),
       border-color 0.3s var(--ease-default),
-      transform 0.3s var(--ease-default);
+      transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
   }
   .notes-dot::before {
     content: "";
@@ -811,9 +950,6 @@ const captures = [
     border: 1px solid #ffffff;
     opacity: 0;
     animation: notes-pulse 2.4s var(--ease-default) infinite;
-  }
-  .notes-dot:hover {
-    transform: scale(1.1);
   }
   .notes-dot[aria-pressed="true"] {
     background: var(--accent);
@@ -833,13 +969,26 @@ const captures = [
     70%, 100% { opacity: 0; transform: scale(1.5); }
   }
 
+  /* --- Panneau de texte --- */
   .notes-panel {
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
   }
+  .notes-notes {
+    display: grid;
+  }
+  .notes-note {
+    grid-area: 1 / 1;
+  }
   .notes-note[hidden] {
     display: none;
+  }
+  .notes-note:not([hidden]) {
+    animation: notes-rise 0.45s var(--ease-default);
+  }
+  @keyframes notes-rise {
+    from { opacity: 0; transform: translateY(10px); }
   }
   .notes-note-index {
     display: block;
@@ -862,21 +1011,42 @@ const captures = [
 
   .notes-nav {
     display: flex;
+    align-items: center;
     gap: 0.5rem;
   }
   .notes-nav button {
-    width: 2.6rem;
+    min-width: 2.6rem;
     height: 2.6rem;
     border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
-    border-radius: 50%;
+    border-radius: 999px;
     background: none;
     color: inherit;
     font: inherit;
     cursor: pointer;
-    transition: border-color 0.3s var(--ease-default);
+    transition: border-color 0.3s var(--ease-default), background-color 0.3s var(--ease-default);
   }
   .notes-nav button:hover {
     border-color: var(--accent);
+  }
+  .notes-nav button:focus-visible,
+  .notes-tabs button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .notes-nav .notes-zoom {
+    margin-left: auto;
+    padding: 0 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .notes-zoom-out,
+  .notes-zoom[aria-pressed="true"] .notes-zoom-in {
+    display: none;
+  }
+  .notes-zoom[aria-pressed="true"] .notes-zoom-out {
+    display: inline;
   }
 
   /* ============ Mobile ============ */
@@ -907,11 +1077,35 @@ const captures = [
       margin: -0.8rem 0 0 -0.8rem;
       font-size: 0.65rem;
     }
+    /* Onglets : défilent horizontalement s'ils ne tiennent pas */
+    .notes-tabs {
+      max-width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .notes-tabs::-webkit-scrollbar {
+      display: none;
+    }
+    .notes-tabs button {
+      flex: none;
+      padding: 0.5rem 0.7rem;
+      font-size: 0.74rem;
+    }
+    /* Hauteur réservée au texte : la page ne saute pas d'une note à l'autre */
+    .notes-notes {
+      min-height: 11.5rem;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .notes-dot::before {
+    .notes-dot::before,
+    .notes-veil,
+    .notes-note:not([hidden]) {
       animation: none;
+    }
+    .notes-stage,
+    .notes-dot {
+      transition: none;
     }
   }
 </style>
