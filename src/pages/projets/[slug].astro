@@ -3,6 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import DefaultReveal from "../../components/projects/DefaultReveal.astro";
 import ElMagicoReveal from "../../components/projects/ElMagicoReveal.astro";
 import ElMagicoExtras from "../../components/projects/ElMagicoExtras.astro";
+import KararraExtras from "../../components/projects/KararraExtras.astro";
 import ProjectAscent from "../../components/ProjectAscent.astro";
 import CaseGallery from "../../components/CaseGallery.astro";
 import { getProjectBySlug, getProjects } from "../../lib/supabase";
@@ -33,6 +34,7 @@ const Reveal = customReveals[project.slug as keyof typeof customReveals] ?? Defa
 // affiche son contenu sous le texte de la section concernée.
 const customExtras = {
   elmagicobarber: ElMagicoExtras,
+  kararra: KararraExtras,
 };
 const Extras = customExtras[project.slug as keyof typeof customExtras];
 

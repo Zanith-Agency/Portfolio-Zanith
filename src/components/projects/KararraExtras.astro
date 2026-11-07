@@ -1,0 +1,542 @@
+---
+// Contenus interactifs propres à Kararra (page projet).
+//   - section "development" → l'évaluateur, en version simplifiée
+//
+// Mêmes formules que le moteur de l'application (engine.ts) et mêmes
+// réglages que la marque (marges, budget). Les calculs sont dans
+// src/scripts/kararra-simulator.js.
+
+interface Props {
+  section: string;
+}
+
+const { section } = Astro.props;
+
+const tiers = [
+  { id: "materialTier", label: "Matière" },
+  { id: "paletteTier", label: "Palette" },
+  { id: "styleTier", label: "Style" },
+];
+
+const tierOptions = [
+  { value: "coeur", label: "Cœur de marque" },
+  { value: "peripherie", label: "Périphérie" },
+  { value: "hors_univers", label: "Hors univers" },
+];
+
+// Curseurs : id, libellé, min, max, pas, unité
+const priceSliders = [
+  { id: "purchase", label: "Prix d'achat", min: 2, max: 60, step: 0.5, unit: "€" },
+  { id: "fees", label: "Transport & frais d'import", min: 0, max: 20, step: 0.1, unit: "€ / u" },
+  { id: "price", label: "Prix de vente HT", min: 10, max: 150, step: 1, unit: "€" },
+  { id: "qty", label: "Quantité commandée", min: 10, max: 300, step: 10, unit: "u" },
+];
+const scoreSliders = [
+  { id: "quality", label: "Qualité", min: 0, max: 100, step: 5, unit: "/ 100" },
+  { id: "originality", label: "Originalité", min: 0, max: 100, step: 5, unit: "/ 100" },
+  { id: "reliability", label: "Fiabilité fournisseur", min: 0, max: 100, step: 5, unit: "/ 100" },
+  { id: "risk", label: "Niveau de risque", min: 0, max: 100, step: 5, unit: "/ 100" },
+];
+
+const subScores = [
+  { id: "coherence", label: "Cohérence Kararra" },
+  { id: "profitability", label: "Rentabilité" },
+  { id: "quality", label: "Qualité" },
+  { id: "moq_investment", label: "Investissement" },
+  { id: "originality", label: "Originalité" },
+  { id: "supplier_reliability", label: "Fiabilité fournisseur" },
+  { id: "logistics", label: "Logistique" },
+  { id: "risk", label: "Risque" },
+];
+
+// Exemples prêts à l'emploi (produits fictifs)
+const presets = [
+  { id: "travertin", label: "Plateau en travertin" },
+  { id: "bougie", label: "Bougie parfumée" },
+  { id: "vase", label: "Vase coloré" },
+];
+---
+
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Montserrat:wght@400;500;600&display=swap"
+/>
+
+{section === "development" && (
+  <div class="case-extra kar-sim" data-kararra-sim data-case-reveal>
+    <div class="extra-head extra-head--row">
+      <div>
+        <span class="extra-kicker">Évaluateur</span>
+        <h3 class="extra-title">Faites passer un objet à l'examen</h3>
+      </div>
+      <div class="sim-presets" role="group" aria-label="Exemples de produits">
+        {presets.map((preset, index) => (
+          <button type="button" data-sim-preset={preset.id} aria-pressed={index === 0 ? "true" : "false"}>
+            {preset.label}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <!-- Fenêtre façon application -->
+    <div class="sim-app">
+      <div class="sim-bar" aria-hidden="true">
+        <span class="sim-brand">Kararra <em>Evaluator</em></span>
+        <span class="sim-dots"><i></i><i></i><i></i></span>
+      </div>
+
+      <div class="sim-grid">
+        <!-- Saisie -->
+        <form class="sim-form" data-sim-form onsubmit="return false">
+          <div class="sim-group" role="group" aria-labelledby="sim-group-0">
+            <p class="sim-group-title" id="sim-group-0">Prix &amp; coûts</p>
+            {priceSliders.map((s) => (
+              <label class="sim-range">
+                <span class="sim-range-head">
+                  <span>{s.label}</span>
+                  <output data-sim-out={s.id}></output>
+                </span>
+                <input type="range" name={s.id} min={s.min} max={s.max} step={s.step} data-unit={s.unit} />
+              </label>
+            ))}
+          </div>
+
+          <div class="sim-group" role="group" aria-labelledby="sim-group-1">
+            <p class="sim-group-title" id="sim-group-1">Univers de la marque</p>
+            <div class="sim-tiers">
+              {tiers.map((t) => (
+                <label class="sim-select">
+                  <span>{t.label}</span>
+                  <select name={t.id}>
+                    {tierOptions.map((o) => <option value={o.value}>{o.label}</option>)}
+                  </select>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div class="sim-group" role="group" aria-labelledby="sim-group-2">
+            <p class="sim-group-title" id="sim-group-2">Appréciation</p>
+            {scoreSliders.map((s) => (
+              <label class="sim-range">
+                <span class="sim-range-head">
+                  <span>{s.label}</span>
+                  <output data-sim-out={s.id}></output>
+                </span>
+                <input type="range" name={s.id} min={s.min} max={s.max} step={s.step} data-unit={s.unit} />
+              </label>
+            ))}
+          </div>
+        </form>
+
+        <!-- Résultat -->
+        <div class="sim-result" aria-live="polite">
+          <div class="sim-decision" data-sim-decision>
+            <div>
+              <span class="sim-decision-kicker">Décision</span>
+              <strong class="sim-decision-label" data-sim-band>—</strong>
+            </div>
+            <div class="sim-score">
+              <strong data-sim-score>—</strong>
+              <span>score / 100</span>
+            </div>
+          </div>
+          <p class="sim-reason" data-sim-reason></p>
+
+          <dl class="sim-kpis">
+            <div><dt>Coût réel</dt><dd data-sim-landed>—</dd></div>
+            <div><dt>Marge</dt><dd data-sim-margin>—</dd></div>
+            <div><dt>Prix d'achat max</dt><dd data-sim-maxbuy>—</dd></div>
+            <div><dt>Cash requis</dt><dd data-sim-cash>—</dd></div>
+          </dl>
+
+          <div class="sim-scores">
+            <span class="sim-scores-title">Score détaillé</span>
+            {subScores.map((s) => (
+              <div class="sim-bar-row" data-sim-sub={s.id}>
+                <span>{s.label}</span>
+                <span class="sim-track"><span class="sim-fill"></span></span>
+                <span class="sim-value">—</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="sim-note">
+      Version simplifiée de l'évaluateur : mêmes formules que l'application, avec les marges et le budget
+      de la marque (marge plancher 40 %, cible 60 %, excellente 80 %, budget de 5 000 €). Les produits sont fictifs.
+    </p>
+  </div>
+)}
+
+<script>
+  import { initKararraSimulator } from "../../scripts/kararra-simulator";
+  initKararraSimulator();
+</script>
+
+<style>
+  /* --- Bloc commun aux contenus sur mesure --- */
+  .case-extra {
+    grid-column: 1 / -1;
+    margin-top: clamp(1.5rem, 4vw, 3rem);
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+    border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+    border-radius: 14px;
+    background: color-mix(in srgb, currentColor 3%, transparent);
+  }
+  .extra-head {
+    margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
+  }
+  .extra-head--row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.25rem;
+  }
+  .extra-kicker {
+    display: block;
+    margin-bottom: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+  }
+  .extra-title {
+    margin: 0;
+    font-weight: 500;
+    font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+    line-height: 1.15;
+  }
+
+  /* --- Exemples --- */
+  .sim-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .sim-presets button {
+    padding: 0.5rem 0.95rem;
+    border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+    border-radius: 999px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: background-color 0.3s var(--ease-default), border-color 0.3s var(--ease-default), color 0.3s var(--ease-default);
+  }
+  .sim-presets button[aria-pressed="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .sim-presets button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* --- Fenêtre de l'application (palette Kararra) --- */
+  .sim-app {
+    --k-paper: #f5ede1;
+    --k-surface: #fffdf9;
+    --k-field: #fbf4ea;
+    --k-ink: #2c201a;
+    --k-soft: #5a4a3e;
+    --k-muted: #8c7b6b;
+    --k-hair: #e6d7c3;
+    --k-terra: #b4703f;
+    --k-terra-deep: #8a5230;
+    --k-green: #5e7a4e;
+    --k-amber: #b98327;
+    --k-red: #a83a2b;
+    --k-serif: "Playfair Display", Georgia, serif;
+    --k-sans: "Montserrat", system-ui, sans-serif;
+    overflow: hidden;
+    border-radius: 14px;
+    background: var(--k-paper);
+    color: var(--k-ink);
+    font-family: var(--k-sans);
+    box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.45);
+  }
+  .sim-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid var(--k-hair);
+  }
+  .sim-brand {
+    font-family: var(--k-serif);
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .sim-brand em {
+    margin-left: 0.4rem;
+    font-family: var(--k-sans);
+    font-style: normal;
+    font-weight: 500;
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
+    color: var(--k-terra);
+  }
+  .sim-dots {
+    display: flex;
+    gap: 0.35rem;
+  }
+  .sim-dots i {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: var(--k-hair);
+  }
+
+  .sim-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: clamp(1rem, 2.5vw, 1.75rem);
+    padding: clamp(1rem, 2.5vw, 1.75rem);
+  }
+
+  /* --- Saisie --- */
+  .sim-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .sim-group {
+    margin: 0;
+    padding: 1.1rem 1.2rem 0.4rem;
+    border: 1px solid var(--k-hair);
+    border-radius: 14px;
+    background: var(--k-surface);
+  }
+  .sim-group-title {
+    margin: 0 0 0.75rem;
+    font-family: var(--k-serif);
+    font-weight: 600;
+    font-size: 1.05rem;
+  }
+  .sim-range {
+    display: block;
+    margin-bottom: 0.85rem;
+  }
+  .sim-range-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.35rem;
+    font-size: 0.75rem;
+    color: var(--k-muted);
+  }
+  .sim-range-head output {
+    color: var(--k-ink);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .sim-range input {
+    width: 100%;
+    height: 1.4rem;
+    margin: 0;
+    background: transparent;
+    accent-color: var(--k-terra);
+    cursor: pointer;
+  }
+  .sim-range input:focus-visible {
+    outline: 2px solid var(--k-terra);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  .sim-tiers {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem;
+    margin-bottom: 0.85rem;
+  }
+  .sim-select {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    color: var(--k-muted);
+  }
+  .sim-select select {
+    width: 100%;
+    padding: 0.55rem 0.6rem;
+    border: 1px solid var(--k-hair);
+    border-radius: 10px;
+    background: var(--k-field);
+    color: var(--k-ink);
+    font: inherit;
+    font-size: 0.8rem;
+  }
+  .sim-select select:focus-visible {
+    outline: 2px solid var(--k-terra);
+    outline-offset: 1px;
+  }
+
+  /* --- Résultat --- */
+  .sim-result {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    align-self: start;
+    position: sticky;
+    top: 6rem;
+  }
+  .sim-decision {
+    --band: var(--k-green);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem 1.25rem;
+    border-radius: 14px;
+    background: var(--band);
+    color: #fff;
+    transition: background-color 0.4s var(--ease-default);
+  }
+  .sim-decision-kicker {
+    display: block;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    opacity: 0.85;
+  }
+  .sim-decision-label {
+    font-family: var(--k-serif);
+    font-weight: 700;
+    font-size: clamp(1.3rem, 2.2vw, 1.7rem);
+  }
+  .sim-score {
+    text-align: right;
+  }
+  .sim-score strong {
+    display: block;
+    font-family: var(--k-serif);
+    font-weight: 700;
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .sim-score span {
+    font-size: 0.65rem;
+    opacity: 0.85;
+  }
+  .sim-reason {
+    min-height: 2.6em;
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--k-soft);
+  }
+
+  .sim-kpis {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+    margin: 0;
+  }
+  .sim-kpis div {
+    padding: 0.8rem 0.9rem;
+    border: 1px solid var(--k-hair);
+    border-radius: 12px;
+    background: var(--k-surface);
+  }
+  .sim-kpis dt {
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--k-muted);
+  }
+  .sim-kpis dd {
+    margin: 0.35rem 0 0;
+    font-family: var(--k-serif);
+    font-weight: 700;
+    font-size: 1.2rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sim-scores {
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--k-hair);
+    border-radius: 12px;
+    background: var(--k-surface);
+  }
+  .sim-scores-title {
+    display: block;
+    margin-bottom: 0.7rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    color: var(--k-muted);
+  }
+  .sim-bar-row {
+    display: grid;
+    grid-template-columns: 9.5rem minmax(0, 1fr) 2rem;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.22rem 0;
+    font-size: 0.72rem;
+    color: var(--k-soft);
+  }
+  .sim-track {
+    height: 4px;
+    border-radius: 999px;
+    background: var(--k-hair);
+    overflow: hidden;
+  }
+  .sim-fill {
+    display: block;
+    height: 100%;
+    width: 100%;
+    background: var(--k-terra);
+    transform: scaleX(var(--v, 0));
+    transform-origin: left;
+    transition: transform 0.45s var(--ease-default);
+  }
+  .sim-bar-row.is-unknown .sim-fill {
+    transform: scaleX(0);
+  }
+  .sim-value {
+    text-align: right;
+    color: var(--k-ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sim-note {
+    margin: 1rem 0 0;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    opacity: 0.6;
+  }
+
+  @media (max-width: 900px) {
+    .sim-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    /* Sur téléphone, le résultat passe en premier */
+    .sim-result {
+      position: static;
+      order: -1;
+    }
+  }
+  @media (max-width: 480px) {
+    .sim-tiers {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .sim-bar-row {
+      grid-template-columns: 7.5rem minmax(0, 1fr) 1.8rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sim-fill,
+    .sim-decision {
+      transition: none;
+    }
+  }
+</style>
