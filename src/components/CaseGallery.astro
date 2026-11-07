@@ -324,6 +324,10 @@ const alt = (index: number) => `${title} — image ${index + 1} sur ${images.len
     .cg-slide img {
       width: 100%;
       height: auto;
+      /* Captures mobile (très hautes) : on garde le haut de l'écran */
+      max-height: 70svh;
+      object-fit: cover;
+      object-position: top;
     }
     .cg-zoom {
       display: none;
