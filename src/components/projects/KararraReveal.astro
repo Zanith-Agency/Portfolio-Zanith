@@ -1,0 +1,644 @@
+---
+// Introduction sur mesure du projet Kararra.
+//
+// Principe : « l'écran devient son moteur ». Les deux univers partagent
+// les MÊMES emplacements (.kar-slot--title, --meta, --screen, --a, --b) :
+//   - l'écran Évaluer de l'application devient le code du moteur,
+//   - la carte « Recommandé » devient les règles de décision,
+//   - la carte « Coût réel » devient sa formule,
+//   - le titre devient l'appel de la fonction evaluate(),
+//   - l'accroche devient la stack technique.
+//
+// Images : public/projects/kararra/ (captures de l'application).
+// Les extraits de code reprennent le moteur réel (src/lib/engine/engine.ts
+// de l'application), légèrement raccourcis.
+import ProjectReveal from "../ProjectReveal.astro";
+import type { Project } from "../../lib/supabase";
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const assets = "/projects/kararra";
+const stack = project.tools && project.tools.length > 0
+  ? project.tools
+  : ["Next.js", "React", "TypeScript", "Supabase", "Tailwind CSS"];
+const meta = [project.project_year, stack.slice(0, 2).join(" · ")].filter(Boolean).join(" — ");
+
+// Exemple réel affiché dans l'application (plateau en travertin)
+const costLines = [
+  { label: "Prix d'achat", value: "18,00 €", key: "achat" },
+  { label: "Transport réparti", value: "1,20 €", key: "fret" },
+  { label: "Dédouanement", value: "0,60 €", key: "dedouanement" },
+  { label: "Packaging", value: "1,50 €", key: "packaging" },
+  { label: "Autres", value: "0,60 €", key: "autres" },
+];
+---
+
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Montserrat:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+/>
+
+<ProjectReveal headerTheme="light">
+  <!-- ============ Univers 1 — PROJECT SHOWCASE : l'application ============ -->
+  <div slot="showcase" class="kar kar--showcase">
+    <div class="kar-glow" aria-hidden="true"></div>
+
+    <div class="kar-slot kar-slot--title">
+      <span class="kar-kicker">{project.category}</span>
+      <h1 class="kar-title">
+        <span class="kar-title-line">Kararra</span>
+        <span class="kar-title-line kar-title-line--italic">Evaluator.</span>
+      </h1>
+    </div>
+
+    <div class="kar-slot kar-slot--meta">
+      {project.tagline || project.summary
+        ? <p class="kar-tagline">{project.tagline || project.summary}</p>
+        : <p class="kar-tagline">L'outil qui décide quels objets méritent d'entrer au catalogue.</p>}
+      {meta && <p class="kar-meta">{meta}</p>}
+    </div>
+
+    <figure class="kar-slot kar-slot--screen kar-laptop">
+      <img
+        src={`${assets}/galerie-02-evaluer.webp`}
+        alt="Écran « Évaluer un produit » de l'application Kararra"
+        width="1600"
+        height="856"
+        fetchpriority="high"
+      />
+    </figure>
+
+    <!-- Carte de décision, comme dans l'application -->
+    <div class="kar-slot kar-slot--a kar-decision" aria-hidden="true">
+      <span class="kar-decision-kicker">Décision</span>
+      <span class="kar-decision-label">Recommandé</span>
+      <span class="kar-decision-score">84<small>/ 100</small></span>
+    </div>
+
+    <!-- Carte du coût réel -->
+    <div class="kar-slot kar-slot--b kar-card" aria-hidden="true">
+      <span class="kar-card-kicker">Coût réel / unité</span>
+      <span class="kar-card-total">21,90 €</span>
+      <ul>
+        {costLines.map((line) => (
+          <li><span>{line.label}</span><span>{line.value}</span></li>
+        ))}
+      </ul>
+    </div>
+  </div>
+
+  <!-- ============ Univers 2 — BEHIND THE SCENES : le moteur ============ -->
+  <div slot="behind" class="kar kar--behind">
+    <div class="kar-grid" aria-hidden="true"></div>
+
+    <!-- Le titre devient l'appel de la fonction -->
+    <div class="kar-slot kar-slot--title" aria-hidden="true">
+      <span class="kar-kicker kar-kicker--code">engine.ts</span>
+      <p class="kar-call">
+        <span class="t-fn">evaluate</span>(<span class="t-var">config</span>,<br /><span class="kar-call-indent"><span class="t-var">produit</span>)</span>
+      </p>
+      <p class="kar-call-sub">→ score, marge, prix conseillé, décision</p>
+    </div>
+
+    <!-- L'accroche devient la stack -->
+    <div class="kar-slot kar-slot--meta kar-stack">
+      <span class="kar-stack-title">Stack</span>
+      <ul>
+        {stack.map((tool, index) => (
+          <li><span class="kar-stack-index">{String(index + 1).padStart(2, "0")}</span>{tool}</li>
+        ))}
+      </ul>
+    </div>
+
+    <!-- L'écran devient le code du moteur -->
+    <figure class="kar-slot kar-slot--screen kar-editor" aria-hidden="true">
+      <div class="kar-editor-bar">
+        <span class="kar-editor-dots"><i></i><i></i><i></i></span>
+        <span class="kar-editor-tab">src/lib/engine/engine.ts</span>
+      </div>
+      <pre class="kar-code"><code><span class="t-com">// Score Kararra : moyenne pondérée des critères connus</span>
+<span class="t-key">for</span> (<span class="t-key">const</span> k <span class="t-key">of</span> <span class="t-fn">Object</span>.<span class="t-fn">keys</span>(<span class="t-var">weightOf</span>)) &#123;
+  <span class="t-key">const</span> s = <span class="t-var">subScores</span>[k];
+  <span class="t-key">if</span> (s == <span class="t-key">null</span>) &#123; <span class="t-var">unknownCriteria</span>.<span class="t-fn">push</span>(k); <span class="t-key">continue</span>; &#125;
+  numer += s * <span class="t-var">weightOf</span>[k]; denom += <span class="t-var">weightOf</span>[k];
+&#125;
+<span class="t-key">const</span> scoreKararra = denom &gt; <span class="t-str">0</span> ? numer / denom : <span class="t-str">0</span>;
+
+<span class="t-com">// Règles de sécurité : elles passent outre le score</span>
+<span class="t-key">if</span> (margin &lt; <span class="t-var">config</span>.marginFloor) <span class="t-fn">push</span>(<span class="t-str">'margin_floor'</span>, …);
+<span class="t-key">if</span> (cash &gt; <span class="t-var">config</span>.budgetAvailable) <span class="t-fn">push</span>(<span class="t-str">'cash_ceiling'</span>, …);
+<span class="t-key">const</span> decision = <span class="t-fn">mostSevere</span>([scoreBand, ...triggered]);</code></pre>
+    </figure>
+
+    <!-- La carte de décision devient ses règles -->
+    <div class="kar-slot kar-slot--a kar-rules" aria-hidden="true">
+      <span class="kar-panel-title">Décision</span>
+      <ol>
+        <li><span class="dot dot--green"></span>Recommandé</li>
+        <li><span class="dot dot--amber"></span>À revoir</li>
+        <li><span class="dot dot--red"></span>Non recommandé</li>
+        <li><span class="dot dot--red"></span>Refusé</li>
+        <li><span class="dot dot--brown"></span>Bloqué</li>
+      </ol>
+    </div>
+
+    <!-- La carte du coût devient sa formule -->
+    <div class="kar-slot kar-slot--b kar-formula" aria-hidden="true">
+      <span class="kar-panel-title">coûtRéel =</span>
+      <ul>
+        <li>prixAchat × taux</li>
+        <li>+ fret / unité</li>
+        <li>+ douane</li>
+        <li>+ dédouanement</li>
+        <li>+ packaging + autres</li>
+      </ul>
+    </div>
+
+    <!-- En plus dans les coulisses : la marge -->
+    <div class="kar-slot kar-slot--extra kar-formula kar-formula--wide" aria-hidden="true">
+      <span class="kar-panel-title">marge =</span>
+      <p>(prixVente − coûtRéel) / prixVente</p>
+    </div>
+  </div>
+</ProjectReveal>
+
+<style>
+  /* ============ Base commune aux deux univers ============ */
+  .kar {
+    --k-paper: #f5ede1;
+    --k-surface: #fffdf9;
+    --k-ink: #2c201a;
+    --k-soft: #5a4a3e;
+    --k-muted: #8c7b6b;
+    --k-hair: #e6d7c3;
+    --k-terra: #b4703f;
+    --k-terra-soft: #e9cfb4;
+    --k-green: #5e7a4e;
+    --k-amber: #b98327;
+    --k-red: #a83a2b;
+    --k-brown: #8a5230;
+    --k-serif: "Playfair Display", Georgia, serif;
+    --k-sans: "Montserrat", system-ui, sans-serif;
+    --k-mono: "JetBrains Mono", ui-monospace, monospace;
+
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    font-family: var(--k-sans);
+  }
+  .kar figure {
+    margin: 0;
+  }
+  .kar img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top left;
+  }
+
+  /* --- Emplacements partagés (même géométrie dans les deux scènes) --- */
+  .kar-slot {
+    position: absolute;
+    box-sizing: border-box;
+  }
+  .kar-slot--title {
+    left: 6%;
+    top: 24%;
+    width: 36%;
+  }
+  .kar-slot--meta {
+    left: 6%;
+    top: 62%;
+    width: 28%;
+  }
+  .kar-slot--screen {
+    left: 45%;
+    top: 22%;
+    width: min(46%, 84vh);
+    aspect-ratio: 1600 / 856;
+  }
+  .kar-slot--a {
+    left: 37%;
+    top: 58%;
+    width: min(15%, 28vh);
+    aspect-ratio: 5 / 4;
+  }
+  .kar-slot--b {
+    left: 81%;
+    top: 10%;
+    width: min(15%, 28vh);
+    aspect-ratio: 4 / 5;
+  }
+  .kar-slot--extra {
+    left: 62%;
+    top: 79%;
+    width: min(26%, 46vh);
+  }
+
+  /* --- Titre --- */
+  .kar-kicker {
+    display: block;
+    margin-bottom: 1.1rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.24em;
+    color: var(--k-terra);
+  }
+  .kar-title {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    font-family: var(--k-serif);
+    font-weight: 700;
+    font-size: min(5.2vw, 10vh);
+    line-height: 1.02;
+    letter-spacing: 0.02em;
+    color: var(--k-ink);
+  }
+  .kar-title-line:first-child {
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .kar-title-line--italic {
+    font-style: italic;
+    font-weight: 600;
+    color: var(--k-terra);
+  }
+
+  /* ============ Univers 1 — l'application ============ */
+  .kar--showcase {
+    background: var(--k-paper);
+    color: var(--k-ink);
+  }
+  .kar-glow {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 55% 60% at 72% 45%, rgba(180, 112, 63, 0.16), transparent 70%),
+      radial-gradient(ellipse 50% 45% at 0% 100%, rgba(233, 207, 180, 0.6), transparent 70%);
+  }
+  .kar-tagline {
+    margin: 0 0 1.2rem;
+    font-family: var(--k-serif);
+    font-style: italic;
+    font-size: clamp(1.05rem, 1.45vw, 1.35rem);
+    line-height: 1.5;
+    color: var(--k-soft);
+  }
+  .kar-meta {
+    margin: 0;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--k-muted);
+  }
+
+  /* Ordinateur : la capture est l'écran ; cadre et socle dessinés autour
+     sans changer la taille de l'emplacement */
+  .kar-laptop {
+    border-radius: 6px;
+    box-shadow:
+      0 0 0 10px #2c201a,
+      0 0 0 11px #5a4a3e,
+      0 40px 80px rgba(44, 32, 26, 0.35);
+  }
+  .kar-laptop img {
+    border-radius: 6px;
+  }
+  .kar-laptop::after {
+    content: "";
+    position: absolute;
+    left: -9%;
+    right: -9%;
+    top: calc(100% + 11px);
+    height: 14px;
+    border-radius: 0 0 14px 14px;
+    background: linear-gradient(to bottom, #6b594c, #3a2c23);
+    box-shadow: 0 20px 30px rgba(44, 32, 26, 0.3);
+  }
+
+  .kar-decision {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 1.2rem;
+    border-radius: 16px;
+    background: var(--k-green);
+    color: #fff;
+    box-shadow: 0 30px 60px rgba(44, 32, 26, 0.3);
+  }
+  .kar-decision-kicker {
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    opacity: 0.85;
+  }
+  .kar-decision-label {
+    font-family: var(--k-serif);
+    font-weight: 700;
+    font-size: clamp(1.1rem, 1.6vw, 1.5rem);
+  }
+  .kar-decision-score {
+    margin-top: 0.4rem;
+    font-family: var(--k-serif);
+    font-weight: 700;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    line-height: 1;
+  }
+  .kar-decision-score small {
+    margin-left: 0.3rem;
+    font-family: var(--k-sans);
+    font-weight: 400;
+    font-size: 0.7rem;
+    opacity: 0.85;
+  }
+
+  .kar-card {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--k-hair);
+    border-radius: 16px;
+    background: var(--k-surface);
+    color: var(--k-ink);
+    box-shadow: 0 30px 60px rgba(44, 32, 26, 0.22);
+  }
+  .kar-card-kicker {
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    color: var(--k-muted);
+  }
+  .kar-card-total {
+    margin: 0.3rem 0 0.6rem;
+    font-family: var(--k-serif);
+    font-weight: 700;
+    font-size: clamp(1.4rem, 2.2vw, 2rem);
+    color: var(--k-brown);
+  }
+  .kar-card ul {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: space-between;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .kar-card li {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 0.66rem;
+    color: var(--k-soft);
+  }
+
+  /* ============ Univers 2 — le moteur ============ */
+  .kar--behind {
+    background: #1d1612;
+    color: var(--k-paper);
+  }
+  .kar-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(245, 237, 225, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245, 237, 225, 0.05) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  .kar-kicker--code {
+    font-family: var(--k-mono);
+    letter-spacing: 0.08em;
+    text-transform: none;
+    color: var(--k-terra-soft);
+  }
+  .kar-call {
+    margin: 0;
+    font-family: var(--k-mono);
+    font-size: min(2.3vw, 4.6vh);
+    line-height: 1.3;
+    color: var(--k-paper);
+  }
+  .kar-call-indent {
+    padding-left: 2ch;
+  }
+  .kar-call-sub {
+    margin: 1rem 0 0;
+    font-family: var(--k-mono);
+    font-size: 0.8rem;
+    color: rgba(245, 237, 225, 0.55);
+  }
+
+  /* Coloration du code */
+  .t-key { color: #d9925e; }
+  .t-fn { color: #e9cfb4; }
+  .t-var { color: #a9c49a; }
+  .t-str { color: #e3b86a; }
+  .t-com { color: rgba(245, 237, 225, 0.38); font-style: italic; }
+
+  .kar-stack {
+    font-family: var(--k-mono);
+  }
+  .kar-stack-title,
+  .kar-panel-title {
+    display: block;
+    margin-bottom: 0.7rem;
+    font-family: var(--k-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    color: var(--k-terra-soft);
+  }
+  .kar-stack ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.82rem;
+  }
+  .kar-stack-index {
+    margin-right: 0.5rem;
+    color: rgba(245, 237, 225, 0.4);
+  }
+
+  /* Éditeur de code, à la place de l'écran */
+  .kar-editor {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 6px;
+    border: 1px solid rgba(245, 237, 225, 0.12);
+    background: #241b16;
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.45);
+  }
+  .kar-editor-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid rgba(245, 237, 225, 0.1);
+    background: #1d1612;
+  }
+  .kar-editor-dots {
+    display: flex;
+    gap: 0.35rem;
+  }
+  .kar-editor-dots i {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: rgba(245, 237, 225, 0.2);
+  }
+  .kar-editor-tab {
+    font-family: var(--k-mono);
+    font-size: 0.68rem;
+    color: rgba(245, 237, 225, 0.6);
+  }
+  .kar-code {
+    flex: 1;
+    margin: 0;
+    padding: 1rem 1.2rem;
+    overflow: hidden;
+    font-family: var(--k-mono);
+    font-size: clamp(0.58rem, 0.95vw, 0.85rem);
+    line-height: 1.65;
+    color: var(--k-paper);
+    white-space: pre;
+  }
+
+  .kar-rules,
+  .kar-formula {
+    padding: 1rem 1.1rem;
+    border: 1px solid rgba(245, 237, 225, 0.14);
+    border-radius: 12px;
+    background: #2a201a;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+    font-family: var(--k-mono);
+  }
+  .kar-rules ol {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.72rem;
+  }
+  .kar-rules li {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+  .dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+  }
+  .dot--green { background: var(--k-green); }
+  .dot--amber { background: var(--k-amber); }
+  .dot--red { background: var(--k-red); }
+  .dot--brown { background: var(--k-brown); }
+
+  .kar-formula ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.72rem;
+  }
+  .kar-formula p {
+    margin: 0;
+    font-size: 0.8rem;
+  }
+
+  /* ============ Mobile et tablette portrait ============ */
+  @media (max-width: 800px) {
+    .kar-slot--title {
+      left: 6%;
+      top: 13%;
+      width: 88%;
+    }
+    .kar-title {
+      font-size: min(12vw, 8vh);
+    }
+    .kar-call {
+      font-size: min(5.4vw, 3.8vh);
+    }
+    .kar-slot--meta {
+      left: 6%;
+      top: 32%;
+      width: 88%;
+    }
+    .kar-tagline {
+      margin: 0;
+      font-size: 0.98rem;
+      line-height: 1.45;
+    }
+    .kar-meta,
+    .kar-call-sub {
+      display: none;
+    }
+    .kar-stack ul {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      font-size: 0.7rem;
+    }
+    .kar-slot--screen {
+      left: 6%;
+      top: 47%;
+      width: 88%;
+    }
+    .kar-slot--a {
+      left: 6%;
+      top: 73%;
+      width: min(42%, 22vh);
+    }
+    .kar-slot--b {
+      left: auto;
+      right: 6%;
+      top: 73%;
+      width: min(42%, 22vh);
+      aspect-ratio: 5 / 4;
+    }
+    .kar-slot--extra {
+      display: none;
+    }
+    .kar-laptop {
+      box-shadow:
+        0 0 0 6px #2c201a,
+        0 0 0 7px #5a4a3e,
+        0 20px 40px rgba(44, 32, 26, 0.35);
+    }
+    .kar-laptop::after {
+      top: calc(100% + 7px);
+      height: 9px;
+    }
+    .kar-code {
+      padding: 0.6rem 0.7rem;
+      font-size: 0.5rem;
+    }
+    .kar-card li:nth-child(n + 3),
+    .kar-formula li:nth-child(n + 4) {
+      display: none;
+    }
+    .kar-decision,
+    .kar-card,
+    .kar-rules,
+    .kar-formula {
+      padding: 0.7rem 0.8rem;
+    }
+    .kar-rules ol {
+      gap: 0.15rem;
+      font-size: 0.6rem;
+    }
+    .kar-formula ul {
+      gap: 0.25rem;
+      font-size: 0.62rem;
+    }
+  }
+</style>

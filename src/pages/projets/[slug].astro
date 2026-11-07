@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import DefaultReveal from "../../components/projects/DefaultReveal.astro";
 import ElMagicoReveal from "../../components/projects/ElMagicoReveal.astro";
+import KararraReveal from "../../components/projects/KararraReveal.astro";
 import ElMagicoExtras from "../../components/projects/ElMagicoExtras.astro";
 import KararraExtras from "../../components/projects/KararraExtras.astro";
 import ProjectAscent from "../../components/ProjectAscent.astro";
@@ -25,6 +26,7 @@ const projects = await getProjects();
 // liste utilise les scènes par défaut (DefaultReveal).
 const customReveals = {
   "elmagicobarber": ElMagicoReveal,
+  "kararra": KararraReveal,
 };
 const Reveal = customReveals[project.slug as keyof typeof customReveals] ?? DefaultReveal;
 

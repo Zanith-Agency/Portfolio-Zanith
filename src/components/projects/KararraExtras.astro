@@ -12,6 +12,190 @@ interface Props {
 
 const { section } = Astro.props;
 
+import AnnotatedCaptures, { type Capture } from "../AnnotatedCaptures.astro";
+
+// --- 02 : anatomie du coût réel (exemple réel de l'application :
+// plateau en travertin, 100 unités, vendu 69 € HT) ---
+const anatomy = {
+  product: "Plateau travertin T-104",
+  price: 69,
+  parts: [
+    { id: "achat", label: "Prix d'achat", value: 18, text: "Le prix du fournisseur pour la quantité commandée, selon ses paliers dégressifs, converti en euros." },
+    { id: "fret", label: "Transport réparti", value: 1.2, text: "Le fret est estimé à partir du volume et du poids des cartons (maritime ou aérien, avec un forfait minimum), puis réparti sur chaque unité." },
+    { id: "douane", label: "Douane", value: 0, text: "Un taux appliqué au prix d'achat et au transport. Pour ce produit, il n'y en a pas." },
+    { id: "dedouanement", label: "Dédouanement", value: 0.6, text: "Les frais de dédouanement de l'expédition, répartis sur la quantité commandée." },
+    { id: "packaging", label: "Packaging", value: 1.5, text: "L'emballage de chaque pièce avant la revente." },
+    { id: "autres", label: "Autres frais", value: 0.6, text: "Tout le reste, par unité. Un frais inconnu n'est jamais inventé : il est signalé comme manquant." },
+  ],
+  marginText: "Ce qui reste une fois le coût réel payé. La TVA, récupérable pour la marque, n'entre pas dans le coût.",
+};
+const anatomyCost = anatomy.parts.reduce((sum, part) => sum + part.value, 0);
+const euro = (n: number) => n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+
+// --- 03 : l'univers de la marque (page Réglages de l'application) ---
+const universe = [
+  {
+    id: "material",
+    label: "Matière",
+    items: [
+      { name: "céramique", tier: "coeur" },
+      { name: "marbre", tier: "coeur" },
+      { name: "bois massif", tier: "peripherie" },
+      { name: "laiton", tier: "peripherie" },
+      { name: "MDF", tier: "peripherie" },
+    ],
+  },
+  {
+    id: "palette",
+    label: "Palette",
+    items: [
+      { name: "beige / crème", tier: "coeur" },
+      { name: "blanc cassé", tier: "coeur" },
+      { name: "taupe / greige", tier: "coeur" },
+      { name: "noir mat", tier: "peripherie" },
+      { name: "terre cuite / ocre", tier: "peripherie" },
+      { name: "vert olive", tier: "peripherie" },
+      { name: "couleurs vives", tier: "hors_univers" },
+    ],
+  },
+  {
+    id: "style",
+    label: "Style",
+    items: [
+      { name: "contemporain", tier: "coeur" },
+      { name: "baroque", tier: "hors_univers" },
+    ],
+  },
+];
+const tierLabel: Record<string, string> = {
+  coeur: "Cœur de marque",
+  peripherie: "Périphérie",
+  hors_univers: "Hors univers",
+};
+
+// --- 05 : captures annotées de l'application ---
+const captures: Capture[] = [
+  {
+    id: "evaluer",
+    label: "Évaluer",
+    image: "/projects/kararra/galerie-02-evaluer.webp",
+    width: 1600,
+    height: 856,
+    alt: "Écran « Évaluer un produit » de l'application Kararra",
+    notes: [
+      {
+        dot: { x: 62, y: 12 },
+        zones: [{ x: 62, y: 12, w: 28.5, h: 20 }],
+        title: "Une décision en un coup d'œil",
+        text: "La carte de décision donne le verdict, le score sur 100 et une phrase de synthèse : produit, quantité, marge au prix retenu et niveau de risque.",
+      },
+      {
+        dot: { x: 62, y: 62.5 },
+        zones: [{ x: 62, y: 62.5, w: 28.5, h: 31.5 }],
+        title: "Le vrai coût, ligne par ligne",
+        text: "Prix d'achat, transport réparti, douane, dédouanement, packaging, autres frais : le coût réel par unité est décomposé, pour savoir d'où vient chaque euro.",
+      },
+      {
+        dot: { x: 10, y: 58 },
+        zones: [
+          { x: 10, y: 58, w: 50, h: 6.5 },
+          { x: 62, y: 41.5, w: 28.5, h: 20 },
+        ],
+        title: "La quantité change tout",
+        text: "En déplaçant le curseur de quantité, tout se recalcule en direct : prix fournisseur selon les paliers, coût réel, marge, prix conseillé et trésorerie nécessaire.",
+      },
+    ],
+  },
+  {
+    id: "prix",
+    label: "Prix & score",
+    image: "/projects/kararra/galerie-03-evaluer-score.webp",
+    width: 1600,
+    height: 859,
+    alt: "Prix de vente, trésorerie et score détaillé dans l'évaluateur Kararra",
+    notes: [
+      {
+        dot: { x: 10, y: 66 },
+        zones: [
+          { x: 10, y: 66, w: 50.5, h: 16 },
+          { x: 62.5, y: 4, w: 28.5, h: 19 },
+        ],
+        title: "Tester plusieurs prix",
+        text: "On saisit plusieurs prix de revente : l'outil calcule la marge et le prix TTC de chacun, et marque d'une étoile le plus bas qui atteint la marge cible.",
+      },
+      {
+        dot: { x: 62.5, y: 26 },
+        zones: [{ x: 62.5, y: 26, w: 28.5, h: 20 }],
+        title: "La trésorerie avant l'achat",
+        text: "Investissement, TVA à avancer et cash immédiat sont comparés au budget disponible, avant de passer commande.",
+      },
+      {
+        dot: { x: 62.5, y: 49.5 },
+        zones: [{ x: 62.5, y: 49.5, w: 28.5, h: 30 }],
+        title: "Le score, critère par critère",
+        text: "Les huit critères sont détaillés en barres : on voit tout de suite ce qui tire le score vers le haut ou vers le bas.",
+      },
+      {
+        dot: { x: 62.5, y: 81.5 },
+        zones: [{ x: 62.5, y: 81.5, w: 28.5, h: 14 }],
+        title: "Des leviers pour négocier",
+        text: "L'outil calcule le prix d'achat maximum pour tenir la marge cible et la quantité maximale que le budget permet : des arguments concrets face au fournisseur.",
+      },
+    ],
+  },
+  {
+    id: "fournisseurs",
+    label: "Fournisseurs",
+    image: "/projects/kararra/galerie-04-fournisseurs.webp",
+    width: 1600,
+    height: 857,
+    alt: "Fiche fournisseur dans l'application Kararra",
+    notes: [
+      {
+        dot: { x: 16, y: 31 },
+        zones: [{ x: 16, y: 31, w: 67, h: 24 }],
+        title: "Une fiche par fournisseur",
+        text: "Coordonnées, pays, type de fournisseur : chaque fiche est créée une fois et réutilisée à chaque évaluation.",
+      },
+      {
+        dot: { x: 16, y: 57 },
+        zones: [{ x: 16, y: 57, w: 67, h: 23 }],
+        title: "Les conditions commerciales",
+        text: "Devise, quantité minimale, incoterm, délais de production et de livraison, conformité européenne : tout ce qui pèse sur la décision d'achat.",
+      },
+      {
+        dot: { x: 16, y: 81 },
+        zones: [{ x: 16, y: 81, w: 67, h: 18 }],
+        title: "Des coûts pré-remplis",
+        text: "Douane, dédouanement, transport, packaging, fret : ces valeurs se recopient automatiquement dans l'évaluateur. Laissées vides, elles restent « inconnues » au lieu d'être inventées.",
+      },
+    ],
+  },
+  {
+    id: "reglages",
+    label: "Réglages",
+    image: "/projects/kararra/galerie-06-reglages.webp",
+    width: 1600,
+    height: 858,
+    alt: "Page Réglages de l'application Kararra",
+    notes: [
+      {
+        dot: { x: 16, y: 9 },
+        zones: [{ x: 16, y: 9, w: 68.5, h: 50 }],
+        title: "La politique de la marque",
+        text: "Régime de TVA, marges plancher, cible et excellente, quantités maximales, budget : les règles de décision se règlent ici, sans toucher au code.",
+      },
+      {
+        dot: { x: 16, y: 63 },
+        zones: [{ x: 16, y: 63, w: 30, h: 37 }],
+        title: "L'univers, matière par matière",
+        text: "Chaque matière, palette et style est classé en cœur de marque, périphérie ou hors univers. Ce classement nourrit le score de cohérence.",
+      },
+    ],
+  },
+];
+
+
 const tiers = [
   { id: "materialTier", label: "Matière" },
   { id: "paletteTier", label: "Palette" },
@@ -61,6 +245,133 @@ const presets = [
   rel="stylesheet"
   href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Montserrat:wght@400;500;600&display=swap"
 />
+
+{section === "challenge" && (
+  <div class="case-extra kar-anatomy" data-kararra-anatomy data-case-reveal>
+    <div class="extra-head extra-head--row">
+      <div>
+        <span class="extra-kicker">Anatomie d'un prix</span>
+        <h3 class="extra-title">Ce que coûte vraiment un objet</h3>
+      </div>
+      <div class="ana-switch" role="group" aria-label="Affichage">
+        <button type="button" data-ana-view="cost" aria-pressed="true">Coût réel</button>
+        <button type="button" data-ana-view="price" aria-pressed="false">Prix de vente</button>
+      </div>
+    </div>
+
+    <p class="ana-product">
+      {anatomy.product} · 100 unités · vendu {euro(anatomy.price)} HT
+    </p>
+
+    <div class="ana-total">
+      <span data-ana-total-label>Coût réel par unité</span>
+      <strong data-ana-total>{euro(anatomyCost)}</strong>
+    </div>
+
+    <!-- La barre : chaque segment est proportionnel à son montant -->
+    <div class="ana-bar" data-ana-bar data-view="cost">
+      {anatomy.parts.filter((p) => p.value > 0).map((part) => (
+        <button
+          type="button"
+          class={`ana-seg ana-seg--${part.id}`}
+          style={`--v: ${part.value}`}
+          data-ana-part={part.id}
+          aria-label={`${part.label} : ${euro(part.value)}`}
+        ></button>
+      ))}
+      <button
+        type="button"
+        class="ana-seg ana-seg--marge"
+        style={`--v: ${anatomy.price - anatomyCost}`}
+        data-ana-part="marge"
+        aria-label={`Marge : ${euro(anatomy.price - anatomyCost)}`}
+      ></button>
+    </div>
+
+    <div class="ana-grid">
+      <ul class="ana-legend">
+        {anatomy.parts.map((part) => (
+          <li>
+            <button type="button" data-ana-part={part.id} aria-pressed={part.id === "achat" ? "true" : "false"}>
+              <span class={`ana-swatch ana-seg--${part.id}`}></span>
+              <span class="ana-legend-label">{part.label}</span>
+              <span class="ana-legend-value">{euro(part.value)}</span>
+            </button>
+          </li>
+        ))}
+        <li class="ana-legend-margin">
+          <button type="button" data-ana-part="marge" aria-pressed="false">
+            <span class="ana-swatch ana-seg--marge"></span>
+            <span class="ana-legend-label">Marge</span>
+            <span class="ana-legend-value">{euro(anatomy.price - anatomyCost)}</span>
+          </button>
+        </li>
+      </ul>
+
+      <div class="ana-detail" aria-live="polite">
+        {anatomy.parts.map((part, index) => (
+          <div class="ana-note" data-ana-note={part.id} hidden={index !== 0}>
+            <span class="ana-note-share" data-ana-share={part.value}></span>
+            <h4>{part.label} — {euro(part.value)}</h4>
+            <p>{part.text}</p>
+          </div>
+        ))}
+        <div class="ana-note" data-ana-note="marge" hidden>
+          <span class="ana-note-share" data-ana-share={anatomy.price - anatomyCost}></span>
+          <h4>Marge — {euro(anatomy.price - anatomyCost)}</h4>
+          <p>{anatomy.marginText}</p>
+        </div>
+      </div>
+    </div>
+    <script type="application/json" data-ana-data set:html={JSON.stringify({ cost: anatomyCost, price: anatomy.price })}></script>
+  </div>
+)}
+
+{section === "process" && (
+  <div class="case-extra kar-universe" data-kararra-universe data-case-reveal>
+    <div class="extra-head">
+      <span class="extra-kicker">L'univers Kararra</span>
+      <h3 class="extra-title">Composez un objet, voyez s'il est « Kararra »</h3>
+    </div>
+
+    <div class="uni-grid">
+      <div class="uni-columns">
+        {universe.map((group) => (
+          <div class="uni-col" role="radiogroup" aria-label={group.label}>
+            <span class="uni-col-title">{group.label}</span>
+            {group.items.map((item, index) => (
+              <button
+                type="button"
+                role="radio"
+                class={`uni-chip uni-chip--${item.tier}`}
+                aria-checked={index === 0 ? "true" : "false"}
+                data-uni-group={group.id}
+                data-uni-name={item.name}
+                data-uni-tier={item.tier}
+              >
+                <span>{item.name}</span>
+                <span class="uni-chip-tier">{tierLabel[item.tier]}</span>
+              </button>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <div class="uni-result" aria-live="polite">
+        <span class="uni-result-kicker">Cohérence Kararra</span>
+        <strong class="uni-score"><span data-uni-score>—</span><small>/ 100</small></strong>
+        <span class="uni-meter"><span data-uni-meter></span></span>
+        <p class="uni-object" data-uni-object></p>
+        <p class="uni-verdict" data-uni-verdict></p>
+        <ul class="uni-key">
+          <li><span class="uni-dot uni-dot--coeur"></span>Cœur de marque</li>
+          <li><span class="uni-dot uni-dot--peripherie"></span>Périphérie</li>
+          <li><span class="uni-dot uni-dot--hors_univers"></span>Hors univers</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+)}
 
 {section === "development" && (
   <div class="case-extra kar-sim" data-kararra-sim data-case-reveal>
@@ -171,9 +482,15 @@ const presets = [
   </div>
 )}
 
+{section === "outcome" && (
+  <AnnotatedCaptures captures={captures} kicker="Captures annotées" title="L'application, écran par écran" />
+)}
+
 <script>
-  import { initKararraSimulator } from "../../scripts/kararra-simulator";
+  import { initKararraSimulator, initCostAnatomy, initUniverse } from "../../scripts/kararra-simulator";
   initKararraSimulator();
+  initCostAnatomy();
+  initUniverse();
 </script>
 
 <style>
@@ -515,14 +832,361 @@ const presets = [
     opacity: 0.6;
   }
 
+
+  /* ============ 02 — Anatomie du coût réel ============ */
+  .kar-anatomy {
+    --c-achat: #b4703f;
+    --c-fret: #d39a6a;
+    --c-douane: #8a5230;
+    --c-dedouanement: #c79a5b;
+    --c-packaging: #e2bf94;
+    --c-autres: #8c7b6b;
+    --c-marge: #5e7a4e;
+  }
+  .ana-switch {
+    display: inline-flex;
+    padding: 0.25rem;
+    border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+    border-radius: 999px;
+  }
+  .ana-switch button {
+    padding: 0.5rem 0.95rem;
+    border: 0;
+    border-radius: 999px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: background-color 0.3s var(--ease-default), color 0.3s var(--ease-default);
+  }
+  .ana-switch button[aria-pressed="true"] {
+    background: var(--accent);
+    color: #fff;
+  }
+  .ana-switch button:focus-visible,
+  .ana-legend button:focus-visible,
+  .ana-seg:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .ana-product {
+    margin: 0 0 1.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    opacity: 0.6;
+  }
+  .ana-total {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+  }
+  .ana-total strong {
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* La barre : chaque segment a une largeur proportionnelle (flex-grow) */
+  .ana-bar {
+    display: flex;
+    gap: 3px;
+    height: clamp(3.2rem, 7vw, 4.5rem);
+  }
+  .ana-seg {
+    flex: var(--v) 1 0;
+    min-width: 6px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: var(--c);
+    cursor: pointer;
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition:
+      flex-grow 0.8s var(--ease-default),
+      opacity 0.3s var(--ease-default),
+      transform 0.7s var(--ease-default),
+      min-width 0.8s var(--ease-default);
+  }
+  .ana-bar.is-in .ana-seg {
+    transform: scaleY(1);
+  }
+  .ana-bar.is-in .ana-seg:nth-child(2) { transition-delay: 0.08s, 0s, 0.08s, 0s; }
+  .ana-bar.is-in .ana-seg:nth-child(3) { transition-delay: 0.16s, 0s, 0.16s, 0s; }
+  .ana-bar.is-in .ana-seg:nth-child(4) { transition-delay: 0.24s, 0s, 0.24s, 0s; }
+  .ana-bar.is-in .ana-seg:nth-child(5) { transition-delay: 0.32s, 0s, 0.32s, 0s; }
+  .ana-bar.is-in .ana-seg:nth-child(6) { transition-delay: 0.4s, 0s, 0.4s, 0s; }
+  /* Vue « coût réel » : la marge disparaît */
+  .ana-bar[data-view="cost"] .ana-seg--marge {
+    flex-grow: 0;
+    min-width: 0;
+    margin-left: -3px;
+  }
+  .ana-bar.has-active .ana-seg:not(.is-active) {
+    opacity: 0.35;
+  }
+
+  .ana-seg--achat { --c: var(--c-achat); }
+  .ana-seg--fret { --c: var(--c-fret); }
+  .ana-seg--douane { --c: var(--c-douane); }
+  .ana-seg--dedouanement { --c: var(--c-dedouanement); }
+  .ana-seg--packaging { --c: var(--c-packaging); }
+  .ana-seg--autres { --c: var(--c-autres); }
+  .ana-seg--marge { --c: var(--c-marge); }
+
+  .ana-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+    margin-top: 1.5rem;
+  }
+  .ana-legend {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ana-legend button {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.55rem 0.6rem;
+    border: 0;
+    border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+    border-radius: 6px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 0.88rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.3s var(--ease-default);
+  }
+  .ana-legend button[aria-pressed="true"] {
+    background: color-mix(in srgb, currentColor 6%, transparent);
+  }
+  .ana-legend-margin button {
+    margin-top: 0.4rem;
+    border-bottom: 0;
+    font-weight: 600;
+  }
+  .ana-swatch {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 3px;
+    background: var(--c);
+  }
+  .ana-legend-value {
+    font-variant-numeric: tabular-nums;
+  }
+  .ana-detail {
+    display: grid;
+    align-content: start;
+    padding: 1.25rem 1.4rem;
+    border-radius: 12px;
+    background: color-mix(in srgb, currentColor 5%, transparent);
+  }
+  .ana-note {
+    grid-area: 1 / 1;
+    animation: ana-in 0.4s var(--ease-default);
+  }
+  .ana-note[hidden] {
+    display: none;
+  }
+  @keyframes ana-in {
+    from { opacity: 0; transform: translateY(8px); }
+  }
+  .ana-note-share {
+    display: block;
+    margin-bottom: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+  }
+  .ana-note h4 {
+    margin: 0 0 0.6rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+  .ana-note p {
+    margin: 0;
+    line-height: 1.65;
+    opacity: 0.85;
+  }
+
+  /* ============ 03 — L'univers de la marque ============ */
+  .uni-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+    align-items: start;
+  }
+  .uni-columns {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+  .uni-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+  .uni-col-title {
+    margin-bottom: 0.3rem;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.6;
+  }
+  .uni-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+    border-left: 3px solid var(--tier);
+    border-radius: 8px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 0.86rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.3s var(--ease-default), border-color 0.3s var(--ease-default);
+  }
+  .uni-chip-tier {
+    font-size: 0.66rem;
+    opacity: 0.55;
+  }
+  .uni-chip[aria-checked="true"] {
+    border-color: var(--tier);
+    background: color-mix(in srgb, var(--tier) 16%, transparent);
+  }
+  .uni-chip:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .uni-chip--coeur,
+  .uni-dot--coeur { --tier: #b4703f; }
+  .uni-chip--peripherie,
+  .uni-dot--peripherie { --tier: #c79a5b; }
+  .uni-chip--hors_univers,
+  .uni-dot--hors_univers { --tier: #a83a2b; }
+
+  .uni-result {
+    position: sticky;
+    top: 6rem;
+    padding: 1.4rem 1.5rem;
+    border-radius: 14px;
+    background: color-mix(in srgb, currentColor 5%, transparent);
+  }
+  .uni-result-kicker {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.6;
+  }
+  .uni-score {
+    display: block;
+    margin: 0.4rem 0 0.8rem;
+    font-size: clamp(2.4rem, 5vw, 3.4rem);
+    font-weight: 600;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .uni-score small {
+    margin-left: 0.3rem;
+    font-size: 0.9rem;
+    font-weight: 400;
+    opacity: 0.6;
+  }
+  .uni-meter {
+    display: block;
+    height: 6px;
+    border-radius: 999px;
+    background: color-mix(in srgb, currentColor 12%, transparent);
+    overflow: hidden;
+  }
+  .uni-meter span {
+    display: block;
+    height: 100%;
+    background: #5e7a4e;
+    transform: scaleX(var(--v, 0));
+    transform-origin: left;
+    transition: transform 0.6s var(--ease-default), background-color 0.4s var(--ease-default);
+  }
+  .uni-meter span[data-level="mid"] { background: #b98327; }
+  .uni-meter span[data-level="low"] { background: #a83a2b; }
+  .uni-object {
+    margin: 1rem 0 0.3rem;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+  .uni-verdict {
+    margin: 0;
+    line-height: 1.6;
+    opacity: 0.8;
+  }
+  .uni-key {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    margin: 1.2rem 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.72rem;
+    opacity: 0.75;
+  }
+  .uni-key li {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .uni-dot {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 2px;
+    background: var(--tier);
+  }
+
   @media (max-width: 900px) {
-    .sim-grid {
+    .sim-grid,
+    .ana-grid,
+    .uni-grid {
       grid-template-columns: minmax(0, 1fr);
+    }
+    .uni-result {
+      position: static;
     }
     /* Sur téléphone, le résultat passe en premier */
     .sim-result {
       position: static;
       order: -1;
+    }
+  }
+  @media (max-width: 600px) {
+    .uni-columns {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .uni-col {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+    .uni-col-title {
+      width: 100%;
+    }
+    .uni-chip {
+      flex: 1 1 calc(50% - 0.45rem);
     }
   }
   @media (max-width: 480px) {
@@ -535,8 +1199,13 @@ const presets = [
   }
   @media (prefers-reduced-motion: reduce) {
     .sim-fill,
-    .sim-decision {
+    .sim-decision,
+    .ana-seg,
+    .uni-meter span {
       transition: none;
+    }
+    .ana-note {
+      animation: none;
     }
   }
 </style>

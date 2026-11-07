@@ -14,6 +14,8 @@ interface Props {
   section: string;
 }
 
+import AnnotatedCaptures from "../AnnotatedCaptures.astro";
+
 const { section } = Astro.props;
 
 const palette = [
@@ -166,9 +168,6 @@ const captures = [
   },
 ];
 
-// Masque sombre autour des zones d'une note (trou = zone)
-const veilPath = (zones: { x: number; y: number; w: number; h: number }[]) =>
-  "M0 0H100V100H0Z " + zones.map((z) => `M${z.x} ${z.y}h${z.w}v${z.h}h${-z.w}Z`).join(" ");
 ---
 
 {section === "process" && (
@@ -268,108 +267,7 @@ const veilPath = (zones: { x: number; y: number; w: number; h: number }[]) =>
 )}
 
 {section === "development" && (
-  <div class="case-extra elm-notes" data-elm-notes data-case-reveal>
-    <div class="extra-head extra-head--row">
-      <div>
-        <span class="extra-kicker">Captures annotées</span>
-        <h3 class="extra-title">Ce qui fait le site, point par point</h3>
-      </div>
-      <div class="notes-tabs" role="tablist" aria-label="Capture affichée">
-        {captures.map((capture, index) => (
-          <button
-            type="button"
-            role="tab"
-            id={`notes-tab-${capture.id}`}
-            aria-controls={`notes-capture-${capture.id}`}
-            aria-selected={index === 0 ? "true" : "false"}
-            tabindex={index === 0 ? "0" : "-1"}
-            data-notes-tab={capture.id}
-          >
-            {capture.label}
-          </button>
-        ))}
-      </div>
-    </div>
-
-    {captures.map((capture, captureIndex) => (
-      <div
-        class="notes-capture"
-        id={`notes-capture-${capture.id}`}
-        role="tabpanel"
-        aria-labelledby={`notes-tab-${capture.id}`}
-        data-notes-capture={capture.id}
-        hidden={captureIndex !== 0}
-      >
-        <figure class="notes-figure" style={`aspect-ratio: ${capture.width} / ${capture.height}`} data-notes-figure>
-          <!-- Tout ce qui est dans la « scène » zoome ensemble -->
-          <div class="notes-stage" data-notes-stage>
-            <img
-              src={capture.image}
-              alt={capture.alt}
-              width={capture.width}
-              height={capture.height}
-              loading="lazy"
-              decoding="async"
-              draggable="false"
-            />
-            {capture.notes.map((note, index) => (
-              <svg class="notes-veil" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" data-notes-veil={index} hidden={index !== 0}>
-                <path d={veilPath(note.zones)} fill-rule="evenodd" />
-              </svg>
-            ))}
-            {capture.notes.map((note, index) =>
-              note.zones.map((zone) => (
-                <span
-                  class={`notes-zone${index === 0 ? " is-active" : ""}`}
-                  style={`left: ${zone.x}%; top: ${zone.y}%; width: ${zone.w}%; height: ${zone.h}%`}
-                  data-zone-of={index}
-                  data-x={zone.x}
-                  data-y={zone.y}
-                  data-w={zone.w}
-                  data-h={zone.h}
-                  aria-hidden="true"
-                ></span>
-              ))
-            )}
-            {capture.notes.map((note, index) => (
-              <button
-                type="button"
-                class="notes-dot"
-                style={`left: ${Math.min(97, Math.max(2.5, note.dot.x))}%; top: ${Math.min(95, Math.max(4, note.dot.y))}%`}
-                aria-label={`Note ${index + 1} : ${note.title}`}
-                aria-pressed={index === 0 ? "true" : "false"}
-                data-notes-dot={index}
-              >
-                <span>{index + 1}</span>
-              </button>
-            ))}
-          </div>
-        </figure>
-
-        <div class="notes-panel">
-          <div class="notes-notes">
-            {capture.notes.map((note, index) => (
-              <div class="notes-note" data-notes-note={index} hidden={index !== 0}>
-                <span class="notes-note-index">
-                  {String(index + 1).padStart(2, "0")} / {String(capture.notes.length).padStart(2, "0")}
-                </span>
-                <h4>{note.title}</h4>
-                <p>{note.text}</p>
-              </div>
-            ))}
-          </div>
-          <div class="notes-nav">
-            <button type="button" data-notes-step="-1" aria-label="Note précédente">←</button>
-            <button type="button" data-notes-step="1" aria-label="Note suivante">→</button>
-            <button type="button" class="notes-zoom" data-notes-zoom aria-pressed="false">
-              <span class="notes-zoom-in">Zoomer</span>
-              <span class="notes-zoom-out">Vue d'ensemble</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    ))}
-  </div>
+  <AnnotatedCaptures captures={captures} kicker="Captures annotées" title="Ce qui fait le site, point par point" />
 )}
 
 <script>
@@ -823,232 +721,6 @@ const veilPath = (zones: { x: number; y: number; w: number; h: number }[]) =>
     color: inherit;
   }
 
-  /* ============ Captures annotées ============ */
-
-  .notes-tabs {
-    display: flex;
-    gap: 0.4rem;
-    padding: 0.3rem;
-    border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
-    border-radius: 999px;
-  }
-  .notes-tabs button {
-    padding: 0.5rem 1.1rem;
-    border: 0;
-    border-radius: 999px;
-    background: none;
-    color: inherit;
-    font: inherit;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition:
-      background-color 0.3s var(--ease-default),
-      color 0.3s var(--ease-default);
-  }
-  .notes-tabs button[aria-selected="true"] {
-    background: var(--accent);
-    color: #141414;
-  }
-
-  .notes-capture {
-    display: grid;
-    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
-    gap: clamp(1.25rem, 3vw, 2.5rem);
-    align-items: center;
-  }
-  .notes-capture[hidden] {
-    display: none;
-  }
-
-  /* --- Capture : cadre fixe, la « scène » à l'intérieur zoome --- */
-  .notes-figure {
-    position: relative;
-    margin: 0;
-    overflow: hidden;
-    border-radius: 8px;
-    border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
-    background: #141414;
-    touch-action: pan-y; /* glissement horizontal = note suivante */
-  }
-  .notes-stage {
-    --zoom: 1;
-    position: absolute;
-    inset: 0;
-    transform-origin: 0 0;
-    transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
-    will-change: transform;
-  }
-  .notes-stage img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-
-  /* Voile sombre autour des zones de la note active */
-  .notes-veil {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    fill: rgba(10, 10, 12, 0.55);
-    animation: notes-fade 0.5s var(--ease-default);
-  }
-  .notes-veil[hidden] {
-    display: none;
-  }
-  @keyframes notes-fade {
-    from { opacity: 0; }
-  }
-
-  /* Contour doré des zones mises en valeur */
-  .notes-zone {
-    position: absolute;
-    border: calc(1.5px / var(--zoom)) solid var(--accent);
-    border-radius: calc(6px / var(--zoom));
-    box-shadow: 0 0 calc(18px / var(--zoom)) color-mix(in srgb, var(--accent) 45%, transparent);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.4s var(--ease-default);
-  }
-  .notes-zone.is-active {
-    opacity: 1;
-  }
-
-  /* Points numérotés : taille constante quel que soit le zoom */
-  .notes-dot {
-    position: absolute;
-    z-index: 2;
-    width: 2rem;
-    height: 2rem;
-    margin: -1rem 0 0 -1rem;
-    display: grid;
-    place-items: center;
-    padding: 0;
-    border: 1.5px solid #ffffff;
-    border-radius: 50%;
-    background: color-mix(in srgb, #141414 55%, transparent);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
-    color: #ffffff;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    cursor: pointer;
-    transform: scale(calc(1 / var(--zoom)));
-    transition:
-      background-color 0.3s var(--ease-default),
-      border-color 0.3s var(--ease-default),
-      transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
-  }
-  .notes-dot::before {
-    content: "";
-    position: absolute;
-    inset: -6px;
-    border-radius: 50%;
-    border: 1px solid #ffffff;
-    opacity: 0;
-    animation: notes-pulse 2.4s var(--ease-default) infinite;
-  }
-  .notes-dot[aria-pressed="true"] {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #141414;
-  }
-  .notes-dot[aria-pressed="true"]::before {
-    border-color: var(--accent);
-  }
-  .notes-dot:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 4px;
-  }
-
-  @keyframes notes-pulse {
-    0% { opacity: 0.6; transform: scale(0.8); }
-    70%, 100% { opacity: 0; transform: scale(1.5); }
-  }
-
-  /* --- Panneau de texte --- */
-  .notes-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-  }
-  .notes-notes {
-    display: grid;
-  }
-  .notes-note {
-    grid-area: 1 / 1;
-  }
-  .notes-note[hidden] {
-    display: none;
-  }
-  .notes-note:not([hidden]) {
-    animation: notes-rise 0.45s var(--ease-default);
-  }
-  @keyframes notes-rise {
-    from { opacity: 0; transform: translateY(10px); }
-  }
-  .notes-note-index {
-    display: block;
-    margin-bottom: 0.75rem;
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    color: var(--accent);
-  }
-  .notes-note h4 {
-    margin: 0 0 0.75rem;
-    font-weight: 600;
-    font-size: clamp(1.1rem, 1.6vw, 1.3rem);
-  }
-  .notes-note p {
-    margin: 0;
-    line-height: 1.7;
-    opacity: 0.85;
-  }
-
-  .notes-nav {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .notes-nav button {
-    min-width: 2.6rem;
-    height: 2.6rem;
-    border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
-    border-radius: 999px;
-    background: none;
-    color: inherit;
-    font: inherit;
-    cursor: pointer;
-    transition: border-color 0.3s var(--ease-default), background-color 0.3s var(--ease-default);
-  }
-  .notes-nav button:hover {
-    border-color: var(--accent);
-  }
-  .notes-nav button:focus-visible,
-  .notes-tabs button:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-  .notes-nav .notes-zoom {
-    margin-left: auto;
-    padding: 0 1rem;
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
-  .notes-zoom-out,
-  .notes-zoom[aria-pressed="true"] .notes-zoom-in {
-    display: none;
-  }
-  .notes-zoom[aria-pressed="true"] .notes-zoom-out {
-    display: inline;
-  }
-
   /* ============ Mobile ============ */
   @media (max-width: 560px) {
     .lab-card-links,
@@ -1061,8 +733,7 @@ const veilPath = (zones: { x: number; y: number; w: number; h: number }[]) =>
   }
 
   @media (max-width: 800px) {
-    .lab-grid,
-    .notes-capture {
+    .lab-grid {
       grid-template-columns: minmax(0, 1fr);
     }
     .lab-palette {
@@ -1071,41 +742,6 @@ const veilPath = (zones: { x: number; y: number; w: number; h: number }[]) =>
     .lab-fonts {
       margin-top: 0.25rem;
     }
-    .notes-dot {
-      width: 1.6rem;
-      height: 1.6rem;
-      margin: -0.8rem 0 0 -0.8rem;
-      font-size: 0.65rem;
-    }
-    /* Onglets : défilent horizontalement s'ils ne tiennent pas */
-    .notes-tabs {
-      max-width: 100%;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    .notes-tabs::-webkit-scrollbar {
-      display: none;
-    }
-    .notes-tabs button {
-      flex: none;
-      padding: 0.5rem 0.7rem;
-      font-size: 0.74rem;
-    }
-    /* Hauteur réservée au texte : la page ne saute pas d'une note à l'autre */
-    .notes-notes {
-      min-height: 11.5rem;
-    }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .notes-dot::before,
-    .notes-veil,
-    .notes-note:not([hidden]) {
-      animation: none;
-    }
-    .notes-stage,
-    .notes-dot {
-      transition: none;
-    }
-  }
 </style>

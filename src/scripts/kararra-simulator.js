@@ -1,4 +1,7 @@
-// Évaluateur Kararra simplifié (KararraExtras.astro).
+// Contenus interactifs de la page Kararra (KararraExtras.astro) :
+// l'évaluateur simplifié, l'anatomie du coût réel et l'univers de marque.
+//
+// Évaluateur Kararra simplifié.
 //
 // Reprend les formules du moteur de l'application (engine.ts) :
 // coût réel, marge, prix d'achat maximum, trésorerie, 8 sous-scores
@@ -8,7 +11,7 @@
 // TVA, qui n'entre donc pas dans le coût mais dans la trésorerie.
 
 // --- Réglages de la marque (page Réglages de l'application) ---
-const CONFIG = {
+export const CONFIG = {
   vatRate: 0.21,
   marginFloor: 0.4,
   marginTarget: 0.6,
@@ -194,5 +197,155 @@ export function initKararraSimulator() {
     });
 
     applyPreset("travertin");
+  });
+}
+
+// ---------------- Anatomie du coût réel ----------------
+// Deux vues : « Coût réel » (la barre = le coût) et « Prix de vente »
+// (la barre = le prix ; la marge apparaît en vert). Survoler ou cliquer
+// un segment, ou une ligne de la légende, affiche son explication.
+
+export function initCostAnatomy() {
+  document.querySelectorAll("[data-kararra-anatomy]").forEach((root) => {
+    if (root.dataset.anaReady) return;
+    root.dataset.anaReady = "true";
+
+    let data = { cost: 0, price: 0 };
+    try {
+      data = JSON.parse(root.querySelector("[data-ana-data]")?.textContent || "{}");
+    } catch {
+      return;
+    }
+
+    const bar = root.querySelector("[data-ana-bar]");
+    const viewButtons = root.querySelectorAll("[data-ana-view]");
+    const totalLabel = root.querySelector("[data-ana-total-label]");
+    const total = root.querySelector("[data-ana-total]");
+    const notes = root.querySelectorAll("[data-ana-note]");
+    const legendButtons = root.querySelectorAll(".ana-legend [data-ana-part]");
+    const segments = root.querySelectorAll(".ana-bar [data-ana-part]");
+    let view = "cost";
+    let active = "achat";
+
+    const updateShares = () => {
+      // Part de chaque montant : du coût réel, ou du prix de vente
+      const base = view === "cost" ? data.cost : data.price;
+      root.querySelectorAll("[data-ana-share]").forEach((el) => {
+        const share = Number(el.dataset.anaShare) / base;
+        el.textContent = `${pct(share)} du ${view === "cost" ? "coût réel" : "prix de vente"}`;
+      });
+    };
+
+    const select = (id) => {
+      // La marge n'existe que dans la vue « prix de vente »
+      if (id === "marge" && view === "cost") setView("price");
+      active = id;
+      notes.forEach((note) => (note.hidden = note.dataset.anaNote !== id));
+      legendButtons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.anaPart === id)));
+      segments.forEach((seg) => seg.classList.toggle("is-active", seg.dataset.anaPart === id));
+      bar.classList.add("has-active");
+    };
+
+    const setView = (next) => {
+      view = next;
+      bar.dataset.view = next;
+      viewButtons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.anaView === next)));
+      totalLabel.textContent = next === "cost" ? "Coût réel par unité" : "Prix de vente HT";
+      total.textContent = eur(next === "cost" ? data.cost : data.price);
+      if (next === "cost" && active === "marge") select("achat");
+      updateShares();
+    };
+
+    viewButtons.forEach((b) => b.addEventListener("click", () => setView(b.dataset.anaView)));
+    root.querySelectorAll("[data-ana-part]").forEach((el) => {
+      el.addEventListener("click", () => select(el.dataset.anaPart));
+      el.addEventListener("pointerenter", (event) => {
+        if (event.pointerType === "mouse") select(el.dataset.anaPart);
+      });
+    });
+
+    // La barre se remplit quand le bloc arrive à l'écran
+    const reveal = () => bar.classList.add("is-in");
+    if ("IntersectionObserver" in window) {
+      const io = new IntersectionObserver((entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          reveal();
+          io.disconnect();
+        }
+      }, { threshold: 0.3 });
+      io.observe(bar);
+    } else {
+      reveal();
+    }
+
+    setView("cost");
+    select("achat");
+  });
+}
+
+// ---------------- L'univers de la marque ----------------
+// Une matière, une palette, un style : la cohérence est la moyenne des
+// notes de leur niveau (cœur, périphérie, hors univers), comme dans le
+// moteur de l'application.
+
+const VERDICTS = [
+  { min: 85, text: "Pleinement dans l'univers de la marque." },
+  { min: 50, text: "Compatible, mais en périphérie de l'univers." },
+  { min: 0, text: "Hors de l'univers : ce critère pèsera lourd dans le score." },
+];
+
+export function initUniverse() {
+  document.querySelectorAll("[data-kararra-universe]").forEach((root) => {
+    if (root.dataset.uniReady) return;
+    root.dataset.uniReady = "true";
+
+    const chips = Array.from(root.querySelectorAll("[data-uni-group]"));
+    const scoreEl = root.querySelector("[data-uni-score]");
+    const meter = root.querySelector("[data-uni-meter]");
+    const objectEl = root.querySelector("[data-uni-object]");
+    const verdictEl = root.querySelector("[data-uni-verdict]");
+
+    const render = () => {
+      const chosen = {};
+      chips.forEach((chip) => {
+        if (chip.getAttribute("aria-checked") === "true") chosen[chip.dataset.uniGroup] = chip;
+      });
+      const picked = Object.values(chosen);
+      const score = picked.reduce((sum, chip) => sum + CONFIG.coherence[chip.dataset.uniTier], 0) / picked.length;
+      scoreEl.textContent = String(Math.round(score));
+      meter.style.setProperty("--v", String(score / 100));
+      meter.dataset.level = score >= 85 ? "high" : score >= 50 ? "mid" : "low";
+      const m = chosen.material?.dataset.uniName;
+      const p = chosen.palette?.dataset.uniName;
+      const st = chosen.style?.dataset.uniName;
+      objectEl.textContent = `Un objet en ${m}, ${p}, de style ${st}.`;
+      verdictEl.textContent = VERDICTS.find((v) => score >= v.min).text;
+    };
+
+    chips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        chips
+          .filter((c) => c.dataset.uniGroup === chip.dataset.uniGroup)
+          .forEach((c) => {
+            c.setAttribute("aria-checked", String(c === chip));
+            c.tabIndex = c === chip ? 0 : -1;
+          });
+        render();
+      });
+      // Clavier : flèches haut / bas dans une colonne (groupe radio)
+      chip.addEventListener("keydown", (event) => {
+        if (!["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft"].includes(event.key)) return;
+        event.preventDefault();
+        const group = chips.filter((c) => c.dataset.uniGroup === chip.dataset.uniGroup);
+        const step = event.key === "ArrowDown" || event.key === "ArrowRight" ? 1 : -1;
+        const next = group[(group.indexOf(chip) + step + group.length) % group.length];
+        next.click();
+        next.focus();
+      });
+    });
+
+    // Un seul arrêt de tabulation par colonne
+    chips.forEach((chip) => (chip.tabIndex = chip.getAttribute("aria-checked") === "true" ? 0 : -1));
+    render();
   });
 }
