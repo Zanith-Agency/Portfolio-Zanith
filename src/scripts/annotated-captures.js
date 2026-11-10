@@ -47,7 +47,9 @@ function initNotes(root) {
     const render = () => {
       const { active, zoomed } = state;
       notes.forEach((note, i) => (note.hidden = i !== active));
-      veils.forEach((veil, i) => (veil.hidden = i !== active));
+      // Le voile est un <svg> : la propriété .hidden n'existe que sur les
+      // éléments HTML, il faut donc passer par l'attribut.
+      veils.forEach((veil, i) => veil.toggleAttribute("hidden", i !== active));
       dots.forEach((dot, i) => dot.setAttribute("aria-pressed", String(i === active)));
       zones.forEach((zone) => zone.classList.toggle("is-active", Number(zone.dataset.zoneOf) === active));
       zoomButton?.setAttribute("aria-pressed", String(zoomed));
