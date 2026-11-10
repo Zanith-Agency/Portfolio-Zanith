@@ -88,6 +88,15 @@ function setupReveal(root) {
     // superposeraient au logo et au menu, on les masque.
     root.classList.toggle("is-near-top", split < metrics.top);
 
+    // Couleur du header : celle des coulisses dès que la frontière est
+    // remontée au-dessus du milieu du header (voir header-theme.js)
+    const headerMiddle = header ? header.getBoundingClientRect().height / 2 : 0;
+    const theme = split < headerMiddle ? root.dataset.behindTheme : root.dataset.showcaseTheme;
+    if (theme && root.dataset.headerTheme !== theme) {
+      root.dataset.headerTheme = theme;
+      window.dispatchEvent(new Event("zanith:header-theme"));
+    }
+
     // Pour les lecteurs d'écran : pourcentage des coulisses révélé
     const revealed = Math.round((1 - ratio) * 100);
     handle.setAttribute("aria-valuenow", String(revealed));

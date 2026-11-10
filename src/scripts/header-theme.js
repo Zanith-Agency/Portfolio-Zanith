@@ -36,5 +36,7 @@ export function initHeaderTheme() {
 
   window.addEventListener("scroll", schedule, { passive: true });
   window.addEventListener("resize", schedule);
+  // Une zone a changé de fond sans défilement (ex. : intro des pages projets)
+  window.addEventListener("zanith:header-theme", schedule);
   update();
 }

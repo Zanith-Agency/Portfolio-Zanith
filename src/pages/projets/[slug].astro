@@ -3,8 +3,10 @@ import Layout from "../../layouts/Layout.astro";
 import DefaultReveal from "../../components/projects/DefaultReveal.astro";
 import ElMagicoReveal from "../../components/projects/ElMagicoReveal.astro";
 import KararraReveal from "../../components/projects/KararraReveal.astro";
+import ItechnixReveal from "../../components/projects/ItechnixReveal.astro";
 import ElMagicoExtras from "../../components/projects/ElMagicoExtras.astro";
 import KararraExtras from "../../components/projects/KararraExtras.astro";
+import ItechnixExtras from "../../components/projects/ItechnixExtras.astro";
 import ProjectAscent from "../../components/ProjectAscent.astro";
 import CaseGallery from "../../components/CaseGallery.astro";
 import { getProjectBySlug, getProjects } from "../../lib/supabase";
@@ -27,6 +29,7 @@ const projects = await getProjects();
 const customReveals = {
   "elmagicobarber": ElMagicoReveal,
   "kararra": KararraReveal,
+  "itechnix": ItechnixReveal,
 };
 const Reveal = customReveals[project.slug as keyof typeof customReveals] ?? DefaultReveal;
 
@@ -37,6 +40,7 @@ const Reveal = customReveals[project.slug as keyof typeof customReveals] ?? Defa
 const customExtras = {
   elmagicobarber: ElMagicoExtras,
   kararra: KararraExtras,
+  itechnix: ItechnixExtras,
 };
 const Extras = customExtras[project.slug as keyof typeof customExtras];
 

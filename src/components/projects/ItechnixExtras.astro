@@ -1,0 +1,501 @@
+---
+// Contenus interactifs propres à Itechnix (page projet).
+//   - section "development" → captures annotées du site
+//   - section "outcome"     → le parcours d'une demande de devis, de la
+//                              recherche Google jusqu'à la conversion
+// Interactions du parcours : src/scripts/itechnix-extras.js
+
+import AnnotatedCaptures, { type Capture } from "../AnnotatedCaptures.astro";
+
+interface Props {
+  section: string;
+}
+
+const { section } = Astro.props;
+
+const captures: Capture[] = [
+  {
+    id: "accueil",
+    label: "Accueil",
+    image: "/projects/itechnix/galerie-01-accueil.webp",
+    width: 1600,
+    height: 855,
+    alt: "Page d'accueil du site Itechnix Construct",
+    notes: [
+      {
+        dot: { x: 10.8, y: 84 },
+        zones: [
+          { x: 10.8, y: 84, w: 9.5, h: 7 },
+          { x: 21.3, y: 84, w: 14.4, h: 7 },
+        ],
+        title: "Deux boutons, deux intentions",
+        text: "Sous le titre, deux appels à l'action : « Services » pour découvrir les métiers, et « Demander un devis », en rouge, pour passer directement à l'action.",
+      },
+      {
+        dot: { x: 1.8, y: 88 },
+        zones: [{ x: 1.5, y: 88, w: 5, h: 9.5 }],
+        title: "WhatsApp, en un geste",
+        text: "Une bulle WhatsApp reste visible sur toutes les pages : le visiteur écrit à l'équipe directement, comme il le ferait avec un artisan qu'il connaît.",
+      },
+      {
+        dot: { x: 9.5, y: 42 },
+        zones: [
+          { x: 9.5, y: 42, w: 56.5, h: 10 },
+          { x: 82.5, y: 4.5, w: 6.5, h: 7 },
+        ],
+        title: "Les métiers dès le titre",
+        text: "Plomberie, chauffage, électricité : le visiteur sait en une seconde s'il est au bon endroit. Le bouton Contact, en rouge, reste à portée dans le menu.",
+      },
+    ],
+  },
+  {
+    id: "solutions",
+    label: "Solutions",
+    image: "/projects/itechnix/galerie-03-solutions.webp",
+    width: 1600,
+    height: 862,
+    alt: "Section Solutions du site Itechnix : électricité, plomberie, chauffage",
+    notes: [
+      {
+        dot: { x: 10.5, y: 28 },
+        zones: [{ x: 10.5, y: 28, w: 80.5, h: 35 }],
+        title: "Un métier, une carte",
+        text: "Électricité, plomberie, chauffage : chaque métier a sa carte illustrée, qui mène à sa page dédiée.",
+      },
+      {
+        dot: { x: 58.5, y: 68 },
+        zones: [{ x: 58.5, y: 68, w: 31, h: 27.5 }],
+        title: "Une question ? Un clic",
+        text: "Un encart « Vous avez des questions ? » propose de contacter l'équipe sans avoir à chercher la page Contact.",
+      },
+      {
+        dot: { x: 10, y: 84 },
+        zones: [{ x: 10, y: 84, w: 30, h: 10 }],
+        title: "Un nouveau service mis en avant",
+        text: "L'assistance à la rénovation, nouveau service d'Itechnix, a sa propre section pour être remarquée.",
+      },
+    ],
+  },
+  {
+    id: "devis",
+    label: "Devis",
+    image: "/projects/itechnix/galerie-04-devis.webp",
+    width: 1600,
+    height: 858,
+    alt: "Formulaire de demande de devis du site Itechnix",
+    notes: [
+      {
+        dot: { x: 15.5, y: 34 },
+        zones: [{ x: 15.5, y: 34, w: 26, h: 35 }],
+        title: "Les coordonnées, en face du formulaire",
+        text: "Adresse et téléphone sont affichés à côté du formulaire : ceux qui préfèrent appeler n'ont rien à chercher.",
+      },
+      {
+        dot: { x: 53.5, y: 35 },
+        zones: [{ x: 53.5, y: 35, w: 27, h: 9.5 }],
+        title: "Le métier, avant tout",
+        text: "Le champ « Service souhaité » oriente la demande vers le bon métier dès sa réception.",
+      },
+      {
+        dot: { x: 53.5, y: 47 },
+        zones: [
+          { x: 53.5, y: 47, w: 27, h: 10 },
+          { x: 53.5, y: 61, w: 27, h: 24 },
+        ],
+        title: "Forfait ou sur mesure",
+        text: "Le client indique s'il souhaite une prestation à prix fixe. La description du projet reste facultative, pour ne pas freiner l'envoi.",
+      },
+      {
+        dot: { x: 53.5, y: 87 },
+        zones: [{ x: 53.5, y: 87, w: 21.5, h: 10.5 }],
+        title: "Protégé contre le spam",
+        text: "Un reCAPTCHA filtre les envois automatiques : l'équipe ne reçoit que de vraies demandes.",
+      },
+    ],
+  },
+  {
+    id: "metier",
+    label: "Page métier",
+    image: "/projects/itechnix/galerie-07-electricite.webp",
+    width: 1600,
+    height: 859,
+    alt: "Page Électricité du site Itechnix",
+    notes: [
+      {
+        dot: { x: 10, y: 16 },
+        zones: [{ x: 10, y: 16, w: 36, h: 21 }],
+        title: "Une promesse claire",
+        text: "Chaque page métier s'ouvre sur une promesse simple, pensée pour le client et pour Google : elle reprend les mots que les gens recherchent.",
+      },
+      {
+        dot: { x: 13, y: 51 },
+        zones: [{ x: 13, y: 51, w: 36, h: 22 }],
+        title: "Les prestations en liste",
+        text: "Installation, mise en conformité, dépannage : les prestations sont listées pour être lues en quelques secondes.",
+      },
+      {
+        dot: { x: 10, y: 77 },
+        zones: [{ x: 10, y: 77, w: 15, h: 6 }],
+        title: "Un appel à l'action par métier",
+        text: "Chaque page métier a son propre bouton et, plus bas, son formulaire de demande de devis : c'est aussi la page d'arrivée de la campagne Google Ads du métier.",
+      },
+    ],
+  },
+];
+
+// Métiers proposés dans la démonstration ; les trois premiers ont leur
+// campagne Google Ads (Bruxelles + 15 km)
+const services = [
+  { id: "electricite", label: "Électricité", campaign: true },
+  { id: "plomberie", label: "Plomberie", campaign: true },
+  { id: "chauffage", label: "Chauffage", campaign: true },
+  { id: "renovation", label: "Assistance rénovation", campaign: false },
+];
+---
+
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap"
+/>
+
+{section === "development" && (
+  <AnnotatedCaptures captures={captures} kicker="Captures annotées" title="Le site, page par page" />
+)}
+
+{section === "outcome" && (
+  <div class="case-extra itx-flow" data-itx-flow data-case-reveal>
+    <div class="extra-head">
+      <span class="extra-kicker">Parcours d'une demande</span>
+      <h3 class="extra-title">De la recherche Google au devis</h3>
+    </div>
+
+    <div class="flow-grid">
+      <!-- Le formulaire, aux couleurs du site -->
+      <form class="flow-form" data-flow-form onsubmit="return false">
+        <p class="flow-form-title">Obtenez votre devis gratuitement !</p>
+
+        <div class="flow-field">
+          <span class="flow-label">Service souhaité <i>*</i></span>
+          <div class="flow-choices" role="radiogroup" aria-label="Service souhaité">
+            {services.map((service, index) => (
+              <button
+                type="button"
+                role="radio"
+                aria-checked={index === 2 ? "true" : "false"}
+                data-flow-service={service.id}
+                data-label={service.label}
+                data-campaign={service.campaign ? "true" : "false"}
+              >
+                {service.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div class="flow-field">
+          <span class="flow-label">Souhaitez-vous choisir un forfait (prestation à prix fixe) ? <i>*</i></span>
+          <div class="flow-choices flow-choices--small" role="radiogroup" aria-label="Forfait">
+            <button type="button" role="radio" aria-checked="false" data-flow-forfait="oui">Oui</button>
+            <button type="button" role="radio" aria-checked="true" data-flow-forfait="non">Non</button>
+          </div>
+        </div>
+
+        <label class="flow-field">
+          <span class="flow-label">Description du projet (optionnel)</span>
+          <textarea rows="3" maxlength="180" data-flow-description>Remplacement d'une vieille chaudière avant l'hiver.</textarea>
+        </label>
+
+        <p class="flow-demo">Coordonnées pré-remplies pour la démonstration · rien n'est envoyé.</p>
+
+        <div class="flow-actions">
+          <button type="button" class="flow-submit" data-flow-send="form">Envoyer la demande <span aria-hidden="true">›</span></button>
+          <button type="button" class="flow-wa" data-flow-send="whatsapp">
+            <svg viewBox="0 0 32 32" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M16 4a12 12 0 0 0-10.4 18L4 28l6.2-1.6A12 12 0 1 0 16 4Zm0 21.8c-1.9 0-3.7-.5-5.3-1.5l-.4-.2-3.7 1 1-3.6-.2-.4A9.8 9.8 0 1 1 16 25.8Zm5.4-7.3c-.3-.1-1.7-.9-2-1s-.5-.1-.7.2l-.9 1.1c-.2.2-.3.2-.6.1a8 8 0 0 1-4-3.5c-.3-.5.3-.5.9-1.6.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4s-1 1-1 2.5 1 2.9 1.2 3.1c.1.2 2 3.1 5 4.4 1.8.8 2.6.9 3.5.7.6-.1 1.7-.7 2-1.4s.2-1.2.2-1.4l-.6-.3Z"/></svg>
+            Plutôt WhatsApp
+          </button>
+        </div>
+      </form>
+
+      <!-- Ce qui se passe, étape par étape -->
+      <div class="flow-steps" aria-live="polite">
+        <div class="flow-steps-head">
+          <span class="flow-steps-title" data-flow-title>Le parcours</span>
+          <button type="button" class="flow-reset" data-flow-reset hidden>Recommencer</button>
+        </div>
+        <ol data-flow-list>
+          <li class="flow-step is-idle">
+            <span class="flow-step-dot"></span>
+            <div>
+              <strong>Choisissez un métier, puis envoyez</strong>
+              <p>Le parcours complet s'affiche ici, de la recherche Google jusqu'à la demande reçue.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </div>
+)}
+
+<script>
+  import { initItechnixFlow } from "../../scripts/itechnix-extras";
+  initItechnixFlow();
+</script>
+
+<style>
+  /* --- Bloc commun aux contenus sur mesure --- */
+  .case-extra {
+    grid-column: 1 / -1;
+    margin-top: clamp(1.5rem, 4vw, 3rem);
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+    border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+    border-radius: 14px;
+    background: color-mix(in srgb, currentColor 3%, transparent);
+  }
+  .extra-head {
+    margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
+  }
+  .extra-kicker {
+    display: block;
+    margin-bottom: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+  }
+  .extra-title {
+    margin: 0;
+    font-weight: 500;
+    font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+    line-height: 1.15;
+  }
+
+  /* ============ Parcours d'une demande ============ */
+  .flow-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+    align-items: start;
+  }
+
+  /* Formulaire façon site Itechnix */
+  .flow-form {
+    --f-ink: #1d2733;
+    --f-field: #c9d8ef;
+    --f-blue: #1f6fd6;
+    --f-red: #e5482f;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    padding: clamp(1.25rem, 2.5vw, 1.75rem);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--f-ink);
+    font-family: "Lato", system-ui, sans-serif;
+    box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.45);
+  }
+  .flow-form-title {
+    margin: 0;
+    font-weight: 900;
+    font-size: clamp(1.25rem, 2vw, 1.55rem);
+    line-height: 1.15;
+  }
+  .flow-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .flow-label {
+    font-size: 0.88rem;
+  }
+  .flow-label i {
+    font-style: normal;
+    color: var(--f-red);
+  }
+  .flow-choices {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+  .flow-choices--small {
+    grid-template-columns: repeat(2, minmax(0, 7rem));
+  }
+  .flow-choices button {
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #1d2733;
+    border-radius: 8px;
+    background: var(--f-field);
+    color: var(--f-ink);
+    font: inherit;
+    font-size: 0.86rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.25s var(--ease-default), color 0.25s var(--ease-default);
+  }
+  .flow-choices button[aria-checked="true"] {
+    background: var(--f-blue);
+    border-color: var(--f-blue);
+    color: #fff;
+  }
+  .flow-form textarea {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #1d2733;
+    border-radius: 8px;
+    background: var(--f-field);
+    color: var(--f-ink);
+    font: inherit;
+    font-size: 1rem; /* 16 px : pas de zoom automatique sur iPhone */
+    resize: none;
+  }
+  .flow-demo {
+    margin: 0;
+    font-size: 0.72rem;
+    color: #5d6b7c;
+  }
+  .flow-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+  .flow-submit,
+  .flow-wa {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.75rem 1.1rem;
+    border: 0;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 0.92rem;
+    cursor: pointer;
+    transition: filter 0.25s var(--ease-default), opacity 0.25s var(--ease-default);
+  }
+  .flow-submit {
+    background: var(--f-red);
+    color: #fff;
+  }
+  .flow-submit span {
+    font-weight: 900;
+  }
+  .flow-wa {
+    background: #25d366;
+    color: #fff;
+  }
+  .flow-submit:hover,
+  .flow-wa:hover {
+    filter: brightness(1.06);
+  }
+  .flow-form button:focus-visible,
+  .flow-form textarea:focus-visible,
+  .flow-reset:focus-visible {
+    outline: 2px solid var(--f-blue, var(--accent));
+    outline-offset: 2px;
+  }
+  .flow-form.is-sent .flow-actions button {
+    opacity: 0.45;
+    pointer-events: none;
+  }
+
+  /* Étapes */
+  .flow-steps {
+    padding: clamp(1.1rem, 2.5vw, 1.6rem);
+    border-radius: 12px;
+    background: color-mix(in srgb, currentColor 5%, transparent);
+  }
+  .flow-steps-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.1rem;
+  }
+  .flow-steps-title {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.65;
+  }
+  .flow-reset {
+    padding: 0.4rem 0.85rem;
+    border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+    border-radius: 999px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 0.75rem;
+    cursor: pointer;
+  }
+  .flow-steps ol {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .flow-steps :global(.flow-step) {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.9rem;
+    animation: flow-in 0.5s var(--ease-default) both;
+  }
+  /* Le fil qui relie les étapes */
+  .flow-steps :global(.flow-step:not(:last-child))::after {
+    content: "";
+    position: absolute;
+    left: 0.4rem;
+    top: 1.2rem;
+    bottom: -1rem;
+    width: 1px;
+    background: color-mix(in srgb, currentColor 20%, transparent);
+  }
+  @keyframes flow-in {
+    from { opacity: 0; transform: translateY(10px); }
+  }
+  .flow-steps :global(.flow-step-dot) {
+    width: 0.85rem;
+    height: 0.85rem;
+    margin-top: 0.2rem;
+    border-radius: 50%;
+    background: var(--step, var(--accent));
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--step, var(--accent)) 20%, transparent);
+  }
+  .flow-steps :global(.flow-step.is-idle .flow-step-dot) {
+    --step: color-mix(in srgb, currentColor 35%, transparent);
+  }
+  .flow-steps :global(.flow-step strong) {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.95rem;
+  }
+  .flow-steps :global(.flow-step p) {
+    margin: 0;
+    font-size: 0.86rem;
+    line-height: 1.55;
+    opacity: 0.8;
+  }
+  .flow-steps :global(.flow-step-tag) {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--step, var(--accent));
+  }
+
+  @media (max-width: 900px) {
+    .flow-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .flow-steps :global(.flow-step) {
+      animation: none;
+    }
+  }
+</style>

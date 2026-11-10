@@ -1,0 +1,640 @@
+---
+// Introduction sur mesure du projet Itechnix.
+//
+// Principe : « le site devient sa stratégie ». Les deux univers
+// partagent les MÊMES emplacements (.itx-slot--…) :
+//   - l'écran d'accueil devient l'arborescence du site,
+//   - le téléphone devient les mots-clés locaux visés,
+//   - le bouton « Demander un devis » devient la conversion suivie,
+//   - le titre devient l'objectif (trouvé, choisi, contacté),
+//   - l'accroche devient la stack.
+// En plus dans les coulisses : les campagnes Google Ads par métier.
+//
+// Images : public/projects/itechnix/ (captures du site fournies par Nadir).
+import ProjectReveal from "../ProjectReveal.astro";
+import type { Project } from "../../lib/supabase";
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const assets = "/projects/itechnix";
+const stack = project.tools && project.tools.length > 0
+  ? project.tools
+  : ["Figma", "WordPress", "Elementor", "Google Ads", "Google Tag Manager"];
+
+let siteHost: string | null = null;
+try {
+  siteHost = project.site_url ? new URL(project.site_url).hostname.replace(/^www\./, "") : null;
+} catch {
+  siteHost = null;
+}
+const meta = [project.project_year, siteHost].filter(Boolean).join(" — ");
+
+// Plan du site (menu réel du site en ligne)
+const sitemap = [
+  { label: "Services", children: ["Électricité", "Plomberie", "Chauffage", "Assistance rénovation", "Forfaits"] },
+  { label: "Projets", children: [] },
+  { label: "Carrière", children: [] },
+  { label: "À propos", children: [] },
+  { label: "Contact & devis", children: [] },
+];
+
+// Exemples de mots-clés locaux et transactionnels visés
+const keywords = ["chauffagiste Bruxelles", "urgence plomberie", "entretien chaudière gaz", "robinet qui fuit", "purgeur automatique"];
+
+const campaigns = ["Plomberie", "Électricité", "Chauffage"];
+---
+
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=JetBrains+Mono:wght@400;500&display=swap"
+/>
+
+<ProjectReveal headerTheme="dark" behindTheme="light">
+  <!-- ============ Univers 1 — PROJECT SHOWCASE : le site ============ -->
+  <div slot="showcase" class="itx itx--showcase">
+    <div class="itx-glow" aria-hidden="true"></div>
+
+    <div class="itx-slot itx-slot--title">
+      <span class="itx-kicker">{project.category}</span>
+      <h1 class="itx-title">
+        <span class="itx-title-main">Itechnix</span>
+        <span class="itx-title-sub">Construct.</span>
+      </h1>
+    </div>
+
+    <div class="itx-slot itx-slot--meta">
+      <p class="itx-tagline">{project.tagline || project.summary || "Plomberie, chauffage, électricité : un expert pour vos projets."}</p>
+      {meta && <p class="itx-meta">{meta}</p>}
+    </div>
+
+    <figure class="itx-slot itx-slot--screen itx-laptop">
+      <img
+        src={`${assets}/galerie-01-accueil.webp`}
+        alt="Page d'accueil du site Itechnix Construct"
+        width="1600"
+        height="855"
+        fetchpriority="high"
+      />
+    </figure>
+
+    <figure class="itx-slot itx-slot--phone itx-phone">
+      <img src={`${assets}/galerie-02-accueil-mobile.webp`} alt="" width="900" height="1600" loading="eager" />
+    </figure>
+
+    <div class="itx-slot itx-slot--cta itx-cta" aria-hidden="true">
+      Demander un devis <span>›</span>
+    </div>
+
+    <span class="itx-whatsapp" aria-hidden="true">
+      <svg viewBox="0 0 32 32" width="26" height="26"><path fill="#fff" d="M16 4a12 12 0 0 0-10.4 18L4 28l6.2-1.6A12 12 0 1 0 16 4Zm0 21.8c-1.9 0-3.7-.5-5.3-1.5l-.4-.2-3.7 1 1-3.6-.2-.4A9.8 9.8 0 1 1 16 25.8Zm5.4-7.3c-.3-.1-1.7-.9-2-1s-.5-.1-.7.2l-.9 1.1c-.2.2-.3.2-.6.1a8 8 0 0 1-4-3.5c-.3-.5.3-.5.9-1.6.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4s-1 1-1 2.5 1 2.9 1.2 3.1c.1.2 2 3.1 5 4.4 1.8.8 2.6.9 3.5.7.6-.1 1.7-.7 2-1.4s.2-1.2.2-1.4l-.6-.3Z"/></svg>
+    </span>
+  </div>
+
+  <!-- ============ Univers 2 — BEHIND THE SCENES : la stratégie ============ -->
+  <div slot="behind" class="itx itx--behind">
+    <div class="itx-grid" aria-hidden="true"></div>
+
+    <!-- Le titre devient l'objectif -->
+    <div class="itx-slot itx-slot--title" aria-hidden="true">
+      <span class="itx-kicker itx-kicker--plan">Objectif</span>
+      <p class="itx-goal">
+        <span>Trouvé.</span>
+        <span>Choisi.</span>
+        <span class="itx-goal-accent">Contacté.</span>
+      </p>
+    </div>
+
+    <!-- L'accroche devient la stack -->
+    <div class="itx-slot itx-slot--meta itx-stack">
+      <span class="itx-panel-title">Stack</span>
+      <ul>
+        {stack.map((tool, index) => (
+          <li><span>{String(index + 1).padStart(2, "0")}</span>{tool}</li>
+        ))}
+      </ul>
+    </div>
+
+    <!-- L'écran devient l'arborescence -->
+    <figure class="itx-slot itx-slot--screen itx-sitemap" aria-hidden="true">
+      <span class="itx-panel-title">Arborescence</span>
+      <div class="itx-tree">
+        <span class="itx-node itx-node--root">Accueil</span>
+        <ul class="itx-branches">
+          {sitemap.map((page) => (
+            <li>
+              <span class="itx-node">{page.label}</span>
+              {page.children.length > 0 && (
+                <ul class="itx-leaves">
+                  {page.children.map((child) => <li><span class="itx-node itx-node--leaf">{child}</span></li>)}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </figure>
+
+    <!-- Le téléphone devient les mots-clés -->
+    <div class="itx-slot itx-slot--phone itx-keywords" aria-hidden="true">
+      <span class="itx-panel-title">Mots-clés locaux</span>
+      <ul>
+        {keywords.map((keyword) => <li>« {keyword} »</li>)}
+      </ul>
+    </div>
+
+    <!-- Le bouton devient la conversion suivie -->
+    <div class="itx-slot itx-slot--cta itx-conversion" aria-hidden="true">
+      <span class="itx-conversion-dot"></span>
+      Devis envoyé → conversion
+    </div>
+
+    <!-- En plus : les campagnes Google Ads, une par métier -->
+    <div class="itx-slot itx-slot--extra itx-campaigns" aria-hidden="true">
+      <span class="itx-panel-title">Google Ads · Bruxelles + 15 km</span>
+      <ul>
+        {campaigns.map((name) => (
+          <li><span class="itx-campaign-dot"></span>{name}</li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</ProjectReveal>
+
+<style>
+  /* ============ Base commune aux deux univers ============ */
+  .itx {
+    --i-navy: #0f1d2e;
+    --i-navy-2: #172a40;
+    --i-blue: #1f6fd6;
+    --i-blue-soft: #5b8fd6;
+    --i-sky: #b8cdea;
+    --i-sky-2: #dbe6f5;
+    --i-red: #e5482f;
+    --i-ink: #1d2733;
+    --i-green: #25d366;
+    --i-sans: "Lato", system-ui, sans-serif;
+    --i-mono: "JetBrains Mono", ui-monospace, monospace;
+
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    font-family: var(--i-sans);
+  }
+  .itx figure {
+    margin: 0;
+  }
+  .itx img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+  }
+
+  /* --- Emplacements partagés --- */
+  .itx-slot {
+    position: absolute;
+    box-sizing: border-box;
+  }
+  .itx-slot--title {
+    left: 6%;
+    top: 24%;
+    width: 36%;
+  }
+  .itx-slot--meta {
+    left: 6%;
+    top: 62%;
+    width: 28%;
+  }
+  .itx-slot--screen {
+    left: 45%;
+    top: 22%;
+    width: min(46%, 84vh);
+    aspect-ratio: 1600 / 855;
+  }
+  .itx-slot--phone {
+    left: 37%;
+    top: 46%;
+    width: min(11%, 21vh);
+    aspect-ratio: 9 / 16;
+  }
+  .itx-slot--cta {
+    left: 76%;
+    top: 11%;
+    width: min(15%, 28vh);
+    aspect-ratio: 4 / 1;
+  }
+  .itx-slot--extra {
+    left: 60%;
+    top: 79%;
+    width: min(30%, 54vh);
+  }
+
+  /* --- Titre --- */
+  .itx-kicker {
+    display: block;
+    margin-bottom: 1.1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--i-sky);
+  }
+  .itx-title {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    line-height: 0.95;
+  }
+  .itx-title-main {
+    font-weight: 900;
+    font-size: min(6.4vw, 12vh);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--i-blue);
+  }
+  .itx-title-sub {
+    margin-top: 0.2em;
+    font-weight: 900;
+    font-size: min(3.6vw, 7vh);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--i-red);
+  }
+
+  /* ============ Univers 1 — le site ============ */
+  .itx--showcase {
+    background: linear-gradient(160deg, var(--i-navy-2), var(--i-navy) 60%);
+    color: #fff;
+  }
+  .itx-glow {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 55% 60% at 72% 45%, rgba(91, 143, 214, 0.22), transparent 70%),
+      radial-gradient(ellipse 40% 40% at 0% 100%, rgba(229, 72, 47, 0.12), transparent 70%);
+  }
+  .itx-tagline {
+    margin: 0 0 1.2rem;
+    font-size: clamp(1.05rem, 1.45vw, 1.35rem);
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  .itx-meta {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .itx-laptop {
+    border-radius: 6px;
+    box-shadow:
+      0 0 0 10px #0a131e,
+      0 0 0 11px #34475e,
+      0 40px 80px rgba(0, 0, 0, 0.55);
+  }
+  .itx-laptop img {
+    border-radius: 6px;
+  }
+  .itx-laptop::after {
+    content: "";
+    position: absolute;
+    left: -9%;
+    right: -9%;
+    top: calc(100% + 11px);
+    height: 14px;
+    border-radius: 0 0 14px 14px;
+    background: linear-gradient(to bottom, #4a5d74, #1b2735);
+    box-shadow: 0 20px 30px rgba(0, 0, 0, 0.45);
+  }
+
+  .itx-phone {
+    padding: 5px;
+    border-radius: 18px;
+    background: #0a131e;
+    box-shadow:
+      0 0 0 1px #34475e,
+      0 30px 60px rgba(0, 0, 0, 0.55);
+  }
+  .itx-phone img {
+    border-radius: 13px;
+  }
+
+  .itx-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    border-radius: 6px;
+    background: var(--i-red);
+    color: #fff;
+    font-size: clamp(0.75rem, 1.1vw, 1rem);
+    box-shadow: 0 20px 40px rgba(229, 72, 47, 0.35);
+  }
+  .itx-cta span {
+    font-weight: 900;
+  }
+
+  .itx-whatsapp {
+    position: absolute;
+    left: 31%;
+    top: 78%;
+    display: grid;
+    place-items: center;
+    width: 3.2rem;
+    height: 3.2rem;
+    border-radius: 50%;
+    background: var(--i-green);
+    box-shadow: 0 14px 30px rgba(37, 211, 102, 0.35);
+  }
+
+  /* ============ Univers 2 — la stratégie ============ */
+  .itx--behind {
+    background: var(--i-sky-2);
+    color: var(--i-ink);
+  }
+  .itx-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(31, 111, 214, 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(31, 111, 214, 0.1) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+  .itx-kicker--plan {
+    color: var(--i-blue);
+  }
+  .itx-goal {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    font-weight: 900;
+    font-size: min(4.6vw, 8.5vh);
+    line-height: 1.02;
+    letter-spacing: -0.01em;
+    color: var(--i-ink);
+  }
+  .itx-goal-accent {
+    color: var(--i-red);
+  }
+
+  .itx-panel-title {
+    display: block;
+    margin-bottom: 0.8rem;
+    font-family: var(--i-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--i-blue);
+  }
+
+  .itx-stack ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  .itx-stack li span {
+    margin-right: 0.5rem;
+    font-family: var(--i-mono);
+    font-weight: 400;
+    font-size: 0.72rem;
+    color: var(--i-blue-soft);
+  }
+
+  /* Arborescence, à la place de l'écran */
+  .itx-sitemap {
+    display: flex;
+    flex-direction: column;
+    padding: clamp(0.9rem, 1.8vw, 1.5rem);
+    border: 1.5px solid var(--i-blue);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 30px 60px rgba(15, 29, 46, 0.18);
+  }
+  .itx-tree {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.2rem;
+  }
+  .itx-node {
+    display: inline-block;
+    padding: 0.35rem 0.7rem;
+    border: 1px solid var(--i-blue-soft);
+    border-radius: 6px;
+    background: #fff;
+    font-weight: 700;
+    font-size: clamp(0.6rem, 0.9vw, 0.82rem);
+    white-space: nowrap;
+  }
+  .itx-node--root {
+    border-color: var(--i-red);
+    background: var(--i-red);
+    color: #fff;
+  }
+  .itx-node--leaf {
+    border-style: dashed;
+    font-weight: 400;
+  }
+  .itx-branches {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    gap: clamp(0.4rem, 1vw, 0.9rem);
+    margin: 0;
+    padding: 1rem 0 0;
+    list-style: none;
+    border-top: 1.5px solid var(--i-blue-soft);
+  }
+  .itx-branches > li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .itx-leaves {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0 0 0 0.6rem;
+    list-style: none;
+    border-left: 1.5px dashed var(--i-blue-soft);
+  }
+
+  .itx-keywords {
+    display: flex;
+    flex-direction: column;
+    padding: 0.9rem 0.8rem;
+    border-radius: 14px;
+    background: var(--i-navy);
+    color: #fff;
+    box-shadow: 0 30px 60px rgba(15, 29, 46, 0.3);
+  }
+  .itx-keywords .itx-panel-title {
+    color: var(--i-sky);
+  }
+  .itx-keywords ul {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: space-around;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: clamp(0.6rem, 0.85vw, 0.78rem);
+    line-height: 1.35;
+  }
+
+  .itx-conversion {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    border: 1.5px dashed var(--i-red);
+    border-radius: 6px;
+    background: #fff;
+    font-family: var(--i-mono);
+    font-size: clamp(0.6rem, 0.85vw, 0.78rem);
+    color: var(--i-red);
+  }
+  .itx-conversion-dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: var(--i-red);
+  }
+
+  .itx-campaigns {
+    padding: 0.9rem 1rem;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 20px 40px rgba(15, 29, 46, 0.14);
+  }
+  .itx-campaigns ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.2rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+  .itx-campaigns li {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  .itx-campaign-dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 2px;
+    background: var(--i-blue);
+  }
+
+  /* ============ Mobile et tablette portrait ============ */
+  @media (max-width: 800px) {
+    .itx-slot--title {
+      left: 6%;
+      top: 13%;
+      width: 88%;
+    }
+    .itx-title-main {
+      font-size: min(13vw, 8vh);
+    }
+    .itx-title-sub {
+      font-size: min(7vw, 4.6vh);
+    }
+    .itx-goal {
+      font-size: min(9vw, 5.4vh);
+    }
+    .itx-slot--meta {
+      left: 6%;
+      top: 35%;
+      width: 88%;
+    }
+    .itx-tagline {
+      margin: 0;
+      font-size: 0.98rem;
+      line-height: 1.45;
+    }
+    .itx-meta {
+      display: none;
+    }
+    .itx-stack ul {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      font-size: 0.72rem;
+    }
+    .itx-slot--screen {
+      left: 6%;
+      top: 49%;
+      width: 88%;
+    }
+    .itx-slot--phone {
+      left: 6%;
+      top: 72%;
+      width: min(24%, 15vh);
+    }
+    .itx-slot--cta {
+      left: auto;
+      right: 6%;
+      top: 78%;
+      width: min(52%, 30vh);
+    }
+    .itx-slot--extra,
+    .itx-whatsapp {
+      display: none;
+    }
+    .itx-laptop {
+      box-shadow:
+        0 0 0 6px #0a131e,
+        0 0 0 7px #34475e,
+        0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+    .itx-laptop::after {
+      top: calc(100% + 7px);
+      height: 9px;
+    }
+    .itx-sitemap {
+      padding: 0.6rem;
+    }
+    .itx-sitemap .itx-panel-title {
+      display: none;
+    }
+    .itx-node {
+      padding: 0.2rem 0.35rem;
+      font-size: 0.5rem;
+    }
+    .itx-tree {
+      gap: 0.6rem;
+    }
+    .itx-branches {
+      gap: 0.25rem;
+      padding-top: 0.6rem;
+    }
+    .itx-keywords {
+      padding: 0.5rem 0.45rem;
+    }
+    .itx-keywords .itx-panel-title {
+      font-size: 0.5rem;
+      margin-bottom: 0.3rem;
+    }
+    .itx-keywords ul {
+      font-size: 0.5rem;
+    }
+  }
+</style>
