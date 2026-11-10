@@ -1,0 +1,575 @@
+---
+// Introduction sur mesure du projet Flexy Rent.
+//
+// Principe : « le site devient son API ». Les deux univers partagent
+// les MÊMES emplacements (.flx-slot--…) :
+//   - l'écran d'accueil devient la réponse JSON de RentSyst,
+//   - la carte du véhicule devient la requête de recherche,
+//   - la carte « Disponible » devient la réponse AJAX du site,
+//   - le titre devient l'appel GET /booking/search,
+//   - l'accroche devient la stack.
+// En plus dans les coulisses : le jeton OAuth et le schéma de l'intégration.
+//
+// Les extraits reprennent le plugin flexyrent-rentsyst (endpoints, noms
+// des champs, cache du jeton), légèrement raccourcis.
+import ProjectReveal from "../ProjectReveal.astro";
+import type { Project } from "../../lib/supabase";
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const assets = "/projects/flexyrent";
+const stack = project.tools && project.tools.length > 0
+  ? project.tools
+  : ["WordPress", "Kadence", "PHP", "API RentSyst", "OAuth 2.0"];
+
+let siteHost: string | null = null;
+try {
+  siteHost = project.site_url ? new URL(project.site_url).hostname.replace(/^www\./, "") : null;
+} catch {
+  siteHost = null;
+}
+const meta = [project.project_year, siteHost].filter(Boolean).join(" — ");
+
+// Extraits affichés dans les coulisses (texte brut : les accolades
+// restent dans des variables pour ne pas être lues par Astro)
+const jsonResponse = `{
+  "vehicles": [
+    {
+      "id": 94149,
+      "brand": "Citroën",
+      "mark": "C3",
+      "group": "Citadine",
+      "price_day": 45
+    },
+    { "id": …, "mark": "208", "price_day": 49 },
+    …
+  ]
+}`;
+
+const ajaxResponse = `{ "available": true,
+  "days": 4, "total": 180 }`;
+---
+
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap"
+/>
+
+<ProjectReveal headerTheme="light" behindTheme="dark">
+  <!-- ============ Univers 1 — PROJECT SHOWCASE : le site ============ -->
+  <div slot="showcase" class="flx flx--showcase">
+    <div class="flx-glow" aria-hidden="true"></div>
+
+    <div class="flx-slot flx-slot--title">
+      <span class="flx-kicker">{project.category}</span>
+      <h1 class="flx-title">
+        <span>Flexy</span>
+        <span class="flx-title-red">Rent.</span>
+      </h1>
+    </div>
+
+    <div class="flx-slot flx-slot--meta">
+      <p class="flx-tagline">{project.tagline || project.summary || "Réservez, retirez, roulez."}</p>
+      {meta && <p class="flx-meta">{meta}</p>}
+    </div>
+
+    <figure class="flx-slot flx-slot--screen flx-laptop">
+      <img
+        src={`${assets}/galerie-01-accueil-voitures.webp`}
+        alt="Page d'accueil du site Flexy Rent"
+        width="1600"
+        height="861"
+        fetchpriority="high"
+      />
+    </figure>
+
+    <!-- Carte d'un véhicule, comme dans le catalogue -->
+    <div class="flx-slot flx-slot--a flx-car" aria-hidden="true">
+      <img src={`${assets}/vehicule-c3.webp`} alt="" width="900" height="483" loading="eager" />
+      <div class="flx-car-row">
+        <strong>Citroën C3</strong>
+        <span><small>À partir de</small>45€/jour</span>
+      </div>
+    </div>
+
+    <!-- Disponibilité vérifiée sur la fiche du véhicule -->
+    <div class="flx-slot flx-slot--b flx-available" aria-hidden="true">
+      <span class="flx-available-dot"></span>
+      <div>
+        <strong>Disponible</strong>
+        <span>4 jours · 180,00 €</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Univers 2 — BEHIND THE SCENES : l'API ============ -->
+  <div slot="behind" class="flx flx--behind">
+    <div class="flx-grid" aria-hidden="true"></div>
+
+    <!-- Le titre devient l'appel à l'API -->
+    <div class="flx-slot flx-slot--title" aria-hidden="true">
+      <span class="flx-kicker flx-kicker--code">API RentSyst v2</span>
+      <p class="flx-call"><span class="flx-verb">GET</span> /booking<br />/search</p>
+      <p class="flx-call-sub">date_from · date_to · pickup_location</p>
+    </div>
+
+    <!-- L'accroche devient la stack -->
+    <div class="flx-slot flx-slot--meta flx-stack">
+      <span class="flx-panel-title">Stack</span>
+      <ul>
+        {stack.map((tool, index) => (
+          <li><span>{String(index + 1).padStart(2, "0")}</span>{tool}</li>
+        ))}
+      </ul>
+    </div>
+
+    <!-- L'écran devient la réponse JSON -->
+    <figure class="flx-slot flx-slot--screen flx-editor" aria-hidden="true">
+      <div class="flx-editor-bar">
+        <span class="flx-editor-dots"><i></i><i></i><i></i></span>
+        <span class="flx-editor-tab">200 OK · application/json</span>
+      </div>
+      <pre class="flx-code">{jsonResponse}</pre>
+    </figure>
+
+    <!-- La carte du véhicule devient le jeton OAuth -->
+    <div class="flx-slot flx-slot--a flx-token" aria-hidden="true">
+      <span class="flx-panel-title">POST /oauth2/token</span>
+      <ul>
+        <li>client_credentials</li>
+        <li>jeton en cache · 23 h</li>
+        <li>401 → nouveau jeton</li>
+      </ul>
+    </div>
+
+    <!-- La disponibilité devient la réponse AJAX du site -->
+    <div class="flx-slot flx-slot--b flx-ajax" aria-hidden="true">
+      <span class="flx-panel-title">admin-ajax.php</span>
+      <pre>{ajaxResponse}</pre>
+    </div>
+
+    <!-- En plus : le schéma de l'intégration -->
+    <div class="flx-slot flx-slot--extra flx-schema" aria-hidden="true">
+      <span>Site WordPress</span>
+      <i>⇄</i>
+      <span class="flx-schema-plugin">Plugin sur mesure</span>
+      <i>⇄</i>
+      <span>RentSyst</span>
+    </div>
+  </div>
+</ProjectReveal>
+
+<style>
+  /* ============ Base commune ============ */
+  .flx {
+    --f-paper: #f4f4f4;
+    --f-ink: #161616;
+    --f-soft: #5d5d5d;
+    --f-red: #e0262b;
+    --f-dark: #121212;
+    --f-dark-2: #1c1c1c;
+    --f-green: #2fa85a;
+    --f-sans: "Space Grotesk", system-ui, sans-serif;
+    --f-mono: "JetBrains Mono", ui-monospace, monospace;
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    font-family: var(--f-sans);
+  }
+  .flx figure {
+    margin: 0;
+  }
+  .flx img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+  }
+
+  /* --- Emplacements partagés --- */
+  .flx-slot {
+    position: absolute;
+    box-sizing: border-box;
+  }
+  .flx-slot--title { left: 6%; top: 24%; width: 36%; }
+  .flx-slot--meta { left: 6%; top: 62%; width: 28%; }
+  .flx-slot--screen {
+    left: 45%;
+    top: 22%;
+    width: min(46%, 84vh);
+    aspect-ratio: 1600 / 861;
+  }
+  .flx-slot--a {
+    left: 34%;
+    top: 58%;
+    width: min(17%, 32vh);
+    aspect-ratio: 5 / 4;
+  }
+  .flx-slot--b {
+    left: 78%;
+    top: 11%;
+    width: min(16%, 30vh);
+    aspect-ratio: 3 / 1;
+  }
+  .flx-slot--extra {
+    left: 58%;
+    top: 81%;
+    width: min(34%, 62vh);
+  }
+
+  /* --- Titre --- */
+  .flx-kicker {
+    display: block;
+    margin-bottom: 1.1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--f-red);
+  }
+  .flx-title {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    font-weight: 700;
+    font-size: min(7vw, 13vh);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    color: var(--f-ink);
+  }
+  .flx-title-red {
+    color: var(--f-red);
+  }
+
+  /* ============ Univers 1 — le site ============ */
+  .flx--showcase {
+    background: var(--f-paper);
+    color: var(--f-ink);
+  }
+  .flx-glow {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 55% 60% at 72% 45%, rgba(224, 38, 43, 0.1), transparent 70%),
+      radial-gradient(ellipse 45% 40% at 0% 100%, rgba(0, 0, 0, 0.06), transparent 70%);
+  }
+  .flx-tagline {
+    margin: 0 0 1.2rem;
+    font-size: clamp(1.05rem, 1.45vw, 1.35rem);
+    line-height: 1.5;
+    color: var(--f-soft);
+  }
+  .flx-meta {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: #8a8a8a;
+  }
+  .flx-laptop {
+    border-radius: 6px;
+    box-shadow:
+      0 0 0 10px #161616,
+      0 0 0 11px #444,
+      0 40px 80px rgba(0, 0, 0, 0.3);
+  }
+  .flx-laptop img {
+    border-radius: 6px;
+  }
+  .flx-laptop::after {
+    content: "";
+    position: absolute;
+    left: -9%;
+    right: -9%;
+    top: calc(100% + 11px);
+    height: 14px;
+    border-radius: 0 0 14px 14px;
+    background: linear-gradient(to bottom, #5a5a5a, #222);
+    box-shadow: 0 20px 30px rgba(0, 0, 0, 0.25);
+  }
+
+  .flx-car {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+  }
+  .flx-car img {
+    flex: 1;
+    min-height: 0;
+    object-position: center;
+  }
+  .flx-car-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.6rem 0.8rem 0.7rem;
+    font-size: clamp(0.7rem, 1vw, 0.9rem);
+  }
+  .flx-car-row span {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    font-weight: 700;
+  }
+  .flx-car-row small {
+    font-weight: 400;
+    font-size: 0.65em;
+    color: var(--f-soft);
+  }
+
+  .flx-available {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0 1rem;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+    font-size: clamp(0.7rem, 1vw, 0.9rem);
+  }
+  .flx-available div {
+    display: flex;
+    flex-direction: column;
+  }
+  .flx-available span:not(.flx-available-dot) {
+    color: var(--f-soft);
+  }
+  .flx-available-dot {
+    flex: none;
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    background: var(--f-green);
+    box-shadow: 0 0 0 5px rgba(47, 168, 90, 0.18);
+  }
+
+  /* ============ Univers 2 — l'API ============ */
+  .flx--behind {
+    background: var(--f-dark);
+    color: #f1f1f1;
+  }
+  .flx-grid {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.09) 1px, transparent 1.2px);
+    background-size: 22px 22px;
+  }
+  .flx-kicker--code {
+    font-family: var(--f-mono);
+    letter-spacing: 0.08em;
+    text-transform: none;
+  }
+  .flx-call {
+    margin: 0;
+    font-family: var(--f-mono);
+    font-size: min(3.6vw, 6.6vh);
+    line-height: 1.15;
+  }
+  .flx-verb {
+    padding: 0 0.25em;
+    border-radius: 6px;
+    background: var(--f-red);
+    color: #fff;
+  }
+  .flx-call-sub {
+    margin: 1rem 0 0;
+    font-family: var(--f-mono);
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  .flx-panel-title {
+    display: block;
+    margin-bottom: 0.6rem;
+    font-family: var(--f-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    color: #ff6b6f;
+  }
+  .flx-stack ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+  .flx-stack li span {
+    margin-right: 0.5rem;
+    font-family: var(--f-mono);
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  .flx-editor {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: var(--f-dark-2);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+  }
+  .flx-editor-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .flx-editor-dots {
+    display: flex;
+    gap: 0.35rem;
+  }
+  .flx-editor-dots i {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+  }
+  .flx-editor-tab {
+    font-family: var(--f-mono);
+    font-size: 0.68rem;
+    color: #5fd38b;
+  }
+  .flx-code,
+  .flx-ajax pre {
+    flex: 1;
+    margin: 0;
+    padding: 1rem 1.2rem;
+    overflow: hidden;
+    font-family: var(--f-mono);
+    font-size: clamp(0.58rem, 0.95vw, 0.86rem);
+    line-height: 1.6;
+    color: #e9e9e9;
+    white-space: pre;
+  }
+
+  .flx-token,
+  .flx-ajax {
+    display: flex;
+    flex-direction: column;
+    padding: 0.9rem 1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: var(--f-dark-2);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+  }
+  .flx-token ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--f-mono);
+    font-size: clamp(0.62rem, 0.85vw, 0.78rem);
+  }
+  .flx-ajax pre {
+    padding: 0;
+    font-size: clamp(0.55rem, 0.75vw, 0.72rem);
+    color: #5fd38b;
+  }
+
+  .flx-schema {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.8rem 1rem;
+    border-radius: 999px;
+    border: 1px dashed rgba(255, 255, 255, 0.25);
+    font-family: var(--f-mono);
+    font-size: clamp(0.6rem, 0.85vw, 0.78rem);
+  }
+  .flx-schema i {
+    font-style: normal;
+    color: #ff6b6f;
+  }
+  .flx-schema-plugin {
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    background: var(--f-red);
+    color: #fff;
+  }
+
+  /* ============ Mobile et tablette portrait ============ */
+  @media (max-width: 800px) {
+    .flx-slot--title { left: 6%; top: 13%; width: 88%; }
+    .flx-title { font-size: min(15vw, 9vh); }
+    .flx-call { font-size: min(8vw, 5vh); }
+    .flx-slot--meta { left: 6%; top: 35%; width: 88%; }
+    .flx-tagline {
+      margin: 0;
+      font-size: 0.98rem;
+      line-height: 1.45;
+    }
+    .flx-meta,
+    .flx-call-sub {
+      display: none;
+    }
+    .flx-stack ul {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      font-size: 0.72rem;
+    }
+    .flx-slot--screen { left: 6%; top: 49%; width: 88%; }
+    .flx-slot--a {
+      left: 6%;
+      top: 73%;
+      width: min(44%, 26vh);
+    }
+    .flx-slot--b {
+      left: auto;
+      right: 6%;
+      top: 75%;
+      width: min(42%, 24vh);
+    }
+    .flx-slot--extra {
+      display: none;
+    }
+    .flx-laptop {
+      box-shadow:
+        0 0 0 6px #161616,
+        0 0 0 7px #444,
+        0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    .flx-laptop::after {
+      top: calc(100% + 7px);
+      height: 9px;
+    }
+    .flx-code {
+      padding: 0.5rem 0.6rem;
+      font-size: 0.48rem;
+    }
+    .flx-token,
+    .flx-ajax {
+      padding: 0.5rem 0.6rem;
+    }
+    .flx-token ul {
+      gap: 0.2rem;
+      font-size: 0.55rem;
+    }
+    .flx-ajax pre {
+      font-size: 0.5rem;
+    }
+    .flx-panel-title {
+      font-size: 0.55rem;
+      margin-bottom: 0.3rem;
+    }
+    .flx-available {
+      padding: 0 0.6rem;
+      gap: 0.5rem;
+      font-size: 0.7rem;
+    }
+  }
+</style>

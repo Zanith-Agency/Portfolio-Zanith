@@ -1,0 +1,1003 @@
+---
+// Contenus interactifs propres à Flexy Rent (page projet).
+//   - section "overview"    → la recherche de l'accueil (voitures / utilitaires)
+//   - section "challenge"   → la connexion par code et le regroupement des
+//                              contacts RentSyst par email
+//   - section "development" → simulateur de réservation + appels à l'API
+//   - section "outcome"     → captures annotées
+// Interactions : src/scripts/flexyrent-extras.js
+//
+// Prix, assurances et options : relevés sur le site en ligne (prix
+// indicatifs ; en ligne, le prix vient de RentSyst).
+
+import AnnotatedCaptures, { type Capture } from "../AnnotatedCaptures.astro";
+
+interface Props {
+  section: string;
+}
+
+const { section } = Astro.props;
+const assets = "/projects/flexyrent";
+
+const vehicles = [
+  { id: "c3", name: "Citroën C3", group: "Citadine", price: 45 },
+  { id: "clio", name: "Renault Clio", group: "Citadine", price: 45 },
+  { id: "208", name: "Peugeot 208", group: "Citadine", price: 49 },
+  { id: "c4x", name: "Citroën C4 X", group: "Berline", price: 69 },
+  { id: "c5", name: "Citroën C5 Aircross", group: "SUV", price: 79 },
+];
+
+const insurances = [
+  { id: "standard", name: "Standard", price: 0, deposit: 1500, detail: "Dommages majeurs · franchise 1 500 €" },
+  { id: "basique", name: "Basique", price: 12, deposit: 500, detail: "Dommage · pneu" },
+  { id: "intermediaire", name: "Intermédiaire", price: 15, deposit: 500, detail: "Dommage · pneus" },
+  { id: "complete", name: "Complète", price: 21, deposit: 500, detail: "Dommages int. et ext. · pneu, vitre · conducteur" },
+];
+
+const extras = [
+  { id: "enfant", name: "Siège enfant (9-36 kg)", price: 16.49 },
+  { id: "bebe", name: "Siège bébé (0-13 kg)", price: 16.49 },
+  { id: "rehausseur", name: "Rehausseur (4-12 ans)", price: 8.99 },
+  { id: "gps", name: "GPS externe", price: 4 },
+  { id: "conducteur", name: "Conducteur additionnel", price: 10 },
+  { id: "plein", name: "Service de plein / recharge", price: 24.99 },
+];
+
+const durations = [
+  { days: 1, label: "1 jour" },
+  { days: 3, label: "3 jours" },
+  { days: 7, label: "1 semaine" },
+  { days: 30, label: "1 mois" },
+];
+
+const euro = (n: number) => n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+
+const captures: Capture[] = [
+  {
+    id: "accueil",
+    label: "Accueil",
+    image: `${assets}/galerie-01-accueil-voitures.webp`,
+    width: 1600,
+    height: 861,
+    alt: "Page d'accueil du site Flexy Rent avec le moteur de recherche",
+    notes: [
+      {
+        dot: { x: 40.5, y: 29.5 },
+        zones: [{ x: 40.5, y: 29.5, w: 19, h: 5.5 }],
+        title: "Voitures ou utilitaires",
+        text: "Deux boutons séparent les deux flottes dès l'arrivée : le visuel change, et la recherche porte sur le bon type de véhicule.",
+      },
+      {
+        dot: { x: 17, y: 41 },
+        zones: [{ x: 17, y: 41, w: 65.5, h: 12.5 }],
+        title: "Une recherche en une ligne",
+        text: "Lieu, date et heure de départ, date et heure de retour, puis « Rechercher » : tout tient sur une seule ligne, au-dessus de la ligne de flottaison.",
+      },
+      {
+        dot: { x: 18, y: 55.5 },
+        zones: [
+          { x: 18, y: 55.5, w: 30.5, h: 6 },
+          { x: 66.5, y: 55.5, w: 15, h: 6 },
+        ],
+        title: "Des raccourcis pour aller vite",
+        text: "« 1 jour », « 3 jours », « 1 semaine », « 1 mois » remplissent la date de retour en un clic. L'âge du conducteur est demandé dès la recherche.",
+      },
+    ],
+  },
+  {
+    id: "catalogue",
+    label: "Catalogue",
+    image: `${assets}/galerie-06-filtres.webp`,
+    width: 1600,
+    height: 862,
+    alt: "Catalogue Flexy Rent avec filtres",
+    notes: [
+      {
+        dot: { x: 2.5, y: 14 },
+        zones: [{ x: 2.5, y: 14, w: 15.5, h: 84 }],
+        title: "Des filtres qui se combinent",
+        text: "Catégorie, transmission, motorisation : les filtres se cumulent et le nombre de véhicules disponibles se met à jour.",
+      },
+      {
+        dot: { x: 38.5, y: 54 },
+        zones: [
+          { x: 38.5, y: 54, w: 6.5, h: 7 },
+          { x: 64.5, y: 54, w: 6.5, h: 7 },
+        ],
+        title: "Un prix « à partir de » par jour",
+        text: "Chaque carte affiche le tarif journalier de départ : on compare les modèles sans ouvrir chaque fiche.",
+      },
+      {
+        dot: { x: 19.5, y: 63 },
+        zones: [{ x: 19.5, y: 63, w: 51, h: 18 }],
+        title: "L'essentiel en pictogrammes",
+        text: "Places, bagages, boîte de vitesses, motorisation, puis ce qui est inclus : kilométrage illimité et assurance.",
+      },
+    ],
+  },
+  {
+    id: "fiche",
+    label: "Fiche véhicule",
+    image: `${assets}/galerie-07-fiche-vehicule.webp`,
+    width: 1600,
+    height: 858,
+    alt: "Fiche du véhicule Citroën C3 avec le module de réservation",
+    notes: [
+      {
+        dot: { x: 66, y: 20 },
+        zones: [{ x: 66, y: 20, w: 24.5, h: 74 }],
+        title: "Réserver sans quitter la fiche",
+        text: "Le module de réservation est à côté du véhicule : lieu de prise en charge, dates, heures et âge du conducteur.",
+      },
+      {
+        dot: { x: 67.5, y: 52 },
+        zones: [{ x: 67.5, y: 52, w: 21.5, h: 17 }],
+        title: "La disponibilité vérifiée en direct",
+        text: "Dès que les dates sont choisies, le site interroge RentSyst : le véhicule est-il libre, à quel prix, pour combien de jours ?",
+      },
+      {
+        dot: { x: 9.5, y: 30 },
+        zones: [{ x: 9.5, y: 30, w: 52, h: 54.5 }],
+        title: "Une flotte homogène",
+        text: "Chaque véhicule est présenté dans le même décor de studio, avec sa catégorie : le catalogue reste cohérent d'une fiche à l'autre.",
+      },
+    ],
+  },
+  {
+    id: "reservation",
+    label: "Réservation",
+    image: `${assets}/galerie-09-assurance.webp`,
+    width: 1600,
+    height: 863,
+    alt: "Étape de réservation : choix de l'assurance et récapitulatif",
+    notes: [
+      {
+        dot: { x: 4.5, y: 34 },
+        zones: [{ x: 4.5, y: 34, w: 63.5, h: 16.5 }],
+        title: "Une assurance toujours incluse",
+        text: "Une assurance est obligatoire : la formule Standard est incluse dans le prix, avec une franchise de 1 500 €.",
+      },
+      {
+        dot: { x: 4.5, y: 52 },
+        zones: [{ x: 4.5, y: 52, w: 63.5, h: 47 }],
+        title: "Trois niveaux pour être mieux couvert",
+        text: "Basique, intermédiaire ou complète : chaque formule affiche son prix par jour et une caution réduite à 500 €.",
+      },
+      {
+        dot: { x: 74.5, y: 4 },
+        zones: [{ x: 74.5, y: 4, w: 22, h: 88 }],
+        title: "Un récapitulatif qui suit chaque choix",
+        text: "Véhicule, dates, lieu, prix par jour multiplié par la durée, assurance et total : le client sait toujours ce qu'il paiera.",
+      },
+    ],
+  },
+  {
+    id: "espace",
+    label: "Espace client",
+    image: `${assets}/galerie-11-espace-client.webp`,
+    width: 1600,
+    height: 858,
+    alt: "Espace client Flexy Rent : historique des réservations",
+    notes: [
+      {
+        dot: { x: 7.5, y: 0.5 },
+        zones: [{ x: 7.5, y: 0.5, w: 39, h: 6 }],
+        title: "Un espace en trois onglets",
+        text: "Tableau de bord, réservations et profil : le client retrouve tout au même endroit, connecté par un code reçu par email.",
+      },
+      {
+        dot: { x: 9.5, y: 18.5 },
+        zones: [{ x: 9.5, y: 18.5, w: 79, h: 40 }],
+        title: "Tout l'historique, regroupé",
+        text: "Chaque réservation affiche son véhicule, sa référence, ses dates et son total. Elles sont regroupées même si RentSyst a créé un contact différent à chaque fois.",
+      },
+      {
+        dot: { x: 83, y: 29.5 },
+        zones: [
+          { x: 82.5, y: 29.5, w: 6.5, h: 3.5 },
+          { x: 82.5, y: 68.5, w: 6.5, h: 3.5 },
+        ],
+        title: "Le statut de chaque location",
+        text: "Réservée, terminée : le statut vient directement de RentSyst, sans mise à jour manuelle.",
+      },
+    ],
+  },
+];
+---
+
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap"
+/>
+
+{section === "overview" && (
+  <div class="case-extra flx-search" data-flx-search data-case-reveal>
+    <div class="extra-head">
+      <span class="extra-kicker">La recherche</span>
+      <h3 class="extra-title">Voitures ou utilitaires, en un clic</h3>
+    </div>
+
+    <div class="flx-site">
+      <div class="flx-hero" data-flx-hero="voitures">
+        <img class="flx-hero-img flx-hero-img--voitures" src={`${assets}/hero-voitures.webp`} alt="" width="1600" height="169" loading="lazy" />
+        <img class="flx-hero-img flx-hero-img--utilitaires" src={`${assets}/hero-utilitaires.webp`} alt="" width="1600" height="196" loading="lazy" />
+        <div class="flx-tabs" role="group" aria-label="Type de véhicule">
+          <button type="button" data-flx-mode="voitures" aria-pressed="true">Voitures</button>
+          <button type="button" data-flx-mode="utilitaires" aria-pressed="false">Utilitaires</button>
+        </div>
+      </div>
+
+      <div class="flx-card">
+        <div class="flx-fields">
+          <div class="flx-field">
+            <span>Retrait &amp; retour</span>
+            <strong>Bruxelles, Belgique</strong>
+          </div>
+          <div class="flx-field">
+            <span>Date de départ</span>
+            <strong data-flx-from>—</strong>
+          </div>
+          <div class="flx-field">
+            <span>Date de retour</span>
+            <strong data-flx-to>—</strong>
+          </div>
+          <button type="button" class="flx-search-btn" data-flx-search-btn>Rechercher</button>
+        </div>
+        <div class="flx-quick">
+          <span>Durée rapide :</span>
+          {durations.map((d, index) => (
+            <button type="button" data-flx-days={d.days} aria-pressed={index === 1 ? "true" : "false"}>{d.label}</button>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <p class="flx-search-result" aria-live="polite" data-flx-result></p>
+  </div>
+)}
+
+{section === "challenge" && (
+  <div class="case-extra flx-login" data-flx-login data-case-reveal>
+    <div class="extra-head">
+      <span class="extra-kicker">L'espace client</span>
+      <h3 class="extra-title">Une connexion sans mot de passe, un historique complet</h3>
+    </div>
+
+    <div class="login-grid">
+      <!-- Le parcours vu par le client -->
+      <div class="login-card">
+        <div class="login-step" data-login-step="email">
+          <p class="login-title">Connexion</p>
+          <label class="login-field">
+            <span>Email</span>
+            <input type="email" value="client@exemple.be" readonly data-login-email />
+          </label>
+          <button type="button" class="login-btn" data-login-send>Recevoir mon code</button>
+        </div>
+
+        <div class="login-step" data-login-step="code" hidden>
+          <p class="login-title">Code reçu par email</p>
+          <div class="login-code" aria-label="Code de connexion">
+            {[0, 1, 2, 3, 4, 5].map(() => <span class="login-digit" data-login-digit></span>)}
+          </div>
+          <button type="button" class="login-btn" data-login-verify disabled>Se connecter</button>
+        </div>
+
+        <div class="login-step" data-login-step="history" hidden>
+          <p class="login-title">Mes réservations</p>
+          <ol class="login-orders" data-login-orders></ol>
+          <button type="button" class="login-reset" data-login-reset>Recommencer</button>
+        </div>
+      </div>
+
+      <!-- Ce que fait le plugin -->
+      <div class="login-log">
+        <span class="login-log-title">Côté plugin</span>
+        <ol data-login-log>
+          <li class="is-idle">Cliquez sur « Recevoir mon code » pour lancer la démonstration.</li>
+        </ol>
+
+        <!-- Les contacts créés par RentSyst, regroupés par email -->
+        <div class="login-merge" data-login-merge hidden>
+          <span class="login-log-title">Contacts trouvés pour cet email</span>
+          <div class="login-contacts" data-login-contacts></div>
+        </div>
+      </div>
+    </div>
+    <p class="flx-demo-note">Démonstration avec des données d'exemple : aucun email n'est envoyé.</p>
+  </div>
+)}
+
+{section === "development" && (
+  <div class="case-extra flx-sim" data-flx-sim data-case-reveal>
+    <div class="extra-head">
+      <span class="extra-kicker">Réservation</span>
+      <h3 class="extra-title">Composez une location, suivez les appels à RentSyst</h3>
+    </div>
+
+    <div class="sim-grid">
+      <form class="sim-form" data-sim-form onsubmit="return false">
+        <div class="sim-block">
+          <p class="sim-block-title">Véhicule</p>
+          <div class="sim-vehicles" role="radiogroup" aria-label="Véhicule">
+            {vehicles.map((v, index) => (
+              <button type="button" role="radio" aria-checked={index === 0 ? "true" : "false"} data-sim-vehicle={v.id} data-price={v.price} data-name={v.name}>
+                <strong>{v.name}</strong>
+                <span>{v.group} · {v.price} €/jour</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div class="sim-block">
+          <p class="sim-block-title">Durée : <span data-sim-days-label>4 jours</span></p>
+          <input type="range" min="1" max="30" step="1" value="4" data-sim-days aria-label="Nombre de jours" />
+        </div>
+
+        <div class="sim-block">
+          <p class="sim-block-title">Assurance</p>
+          <div class="sim-insurances" role="radiogroup" aria-label="Assurance">
+            {insurances.map((ins, index) => (
+              <button type="button" role="radio" aria-checked={index === 0 ? "true" : "false"} data-sim-insurance={ins.id} data-price={ins.price} data-deposit={ins.deposit} data-name={ins.name}>
+                <span class="sim-ins-head">
+                  <strong>{ins.name}</strong>
+                  <em>{ins.price === 0 ? "Incluse" : `+${euro(ins.price)} / jour`}</em>
+                </span>
+                <span class="sim-ins-detail">{ins.detail} · caution {ins.deposit.toLocaleString("fr-FR")} €</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div class="sim-block">
+          <p class="sim-block-title">Options</p>
+          <div class="sim-extras">
+            {extras.map((extra) => (
+              <label class="sim-extra">
+                <input type="checkbox" data-sim-extra={extra.id} data-price={extra.price} data-name={extra.name} />
+                <span>{extra.name}</span>
+                <em>+{euro(extra.price)} / jour</em>
+              </label>
+            ))}
+          </div>
+        </div>
+      </form>
+
+      <div class="sim-side">
+        <div class="sim-recap" aria-live="polite">
+          <p class="sim-recap-title">Récapitulatif</p>
+          <p class="sim-recap-vehicle" data-sim-recap-vehicle></p>
+          <ul class="sim-lines" data-sim-lines></ul>
+          <div class="sim-total">
+            <span>Total</span>
+            <strong data-sim-total>—</strong>
+          </div>
+          <p class="sim-deposit" data-sim-deposit></p>
+          <button type="button" class="sim-book" data-sim-book>Confirmer la réservation</button>
+          <p class="sim-paynote">Paiement lors de la prise en charge du véhicule.</p>
+        </div>
+
+        <div class="sim-api">
+          <p class="sim-api-title">Appels à l'API</p>
+          <ol data-sim-api></ol>
+        </div>
+      </div>
+    </div>
+    <p class="flx-demo-note">Prix indicatifs relevés sur le site · en ligne, le prix et la disponibilité viennent de RentSyst · rien n'est réservé.</p>
+  </div>
+)}
+
+{section === "outcome" && (
+  <AnnotatedCaptures captures={captures} kicker="Captures annotées" title="Le parcours, écran par écran" />
+)}
+
+<script>
+  import { initFlexyRentExtras } from "../../scripts/flexyrent-extras";
+  initFlexyRentExtras();
+</script>
+
+<style>
+  /* --- Bloc commun aux contenus sur mesure --- */
+  .case-extra {
+    grid-column: 1 / -1;
+    margin-top: clamp(1.5rem, 4vw, 3rem);
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+    border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+    border-radius: 14px;
+    background: color-mix(in srgb, currentColor 3%, transparent);
+  }
+  .extra-head {
+    margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
+  }
+  .extra-kicker {
+    display: block;
+    margin-bottom: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+  }
+  .extra-title {
+    margin: 0;
+    font-weight: 500;
+    font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+    line-height: 1.15;
+  }
+  .flx-demo-note {
+    margin: 1rem 0 0;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    opacity: 0.6;
+  }
+
+  /* Palette et police du site Flexy Rent */
+  .flx-site,
+  .login-card,
+  .sim-form,
+  .sim-recap {
+    --f-red: #e0262b;
+    --f-ink: #161616;
+    --f-soft: #6b6b6b;
+    --f-line: #e3e3e3;
+    --f-paper: #f4f4f4;
+    font-family: "Space Grotesk", system-ui, sans-serif;
+  }
+
+  /* ============ 01 — La recherche ============ */
+  .flx-site {
+    overflow: hidden;
+    border-radius: 14px;
+    background: var(--f-paper);
+    color: var(--f-ink);
+    box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.45);
+  }
+  .flx-hero {
+    position: relative;
+    aspect-ratio: 1600 / 190;
+    min-height: 9rem;
+    background: #3a3d40;
+  }
+  .flx-hero-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center bottom;
+    transition: opacity 0.6s var(--ease-default);
+  }
+  .flx-hero[data-flx-hero="voitures"] .flx-hero-img--utilitaires,
+  .flx-hero[data-flx-hero="utilitaires"] .flx-hero-img--voitures {
+    opacity: 0;
+  }
+  .flx-tabs {
+    position: absolute;
+    left: 50%;
+    bottom: 0.9rem;
+    display: flex;
+    gap: 0.5rem;
+    transform: translateX(-50%);
+  }
+  .flx-tabs button,
+  .flx-quick button {
+    padding: 0.6rem 1.2rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--f-ink);
+    font: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s var(--ease-default), color 0.3s var(--ease-default);
+  }
+  .flx-tabs button[aria-pressed="true"],
+  .flx-quick button[aria-pressed="true"] {
+    background: var(--f-red);
+    color: #fff;
+  }
+  .flx-card {
+    margin: 0 clamp(0.75rem, 3vw, 2rem) clamp(0.75rem, 3vw, 2rem);
+    padding: clamp(1rem, 2vw, 1.5rem);
+    border-radius: 14px;
+    background: #fff;
+    position: relative;
+    top: -0.5rem;
+  }
+  .flx-fields {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+    align-items: end;
+    gap: 0.75rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--f-line);
+  }
+  .flx-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .flx-field span {
+    font-size: 0.78rem;
+    color: var(--f-soft);
+  }
+  .flx-field strong {
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--f-line);
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.92rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .flx-search-btn,
+  .login-btn,
+  .sim-book {
+    padding: 0.85rem 1.4rem;
+    border: 0;
+    border-radius: 8px;
+    background: var(--f-red);
+    color: #fff;
+    font: inherit;
+    font-weight: 500;
+    font-size: 0.92rem;
+    cursor: pointer;
+    transition: filter 0.25s var(--ease-default), opacity 0.25s var(--ease-default);
+  }
+  .flx-search-btn:hover,
+  .login-btn:hover:not(:disabled),
+  .sim-book:hover {
+    filter: brightness(1.08);
+  }
+  .flx-quick {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 1rem;
+    font-size: 0.82rem;
+    color: var(--f-soft);
+  }
+  .flx-quick button {
+    border-color: var(--f-line);
+    padding: 0.45rem 0.9rem;
+    font-size: 0.82rem;
+  }
+  .flx-search-result {
+    min-height: 1.6em;
+    margin: 1rem 0 0;
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  .flx-site button:focus-visible,
+  .login-card button:focus-visible,
+  .sim-form button:focus-visible,
+  .sim-form input:focus-visible,
+  .sim-recap button:focus-visible {
+    outline: 2px solid #e0262b;
+    outline-offset: 2px;
+  }
+
+  /* ============ 02 — Connexion par code ============ */
+  .login-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+    align-items: start;
+  }
+  .login-card {
+    padding: clamp(1.25rem, 2.5vw, 1.75rem);
+    border-radius: 14px;
+    background: #fff;
+    color: var(--f-ink);
+    box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.45);
+  }
+  .login-step {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    animation: flx-in 0.4s var(--ease-default);
+  }
+  .login-step[hidden] {
+    display: none;
+  }
+  .login-title {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.3rem;
+  }
+  .login-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--f-soft);
+  }
+  .login-field input {
+    padding: 0.8rem 0.9rem;
+    border: 1px solid var(--f-line);
+    border-radius: 8px;
+    background: var(--f-paper);
+    color: var(--f-ink);
+    font: inherit;
+    font-size: 1rem;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .login-btn:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .login-code {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.4rem;
+  }
+  .login-digit {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 5;
+    border: 1px solid var(--f-line);
+    border-radius: 8px;
+    background: var(--f-paper);
+    font-weight: 700;
+    font-size: 1.4rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .login-digit:not(:empty) {
+    border-color: var(--f-red);
+    background: #fff;
+  }
+  .login-orders {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .login-orders :global(li) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.2rem 0.8rem;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid var(--f-line);
+    border-radius: 10px;
+    animation: flx-in 0.4s var(--ease-default) both;
+  }
+  .login-orders :global(li span) {
+    font-size: 0.78rem;
+    color: var(--f-soft);
+  }
+  .login-orders :global(.status) {
+    grid-column: 2;
+    grid-row: 1;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    background: #ececec;
+    font-style: normal;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .login-orders :global(.status--reserved) {
+    background: #e3ecff;
+    color: #2a4fa8;
+  }
+  .login-orders :global(.total) {
+    grid-column: 2;
+    grid-row: 2;
+    text-align: right;
+    font-weight: 700;
+    color: var(--f-red);
+  }
+  .login-reset {
+    align-self: flex-start;
+    padding: 0.45rem 0.9rem;
+    border: 1px solid var(--f-line);
+    border-radius: 999px;
+    background: none;
+    color: var(--f-ink);
+    font: inherit;
+    font-size: 0.78rem;
+    cursor: pointer;
+  }
+
+  .login-log {
+    padding: clamp(1.1rem, 2.5vw, 1.6rem);
+    border-radius: 12px;
+    background: color-mix(in srgb, currentColor 5%, transparent);
+  }
+  .login-log-title {
+    display: block;
+    margin-bottom: 0.9rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.65;
+  }
+  .login-log ol,
+  .sim-api ol {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .login-log :global(li),
+  .sim-api :global(li) {
+    font-size: 0.86rem;
+    line-height: 1.55;
+    animation: flx-in 0.4s var(--ease-default) both;
+  }
+  .login-log :global(li.is-idle) {
+    opacity: 0.6;
+  }
+  .login-log :global(code),
+  .sim-api :global(code) {
+    display: inline-block;
+    margin-bottom: 0.2rem;
+    padding: 0.1rem 0.45rem;
+    border-radius: 5px;
+    background: #161616;
+    color: #f1f1f1;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    word-break: break-all;
+  }
+  .login-log :global(code .verb),
+  .sim-api :global(code .verb) {
+    color: #ff6b6f;
+    font-weight: 500;
+  }
+  .login-merge {
+    margin-top: 1.4rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  }
+  .login-merge[hidden] {
+    display: none;
+  }
+  .login-contacts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+  .login-contacts :global(.contact) {
+    padding: 0.6rem 0.7rem;
+    border: 1px dashed color-mix(in srgb, currentColor 30%, transparent);
+    border-radius: 8px;
+    font-size: 0.75rem;
+    line-height: 1.45;
+    animation: flx-in 0.4s var(--ease-default) both;
+    transition: transform 0.6s var(--ease-default), opacity 0.6s var(--ease-default), border-color 0.4s;
+  }
+  .login-contacts :global(.contact strong) {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+  }
+  .login-contacts.is-merged :global(.contact) {
+    border-color: #e0262b;
+    opacity: 0.5;
+  }
+
+  /* ============ 04 — Simulateur de réservation ============ */
+  .sim-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+    align-items: start;
+  }
+  .sim-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: clamp(1.1rem, 2.5vw, 1.6rem);
+    border-radius: 14px;
+    background: #fff;
+    color: var(--f-ink);
+    box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.45);
+  }
+  .sim-block-title {
+    margin: 0 0 0.6rem;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  .sim-vehicles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+    gap: 0.5rem;
+  }
+  .sim-vehicles button,
+  .sim-insurances button {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.7rem 0.8rem;
+    border: 1.5px solid var(--f-line);
+    border-radius: 10px;
+    background: var(--f-paper);
+    color: var(--f-ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.25s var(--ease-default), background-color 0.25s var(--ease-default);
+  }
+  .sim-vehicles button span,
+  .sim-ins-detail {
+    font-size: 0.75rem;
+    color: var(--f-soft);
+  }
+  .sim-vehicles button[aria-checked="true"],
+  .sim-insurances button[aria-checked="true"] {
+    border-color: var(--f-red);
+    background: #fff;
+  }
+  .sim-form input[type="range"] {
+    width: 100%;
+    accent-color: var(--f-red);
+  }
+  .sim-insurances {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+  .sim-ins-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .sim-ins-head em {
+    font-style: normal;
+    font-size: 0.78rem;
+    color: var(--f-red);
+    white-space: nowrap;
+  }
+  .sim-extras {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+  .sim-extra {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.15rem 0.6rem;
+    align-items: center;
+    padding: 0.65rem 0.75rem;
+    border-radius: 10px;
+    background: var(--f-paper);
+    font-size: 0.82rem;
+    cursor: pointer;
+  }
+  .sim-extra input {
+    grid-row: 1 / 3;
+    width: 1.05rem;
+    height: 1.05rem;
+    accent-color: var(--f-red);
+  }
+  .sim-extra em {
+    font-style: normal;
+    font-size: 0.74rem;
+    color: var(--f-red);
+  }
+
+  .sim-side {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: sticky;
+    top: 6rem;
+  }
+  .sim-recap {
+    padding: clamp(1.1rem, 2.5vw, 1.5rem);
+    border-radius: 14px;
+    background: #fff;
+    color: var(--f-ink);
+    box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.45);
+  }
+  .sim-recap-title {
+    margin: 0 0 0.3rem;
+    font-weight: 700;
+    font-size: 1.15rem;
+  }
+  .sim-recap-vehicle {
+    margin: 0 0 0.9rem;
+    font-size: 0.85rem;
+    color: var(--f-soft);
+  }
+  .sim-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0 0 0.9rem;
+    list-style: none;
+    border-bottom: 2px solid var(--f-ink);
+  }
+  .sim-lines :global(li) {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .sim-total {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-top: 0.9rem;
+    font-weight: 700;
+  }
+  .sim-total strong {
+    font-size: clamp(1.5rem, 2.6vw, 2rem);
+    color: var(--f-red);
+    font-variant-numeric: tabular-nums;
+  }
+  .sim-deposit,
+  .sim-paynote {
+    margin: 0.4rem 0 0;
+    font-size: 0.75rem;
+    color: var(--f-soft);
+  }
+  .sim-book {
+    width: 100%;
+    margin-top: 1rem;
+  }
+  .sim-api {
+    padding: 1rem 1.2rem;
+    border-radius: 12px;
+    background: color-mix(in srgb, currentColor 5%, transparent);
+  }
+  .sim-api-title {
+    margin: 0 0 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.65;
+  }
+
+  @keyframes flx-in {
+    from { opacity: 0; transform: translateY(8px); }
+  }
+
+  @media (max-width: 900px) {
+    .login-grid,
+    .sim-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .sim-side {
+      position: static;
+    }
+    .flx-fields {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (max-width: 560px) {
+    .sim-insurances,
+    .sim-extras {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .flx-tabs button {
+      padding: 0.5rem 0.9rem;
+      font-size: 0.82rem;
+    }
+    .login-contacts {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .login-step,
+    .login-orders :global(li),
+    .login-log :global(li),
+    .sim-api :global(li),
+    .login-contacts :global(.contact) {
+      animation: none;
+    }
+  }
+</style>
