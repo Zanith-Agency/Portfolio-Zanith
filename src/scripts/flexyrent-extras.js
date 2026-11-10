@@ -258,7 +258,7 @@ function initSimulator(root) {
     const s = state();
     const dayWord = s.days > 1 ? "jours" : "jour";
     daysLabel.textContent = `${s.days} ${dayWord}`;
-    recapVehicle.textContent = `${s.vehicle} · ${s.days} ${dayWord} · Bruxelles`;
+    recapVehicle.textContent = `${s.vehicle} · ${s.days} ${dayWord}`;
 
     const rows = [
       [`${euro(s.price)} × ${s.days} ${dayWord}`, s.price * s.days],
